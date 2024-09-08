@@ -1,0 +1,5 @@
+.git/
+src/bin/
+src/obj/
+src/build/
+.secret_git
