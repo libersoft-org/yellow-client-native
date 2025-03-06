@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use tauri::{AppHandle, Manager, PhysicalPosition, Window};
+use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, WebviewWindow};
 use uuid::Uuid;
 
 // Notification data structure
@@ -15,7 +15,7 @@ struct Notification {
 
 // Notification manager to keep track of active notifications
 struct NotificationManager {
-    notifications: HashMap<String, Window>,
+    notifications: HashMap<String, WebviewWindow>,
     positions: Vec<(u32, u32)>, // (x, y) positions that are currently occupied
 }
 
@@ -27,7 +27,7 @@ impl NotificationManager {
         }
     }
 
-    fn add_notification(&mut self, window: Window, position: (u32, u32)) {
+    fn add_notification(&mut self, window: WebviewWindow, position: (u32, u32)) {
         let id = window.label().to_string();
         self.notifications.insert(id, window);
         self.positions.push(position);
@@ -114,7 +114,7 @@ async fn create_notification(
         tauri::WebviewUrl::App("notification.html".into())
     )
     .title("Notification")
-    .inner_size(notification_width, notification_height)
+    .inner_size(notification_width as f64, notification_height as f64)
     .decorations(false)
     .skip_taskbar(true)
     .always_on_top(true)
