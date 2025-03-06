@@ -133,18 +133,49 @@
         
         let notificationId = '';
         
+        // Debug flag
+        const DEBUG = true;
+        
+        // Debug logging function
+        function debugLog(...args) {
+            if (DEBUG) {
+                console.log('[NOTIFICATION DEBUG]', ...args);
+            }
+        }
+        
+        // Log when the script starts
+        debugLog('Notification window initialized, waiting for events...');
+        
         // Listen for notification data
         listen('notification-data', (event) => {
-            console.log('Received notification ', event);
-            const notification = event.payload;
-            notificationId = notification.id;
+            debugLog('✅ RECEIVED notification-data event:', event);
             
-            document.getElementById('notification-title').textContent = notification.title;
-            document.getElementById('notification-message').textContent = notification.message;
-            
-            // Set the progress bar animation duration
-            document.getElementById('progress').style.animationDuration = `${notification.duration}s`;
+            try {
+                const notification = event.payload;
+                notificationId = notification.id;
+                
+                document.getElementById('notification-title').textContent = notification.title;
+                document.getElementById('notification-message').textContent = notification.message;
+                
+                // Set the progress bar animation duration
+                document.getElementById('progress').style.animationDuration = `${notification.duration}s`;
+                
+                // Add a visual indicator that the event was received
+                document.body.style.border = '2px solid green';
+                setTimeout(() => {
+                    document.body.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+                }, 1000);
+                
+                debugLog('Notification data applied successfully:', notification);
+            } catch (error) {
+                console.error('Error processing notification ', error);
+                // Visual indicator for error
+                document.body.style.border = '2px solid red';
+            }
         });
+        
+        // Log that we've set up the listener
+        debugLog('Event listener for notification-data has been registered');
         
         function closeWithAnimation() {
             document.body.style.animation = 'fade-out 0.2s ease-out forwards';

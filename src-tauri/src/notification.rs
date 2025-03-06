@@ -179,9 +179,14 @@ pub async fn create_notification(
     // Wait a moment for the window to be ready
     std::thread::sleep(Duration::from_millis(100));
     
+    // Log before sending notification
+    println!("Attempting to send notification-data event to window: {}", notification_id);
+    
     // Send notification data to the window
-    notification_window.emit("notification-data", &notification)
-        .map_err(|e| format!("Failed to send notification: {}", e))?;
+    match notification_window.emit("notification-data", &notification) {
+        Ok(_) => println!("Successfully emitted notification-data event to window: {}", notification_id),
+        Err(e) => return Err(format!("Failed to send notification: {}", e)),
+    }
     
     // Add to notification manager
     {
