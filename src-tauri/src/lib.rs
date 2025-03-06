@@ -1,3 +1,4 @@
+#![feature(str_as_str)]
 mod notification;
 
 use std::sync::Arc;
