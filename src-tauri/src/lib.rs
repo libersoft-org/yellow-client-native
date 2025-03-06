@@ -6,6 +6,8 @@ use std::sync::Mutex;
 use log::{LevelFilter, info, error};
 use tauri::{Event, Listener, Manager, Emitter};
 
+// ai! improve the code below to parse payload as json and provide id
+
 // Extension trait to get window label from event
 trait EventExt {
     fn window_label(&self) -> Option<String>;
@@ -94,6 +96,7 @@ pub fn run() {
             let click_app_handle = app_handle.clone(); // Clone for use inside closure
             click_handle.clone().listen("notification-clicked", move |event| {
                 info!("Received notification-clicked event");
+                 info!("Notification clicked: {}", event.payload());
                 if let Some(window_label) = event.window_label() {
                     info!("Notification clicked: {}", window_label);
                     // Close the notification window
