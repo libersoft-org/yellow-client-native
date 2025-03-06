@@ -1,0 +1,1 @@
+ANTHROPIC_API_KEY=(cat ~/secrets/ANTHROPIC ) aider --model sonnet --api-key openrouter=(cat ~/secrets/OPENROUTER_AI_API_KEY) --watch-files --chat-history-file=aider/.aider.chat.history.md --input-history-file aider/.aider.input.history --read ./README.md --read docs --watch
