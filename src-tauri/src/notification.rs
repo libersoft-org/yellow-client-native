@@ -172,19 +172,7 @@ pub async fn create_notification(
     notification_window.set_position(PhysicalPosition::new(x, y))
         .map_err(|e| format!("Failed to position notification window: {}", e))?;
     
-    // Listen for "notification-ready" event before emitting notification data
-    let notification_clone = notification.clone();
-    let notification_window_clone = notification_window.clone();
-    let notification_id_clone = notification_id.clone();
-
-    app.listen_global("notification-ready", move |_event| {
-        info!("Received notification-ready event from window: {}", notification_id_clone);
-        if let Err(e) = notification_window_clone.emit("notification-data", &notification_clone) {
-            error!("Failed to emit notification-data event: {}", e);
-        } else {
-            info!("Successfully emitted notification-data event to window: {}", notification_id_clone);
-        }
-    });
+    // Store notification data; actual emission handled globally in setup
     
     // Add to notification manager
     {
