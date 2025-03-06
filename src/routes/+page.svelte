@@ -8,10 +8,51 @@
   let greetMsg = $state("");
   let notificationTitle = $state("Test Notification");
   let notificationMessage = $state("This is a test notification message");
+  let notificationCount = $state(0);
   let notificationDuration = $state(5);
   let notificationClicks = $state<string[]>([]);
 
+
+
+
+  async function testDebug()
+  {
+    const { listen } = window.__TAURI__.event;
+    const { invoke } = window.__TAURI__.core;
+
+    let notificationId = '';
+
+    // Debug flag
+    const DEBUG = true;
+
+    // Debug logging function
+    function debugLog(...args) {
+      if (DEBUG) {
+        console.log('[NOTIFICATION DEBUG]', ...args);
+        // Send log to main process
+        window.__TAURI__.event.emit('notification-log', {
+          level: 'debug',
+          message: args.map(arg =>
+                  typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+          ).join(' ')
+        });
+      }
+    }
+
+    // Log when the script starts
+    debugLog('Main window initialized, waiting for events...');
+
+
+    listen('notification-data', (event) => {
+      debugLog('✅ +page RECEIVED notification-data event:', event);
+    });
+
+  }
+
   onMount(async () => {
+    await testDebug();
+
+
     // Listen for notification clicks
     await listen("notification-clicked", (event) => {
       const data = event.payload as { id: string };
@@ -33,7 +74,7 @@
     try {
       const notificationId = await invoke("create_notification", {
         title: notificationTitle,
-        message: notificationMessage,
+        message: notificationMessage + ` (${notificationCount++})`,
         duration: notificationDuration
       });
       console.log("Created notification:", notificationId);
