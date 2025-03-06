@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, Window, WindowBuilder, WindowUrl};
+use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, Window};
+use tauri::window::{WindowBuilder, WindowUrl};
 use uuid::Uuid;
 
 // Notification data structure
@@ -118,9 +119,12 @@ async fn create_notification(
     .decorations(false)
     .skip_taskbar(true)
     .always_on_top(true)
-    .center()
     .build()
     .map_err(|e| format!("Failed to create notification window: {}", e))?;
+    
+    // Center the window
+    notification_window.center()
+        .map_err(|e| format!("Failed to center notification window: {}", e))?;
     
     // Position the window
     notification_window.set_position(PhysicalPosition::new(x, y))
