@@ -172,44 +172,19 @@ pub async fn create_notification(
     notification_window.set_position(PhysicalPosition::new(x, y))
         .map_err(|e| format!("Failed to position notification window: {}", e))?;
     
-    // Wait a moment for the window to be ready
-    std::thread::sleep(Duration::from_millis(100));
-    
-    // Wait longer for the window to be fully ready
-    info!("Waiting for notification window to initialize: {}", notification_id);
-    std::thread::sleep(Duration::from_millis(1000));
-    
-    // Log before sending notification
-    info!("Attempting to send notification-data event to window: {}", notification_id);
-    
-    // Send notification data to the window
-    match notification_window.emit("notification-data", &notification) {
-        Ok(_) => info!("Successfully emitted notification-data event to window: {}", notification_id),
-        Err(e) => {
+    // Listen for "notification-ready" event before emitting notification data
+    let notification_clone = notification.clone();
+    let notification_window_clone = notification_window.clone();
+    let notification_id_clone = notification_id.clone();
+
+    app.listen_global("notification-ready", move |_event| {
+        info!("Received notification-ready event from window: {}", notification_id_clone);
+        if let Err(e) = notification_window_clone.emit("notification-data", &notification_clone) {
             error!("Failed to emit notification-data event: {}", e);
-            return Err(format!("Failed to send notification: {}", e));
+        } else {
+            info!("Successfully emitted notification-data event to window: {}", notification_id_clone);
         }
-    }
-    
-    // Try again after a short delay as a fallback
-    std::thread::sleep(Duration::from_millis(500));
-    match notification_window.emit("notification-data", &notification) {
-        Ok(_) => info!("Successfully emitted notification-data event (retry) to window: {}", notification_id),
-        Err(e) => {
-            error!("Failed to emit notification-data event on retry: {}", e);
-            // Continue anyway, don't return error
-        }
-    }
-    
-    // Try one more time after another delay
-    std::thread::sleep(Duration::from_millis(500));
-    match notification_window.emit("notification-data", &notification) {
-        Ok(_) => info!("Successfully emitted notification-data event (final retry) to window: {}", notification_id),
-        Err(e) => {
-            error!("Failed to emit notification-data event on final retry: {}", e);
-            // Continue anyway, don't return error
-        }
-    }
+    });
     
     // Add to notification manager
     {

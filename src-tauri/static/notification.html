@@ -231,7 +231,12 @@
         }
         
         // Wait a moment before setting up event listeners to ensure Tauri is ready
-        setTimeout(setupEventListeners, 300);
+        setTimeout(() => {
+            setupEventListeners();
+            // Notify backend that notification window is ready
+            window.__TAURI__.event.emit('notification-ready');
+            debugLog('notification-ready event emitted');
+        }, 300);
         
         // Log that we've set up the listener
         debugLog('Event listener for notification-data has been registered');
