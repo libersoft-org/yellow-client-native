@@ -9,7 +9,7 @@
   let notificationTitle = $state("Test Notification");
   let notificationMessage = $state("This is a test notification message");
   let notificationCount = $state(0);
-  let notificationDuration = $state(5);
+  let notificationDuration = $state(50000);
   let notificationClicks = $state<string[]>([]);
 
 
@@ -30,7 +30,7 @@
       if (DEBUG) {
         console.log('[NOTIFICATION DEBUG]', ...args);
         // Send log to main process
-        window.__TAURI__.event.emit('notification-log', {
+        window.__TAURI__.event.emit('my-log', {
           level: 'debug',
           message: args.map(arg =>
                   typeof arg === 'object' ? JSON.stringify(arg) : String(arg)

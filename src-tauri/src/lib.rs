@@ -53,7 +53,7 @@ pub fn run() {
             
             // Set up event listener for notification logs
             let log_handle = app_handle.clone();
-            log_handle.listen("notification-log", move |event| {
+            log_handle.listen("my-log", move |event| {
                 let payload = event.payload();
                 info!("Notification log: {}", payload);
             });

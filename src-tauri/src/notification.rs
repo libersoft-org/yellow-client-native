@@ -39,7 +39,7 @@ impl NotificationManager {
             positions: HashMap::new(),
             next_position_id: 0,
             notification_width: 400,
-            notification_height: 150,
+            notification_height: 500,
             margin: 10,
         }
     }
