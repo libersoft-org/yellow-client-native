@@ -15,7 +15,7 @@ pub struct Notification {
 
 // Position information for a notification
 #[derive(Clone, Copy)]
-struct NotificationPosition {
+pub struct NotificationPosition {
     id: usize,  // Unique position ID
     x: u32,
     y: u32,
@@ -38,8 +38,8 @@ impl NotificationManager {
             notifications: HashMap::new(),
             positions: HashMap::new(),
             next_position_id: 0,
-            notification_width: 300,
-            notification_height: 100,
+            notification_width: 400,
+            notification_height: 150,
             margin: 10,
         }
     }
