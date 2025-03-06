@@ -82,19 +82,22 @@ impl NotificationManager {
 
     fn reposition_notifications(&mut self, app_handle: &AppHandle) {
         // Sort positions by their y coordinate
-        let mut positions: Vec<_> = self.positions.iter().collect();
-        positions.sort_by_key(|(_, pos)| pos.id);
+        let mut positions: Vec<_> = self.positions.iter().map(|(id, pos)| (id.clone(), pos.id, pos.x, pos.height)).collect();
+        positions.sort_by_key(|(_, pos_id, _, _)| *pos_id);
         
         // Start from the top
         let mut current_y = 20; // Start 20px from top
         
-        for (id, _) in positions {
-            if let Some(window) = app_handle.get_webview_window(id) {
-                if let Some(pos) = self.positions.get_mut(id) {
+        for (id, _, x, height) in positions {
+            if let Some(window) = app_handle.get_webview_window(&id) {
+                // Update position in our map
+                if let Some(pos) = self.positions.get_mut(&id) {
                     pos.y = current_y;
-                    let _ = window.set_position(PhysicalPosition::new(pos.x, pos.y));
-                    current_y += pos.height + self.margin;
                 }
+                
+                // Update window position
+                let _ = window.set_position(PhysicalPosition::new(x, current_y));
+                current_y += height + self.margin;
             }
         }
     }
