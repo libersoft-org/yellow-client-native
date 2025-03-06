@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, Window};
+use tauri::{AppHandle, Manager, PhysicalPosition, Window};
 use uuid::Uuid;
 
 // Notification data structure
@@ -108,17 +108,18 @@ async fn create_notification(
     }
     
     // Create a new window for the notification
-    let notification_window = tauri::WindowBuilder::new(
-        &app,
+    let notification_window = app.create_webview_window(
         notification_id.clone(),
-        tauri::WindowUrl::App("notification.html".into())
+        tauri::WebviewUrl::App("notification.html".into()),
+        |window_builder| {
+            window_builder
+                .title("Notification")
+                .inner_size(notification_width, notification_height)
+                .decorations(false)
+                .skip_taskbar(true)
+                .always_on_top(true)
+        }
     )
-    .title("Notification")
-    .inner_size(notification_width, notification_height)
-    .decorations(false)
-    .skip_taskbar(true)
-    .always_on_top(true)
-    .build()
     .map_err(|e| format!("Failed to create notification window: {}", e))?;
     
     // Center the window
@@ -148,7 +149,7 @@ async fn create_notification(
         std::thread::sleep(Duration::from_secs(duration));
         
         // Close the notification after duration
-        if let Some(window) = app_handle.get_window(&notification_id_clone) {
+        if let Some(window) = app_handle.get_webview_window(&notification_id_clone) {
             let _ = window.close();
         }
         
@@ -169,7 +170,7 @@ fn close_notification(
     notification_id: String,
     state: tauri::State<'_, NotificationManagerState>,
 ) -> Result<(), String> {
-    if let Some(window) = app.get_window(&notification_id) {
+    if let Some(window) = app.get_webview_window(&notification_id) {
         window.close().map_err(|e| format!("Failed to close notification: {}", e))?;
     }
     
