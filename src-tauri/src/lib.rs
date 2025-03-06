@@ -13,44 +13,90 @@ struct Notification {
     duration: u64, // in seconds
 }
 
+// Position information for a notification
+#[derive(Clone, Copy)]
+struct NotificationPosition {
+    id: usize,  // Unique position ID
+    x: u32,
+    y: u32,
+    height: u32,
+}
+
 // Notification manager to keep track of active notifications
 struct NotificationManager {
     notifications: HashMap<String, WebviewWindow>,
-    positions: Vec<(u32, u32)>, // (x, y) positions that are currently occupied
+    positions: HashMap<String, NotificationPosition>, // Map notification ID to position
+    next_position_id: usize,
+    notification_width: u32,
+    notification_height: u32,
+    margin: u32,
 }
 
 impl NotificationManager {
     fn new() -> Self {
         NotificationManager {
             notifications: HashMap::new(),
-            positions: Vec::new(),
+            positions: HashMap::new(),
+            next_position_id: 0,
+            notification_width: 300,
+            notification_height: 100,
+            margin: 10,
         }
     }
 
-    fn add_notification(&mut self, window: WebviewWindow, position: (u32, u32)) {
+    fn add_notification(&mut self, window: WebviewWindow, x: u32, y: u32) {
         let id = window.label().to_string();
-        self.notifications.insert(id, window);
-        self.positions.push(position);
+        let position = NotificationPosition {
+            id: self.next_position_id,
+            x,
+            y,
+            height: self.notification_height,
+        };
+        self.next_position_id += 1;
+        self.notifications.insert(id.clone(), window);
+        self.positions.insert(id, position);
     }
 
-    fn remove_notification(&mut self, id: &str) -> Option<(u32, u32)> {
-        if let Some(_window) = self.notifications.remove(id) {
-            // Find the position of this notification
-            if let Some(index) = self.positions.iter().position(|&_pos| {
-                // We would need to store position with notification ID to make this accurate
-                // This is a simplification
-                true
-            }) {
-                let position = self.positions.remove(index);
-                return Some(position);
+    fn remove_notification(&mut self, id: &str) -> Option<NotificationPosition> {
+        self.notifications.remove(id);
+        self.positions.remove(id)
+    }
+
+    fn get_next_position(&self, screen_width: u32) -> (u32, u32) {
+        // Start from top right corner
+        let base_x = screen_width - self.notification_width - 20; // 20px margin from right
+        let base_y = 20; // Start 20px from top
+        
+        if self.positions.is_empty() {
+            return (base_x, base_y);
+        }
+        
+        // Find the lowest position (highest y value)
+        let max_y = self.positions.values()
+            .map(|pos| pos.y + pos.height + self.margin)
+            .max()
+            .unwrap_or(base_y);
+            
+        (base_x, max_y)
+    }
+
+    fn reposition_notifications(&mut self, app_handle: &AppHandle) {
+        // Sort positions by their y coordinate
+        let mut positions: Vec<_> = self.positions.iter().collect();
+        positions.sort_by_key(|(_, pos)| pos.id);
+        
+        // Start from the top
+        let mut current_y = 20; // Start 20px from top
+        
+        for (id, _) in positions {
+            if let Some(window) = app_handle.get_webview_window(id) {
+                if let Some(pos) = self.positions.get_mut(id) {
+                    pos.y = current_y;
+                    let _ = window.set_position(PhysicalPosition::new(pos.x, pos.y));
+                    current_y += pos.height + self.margin;
+                }
             }
         }
-        None
-    }
-
-    fn reposition_notifications(&mut self) {
-        // This would reposition remaining notifications after one is closed
-        // Implementation depends on your specific UI requirements
     }
 }
 
@@ -94,18 +140,17 @@ async fn create_notification(
     
     let monitor_size = monitor.size();
     
-    // Calculate position for the notification
-    // Start from top right corner
-    let notification_width = 300;
-    let notification_height = 100;
-    let x = monitor_size.width - notification_width - 20; // 20px margin from right
-    let mut y = 20; // Start 20px from top
-    
-    // Check existing notifications and stack this one below
-    {
+    // Get position for the notification from the manager
+    let (notification_width, notification_height) = {
         let manager = state.lock().unwrap();
-        y += (manager.positions.len() as u32) * (notification_height + 10);
-    }
+        (manager.notification_width, manager.notification_height)
+    };
+    
+    // Calculate position for the notification
+    let (x, y) = {
+        let manager = state.lock().unwrap();
+        manager.get_next_position(monitor_size.width)
+    };
     
     // Create a new window for the notification
     let notification_window = tauri::WebviewWindowBuilder::new(
@@ -136,7 +181,7 @@ async fn create_notification(
     // Add to notification manager
     {
         let mut manager = state.lock().unwrap();
-        manager.add_notification(notification_window.clone(), (x, y));
+        manager.add_notification(notification_window.clone(), x, y);
     }
     
     // Set up auto-close timer
@@ -154,8 +199,8 @@ async fn create_notification(
         
         // Remove from manager
         let mut manager = state_clone.lock().unwrap();
-        if let Some(_) = manager.remove_notification(&notification_id_clone) {
-            manager.reposition_notifications();
+        if manager.remove_notification(&notification_id_clone).is_some() {
+            manager.reposition_notifications(&app_handle);
         }
     });
     
@@ -175,8 +220,8 @@ fn close_notification(
     
     // Remove from manager
     let mut manager = state.lock().unwrap();
-    if let Some(_) = manager.remove_notification(&notification_id) {
-        manager.reposition_notifications();
+    if manager.remove_notification(&notification_id).is_some() {
+        manager.reposition_notifications(&app);
     }
     
     Ok(())

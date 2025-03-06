@@ -9,15 +9,21 @@
             margin: 0;
             padding: 0;
             font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.95);
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(0, 0, 0, 0.1);
             height: 100vh;
             width: 100vw;
             display: flex;
             flex-direction: column;
+            animation: fade-in 0.3s ease-out;
+        }
+        
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .notification-container {
@@ -78,6 +84,11 @@
             from { width: 100%; }
             to { width: 0%; }
         }
+        
+        @keyframes fade-out {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
 
         /* Dark mode support */
         @media (prefers-color-scheme: dark) {
@@ -132,19 +143,27 @@
             document.getElementById('progress').style.animationDuration = `${notification.duration}s`;
         });
         
+        function closeWithAnimation() {
+            document.body.style.animation = 'fade-out 0.2s ease-out forwards';
+            
+            setTimeout(() => {
+                invoke('close_notification', { notification_id: notificationId });
+            }, 200);
+        }
+        
         // Handle click on notification
         document.getElementById('notification-container').addEventListener('click', () => {
             // Emit an event that the notification was clicked
             window.__TAURI__.event.emit('notification-clicked', { id: notificationId });
             
-            // Close the notification
-            invoke('close_notification', { notification_id: notificationId });
+            // Close the notification with animation
+            closeWithAnimation();
         });
         
         // Handle close button click
         document.getElementById('close-button').addEventListener('click', (e) => {
             e.stopPropagation(); // Prevent triggering the container click
-            invoke('close_notification', { notification_id: notificationId });
+            closeWithAnimation();
         });
     </script>
 </body>
