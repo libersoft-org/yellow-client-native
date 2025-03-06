@@ -138,13 +138,13 @@
             window.__TAURI__.event.emit('notification-clicked', { id: notificationId });
             
             // Close the notification
-            invoke('close_notification', { notificationId });
+            invoke('close_notification', { notification_id: notificationId });
         });
         
         // Handle close button click
         document.getElementById('close-button').addEventListener('click', (e) => {
             e.stopPropagation(); // Prevent triggering the container click
-            invoke('close_notification', { notificationId });
+            invoke('close_notification', { notification_id: notificationId });
         });
     </script>
 </body>
