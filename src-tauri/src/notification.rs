@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tauri::{AppHandle, Manager, PhysicalPosition, WebviewWindow};
 use uuid::Uuid;
-use log::{LevelFilter, info, error};
+use log::{info};
 
 // Notification data structure
 #[derive(Clone, serde::Serialize)]

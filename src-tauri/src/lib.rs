@@ -61,6 +61,7 @@ pub fn run() {
             // Listen globally for notification-ready events
             let ready_handle = app_handle.clone();
             ready_handle.listen("notification-ready", move |event| {
+                info!("Received notification-ready event");
                 // Extract window label from event payload or use a default approach
                 if let Some(window_label) = event.window_label() {
                     info!("Received notification-ready event from window: {}", window_label);
@@ -86,6 +87,9 @@ pub fn run() {
                     }
                 }
             });
+
+            
+
 
             Ok(())
         })
