@@ -7,15 +7,16 @@ use tauri::{Event, Listener, Manager, Emitter};
 
 // Extension trait to get window label from event
 trait EventExt {
-    fn window_label(&self) -> Option<&str>;
+    fn window_label(&self) -> Option<String>;
 }
 
 impl EventExt for Event {
-    fn window_label(&self) -> Option<&str> {
-        // In Tauri 2, we can get the window label from the event source
-        if let Some(source) = self.label() {
-            if source.starts_with("window-") {
-                return Some(&source["window-".len()..]);
+    fn window_label(&self) -> Option<String> {
+        // In Tauri 2, we need to extract window label from payload
+        let payload = self.payload();
+        if let Some(payload_str) = payload.as_str() {
+            if payload_str.starts_with("window-") {
+                return Some(payload_str["window-".len()..].to_string());
             }
         }
         None
@@ -48,19 +49,20 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .manage(notification_manager)
         .setup(|app| {
-            let app_handle = app.handle();
+            let app_handle = app.handle().clone();
             
             // Set up event listener for notification logs
-            app_handle.listen("notification-log", move |event| {
+            let log_handle = app_handle.clone();
+            log_handle.listen("notification-log", move |event| {
                 let payload = event.payload();
                 info!("Notification log: {}", payload);
             });
 
             // Listen globally for notification-ready events
-            app_handle.listen("notification-ready", move |event| {
+            let ready_handle = app_handle.clone();
+            ready_handle.listen("notification-ready", move |event| {
                 // Extract window label from event payload or use a default approach
-                if let Some(window) = event.window_label() {
-                    let window_label = window.to_string();
+                if let Some(window_label) = event.window_label() {
                     info!("Received notification-ready event from window: {}", window_label);
                     let state = app_handle.state::<notification::NotificationManagerState>();
                     let manager = state.lock().unwrap();
