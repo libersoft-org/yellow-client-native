@@ -3,6 +3,7 @@ mod notification;
 use std::sync::Arc;
 use std::sync::Mutex;
 use log::{LevelFilter, info};
+use tauri::Listener;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -32,7 +33,7 @@ pub fn run() {
         .setup(|app| {
             // Set up event listener for notification logs
             let app_handle = app.handle();
-            app.listen("notification-log", move |event| {
+            app_handle.listen("notification-log", move |event| {
                 if let Some(payload) = event.payload() {
                     info!("Notification log: {}", payload);
                 }
