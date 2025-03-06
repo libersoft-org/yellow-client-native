@@ -32,7 +32,7 @@ pub fn run() {
         .setup(|app| {
             // Set up event listener for notification logs
             let app_handle = app.handle();
-            app_handle.listen_global("notification-log", |event| {
+            app.listen("notification-log", move |event| {
                 if let Some(payload) = event.payload() {
                     info!("Notification log: {}", payload);
                 }
