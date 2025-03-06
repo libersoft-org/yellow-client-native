@@ -129,11 +129,7 @@ pub async fn create_notification(
         message,
         duration,
     };
-    
-    // Serialize notification data for the window
-    let notification_data = serde_json::to_string(&notification)
-        .map_err(|e| format!("Failed to serialize notification: {}", e))?;
-    
+
     // Get primary monitor dimensions
     let monitor = app.primary_monitor()
         .map_err(|e| format!("Failed to get primary monitor: {}", e))?
@@ -175,7 +171,6 @@ pub async fn create_notification(
     notification_window.set_position(PhysicalPosition::new(x, y))
         .map_err(|e| format!("Failed to position notification window: {}", e))?;
     
-    // Send notification data to the window
     // Wait a moment for the window to be ready
     std::thread::sleep(Duration::from_millis(100));
     
