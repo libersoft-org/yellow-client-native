@@ -44,7 +44,7 @@
 
 
     listen('notification-data', (event) => {
-      debugLog('✅ +page RECEIVED notification-data event:', event);
+      debugLog('+page received notification-data event:', event);
     });
 
   }
