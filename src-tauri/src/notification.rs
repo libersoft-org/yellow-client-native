@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, WebviewWindow};
 use uuid::Uuid;
+use log::{debug, info, error};
 
 // Notification data structure
 #[derive(Clone, serde::Serialize)]
@@ -175,12 +176,15 @@ pub async fn create_notification(
     std::thread::sleep(Duration::from_millis(100));
     
     // Log before sending notification
-    println!("Attempting to send notification-data event to window: {}", notification_id);
+    info!("Attempting to send notification-data event to window: {}", notification_id);
     
     // Send notification data to the window
     match notification_window.emit("notification-data", &notification) {
-        Ok(_) => println!("Successfully emitted notification-data event to window: {}", notification_id),
-        Err(e) => return Err(format!("Failed to send notification: {}", e)),
+        Ok(_) => info!("Successfully emitted notification-data event to window: {}", notification_id),
+        Err(e) => {
+            error!("Failed to emit notification-data event: {}", e);
+            return Err(format!("Failed to send notification: {}", e));
+        }
     }
     
     // Add to notification manager
