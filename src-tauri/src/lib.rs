@@ -15,9 +15,12 @@ impl EventExt for Event {
     fn window_label(&self) -> Option<String> {
         // In Tauri 2, we need to extract window label from payload
         let payload = self.payload();
-        if let Some(payload_str) = payload.as_str() {
-            if payload_str.starts_with("window-") {
-                return Some(payload_str["window-".len()..].to_string());
+        // payload.as_str() already returns an Option<&str>, so we don't need to wrap it in Some()
+        if let Some(payload_str) = payload {
+            if let Some(str_val) = payload_str.as_str() {
+                if str_val.starts_with("window-") {
+                    return Some(str_val["window-".len()..].to_string());
+                }
             }
         }
         None
