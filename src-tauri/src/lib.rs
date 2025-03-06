@@ -3,7 +3,24 @@ mod notification;
 use std::sync::Arc;
 use std::sync::Mutex;
 use log::{LevelFilter, info, error};
-use tauri::{Listener, Manager};
+use tauri::{Event, Listener, Manager};
+
+// Extension trait to get window label from event
+trait EventExt {
+    fn window_label(&self) -> Option<&str>;
+}
+
+impl EventExt for Event {
+    fn window_label(&self) -> Option<&str> {
+        self.target().and_then(|target| {
+            if target.starts_with("window-") {
+                Some(&target["window-".len()..])
+            } else {
+                None
+            }
+        })
+    }
+}
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -41,11 +58,13 @@ pub fn run() {
 
             // Listen globally for notification-ready events
             app_handle.listen("notification-ready", move |event| {
-                if let Some(window_label) = event.window().map(|w| w.label().to_string()) {
+                // Extract window label from event payload or use a default approach
+                if let Some(window) = event.window_label() {
+                    let window_label = window.to_string();
                     info!("Received notification-ready event from window: {}", window_label);
                     let state = app_handle.state::<notification::NotificationManagerState>();
                     let manager = state.lock().unwrap();
-                    if let Some(window) = manager.notifications.get(&window_label) {
+                    if let Some(window) = manager.get_notification_window(&window_label) {
                         // Retrieve notification data from window label or other storage if needed
                         // For simplicity, assuming notification data is stored or retrievable here
                         // You might need to adjust this logic based on your actual data storage

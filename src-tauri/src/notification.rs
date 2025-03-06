@@ -105,6 +105,11 @@ impl NotificationManager {
     pub fn get_dimensions(&self) -> (u32, u32) {
         (self.notification_width, self.notification_height)
     }
+    
+    // Get a notification window by ID
+    pub fn get_notification_window(&self, id: &str) -> Option<&WebviewWindow> {
+        self.notifications.get(id)
+    }
 }
 
 // Create a global notification manager
