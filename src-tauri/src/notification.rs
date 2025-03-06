@@ -211,14 +211,11 @@ pub async fn create_notification(
 // Command to close a notification manually
 #[tauri::command]
 pub fn close_notification(
-
-    // ai! fix this macro call
-    info!("Closing notification: {}", notification_id);
-
     app: AppHandle,
     notification_id: String,
     state: tauri::State<'_, NotificationManagerState>,
 ) -> Result<(), String> {
+    info!("Closing notification: {}", notification_id);
     if let Some(window) = app.get_webview_window(&notification_id) {
         window.close().map_err(|e| format!("Failed to close notification: {}", e))?;
     }
