@@ -97,7 +97,7 @@
         />
       </div>
       
-      <button type="button" on:click={showNotification}>
+      <button type="button" onclick={showNotification}>
         Show Notification
       </button>
     </div>
