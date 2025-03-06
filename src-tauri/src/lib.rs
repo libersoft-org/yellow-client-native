@@ -2,8 +2,8 @@ mod notification;
 
 use std::sync::Arc;
 use std::sync::Mutex;
-use log::{LevelFilter, info};
-use tauri::Listener;
+use log::{LevelFilter, info, error};
+use tauri::{Listener, Manager};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -40,7 +40,7 @@ pub fn run() {
             });
 
             // Listen globally for notification-ready events
-            app_handle.listen_global("notification-ready", move |event| {
+            app_handle.listen("notification-ready", move |event| {
                 if let Some(window_label) = event.window().map(|w| w.label().to_string()) {
                     info!("Received notification-ready event from window: {}", window_label);
                     let state = app_handle.state::<notification::NotificationManagerState>();

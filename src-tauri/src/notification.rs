@@ -1,9 +1,8 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, WebviewWindow};
+use tauri::{AppHandle, Manager, PhysicalPosition, WebviewWindow};
 use uuid::Uuid;
-use log::{info, error};
 
 // Notification data structure
 #[derive(Clone, serde::Serialize)]
@@ -124,7 +123,7 @@ pub async fn create_notification(
     let duration = duration.unwrap_or(5); // Default 5 seconds
     
     // Create notification data
-    let notification = Notification {
+    let _notification = Notification {
         id: notification_id.clone(),
         title,
         message,
