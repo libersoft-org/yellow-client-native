@@ -144,7 +144,7 @@
                     // Send log to main process
                     window.__TAURI__.event.emit('notification-log', {
                         level: 'debug',
-                        message: args.map(arg => 
+                        message: 'NOTIFICATION WINDOW: ' + args.map(arg => 
                             typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
                         ).join(' ')
                     });
@@ -154,8 +154,21 @@
             }
         }
         
-        // Log that the notification window has loaded
-        debugLog('Notification window loaded at', new Date().toISOString());
+        // Immediately log that the notification window has loaded
+        console.log('[NOTIFICATION DEBUG] Window loaded at', new Date().toISOString());
+        
+        // Try to send a log message as soon as possible
+        setTimeout(() => {
+            try {
+                window.__TAURI__.event.emit('notification-log', {
+                    level: 'debug',
+                    message: 'NOTIFICATION WINDOW: Initial load complete at ' + new Date().toISOString()
+                });
+                debugLog('Initial log message sent successfully');
+            } catch (e) {
+                console.error('Failed to send initial log:', e);
+            }
+        }, 100);
         
         // Log when the script starts
         debugLog('Notification window initialized, waiting for events...');
@@ -166,45 +179,59 @@
         // Log all available Tauri APIs
         debugLog('Available Tauri APIs:', Object.keys(window.__TAURI__ || {}));
         
-        try {
-            // Listen for notification data
-            listen('notification-data', (event) => {
-                debugLog('✅ RECEIVED notification-data event:', event);
+        // Set a visual indicator that we're initializing
+        document.getElementById('notification-title').textContent = 'Initializing...';
+        document.body.style.border = '2px solid orange';
+        
+        // Function to set up event listeners
+        function setupEventListeners() {
+            try {
+                debugLog('Setting up notification-data event listener');
                 
-                // Set a visual indicator immediately
-                document.getElementById('notification-title').textContent = 'EVENT RECEIVED';
+                // Listen for notification data
+                listen('notification-data', (event) => {
+                    debugLog('✅ RECEIVED notification-data event:', JSON.stringify(event));
+                    
+                    // Set a visual indicator immediately
+                    document.getElementById('notification-title').textContent = 'EVENT RECEIVED';
+                    document.body.style.border = '2px solid blue';
+                    
+                    try {
+                        const notification = event.payload;
+                        notificationId = notification.id;
+                        
+                        document.getElementById('notification-title').textContent = notification.title;
+                        document.getElementById('notification-message').textContent = notification.message;
+                        
+                        // Set the progress bar animation duration
+                        document.getElementById('progress').style.animationDuration = `${notification.duration}s`;
+                        
+                        // Add a visual indicator that the event was received
+                        document.body.style.border = '2px solid green';
+                        setTimeout(() => {
+                            document.body.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+                        }, 1000);
+                        
+                        debugLog('Notification data applied successfully:', JSON.stringify(notification));
+                    } catch (error) {
+                        debugLog('Error processing notification:', error.toString());
+                        // Visual indicator for error
+                        document.body.style.border = '2px solid red';
+                    }
+                });
+                
+                debugLog('Event listener for notification-data has been registered successfully');
+                document.getElementById('notification-title').textContent = 'Waiting for events...';
                 document.body.style.border = '2px solid blue';
-                
-                try {
-                    const notification = event.payload;
-                    notificationId = notification.id;
-                    
-                    document.getElementById('notification-title').textContent = notification.title;
-                    document.getElementById('notification-message').textContent = notification.message;
-                    
-                    // Set the progress bar animation duration
-                    document.getElementById('progress').style.animationDuration = `${notification.duration}s`;
-                    
-                    // Add a visual indicator that the event was received
-                    document.body.style.border = '2px solid green';
-                    setTimeout(() => {
-                        document.body.style.border = '1px solid rgba(0, 0, 0, 0.1)';
-                    }, 1000);
-                    
-                    debugLog('Notification data applied successfully:', notification);
-                } catch (error) {
-                    debugLog('Error processing notification:', error);
-                    // Visual indicator for error
-                    document.body.style.border = '2px solid red';
-                }
-            });
-            
-            debugLog('Event listener for notification-data has been registered successfully');
-        } catch (error) {
-            debugLog('Failed to register event listener:', error);
-            document.getElementById('notification-title').textContent = 'Error: ' + error.message;
-            document.body.style.border = '2px solid red';
+            } catch (error) {
+                debugLog('Failed to register event listener:', error.toString());
+                document.getElementById('notification-title').textContent = 'Error: ' + error.message;
+                document.body.style.border = '2px solid red';
+            }
         }
+        
+        // Wait a moment before setting up event listeners to ensure Tauri is ready
+        setTimeout(setupEventListeners, 300);
         
         // Log that we've set up the listener
         debugLog('Event listener for notification-data has been registered');
