@@ -135,7 +135,8 @@
         
         // Listen for notification data
         listen('notification-data', (event) => {
-            const notification = JSON.parse(event.payload);
+            console.log('Received notification ', event);
+            const notification = event.payload;
             notificationId = notification.id;
             
             document.getElementById('notification-title').textContent = notification.title;

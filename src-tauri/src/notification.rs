@@ -176,8 +176,12 @@ pub async fn create_notification(
         .map_err(|e| format!("Failed to position notification window: {}", e))?;
     
     // Send notification data to the window
-    notification_window.emit("notification-data", notification_data)
-        .map_err(|e| format!("Failed to send notification  {}", e))?;
+    // Wait a moment for the window to be ready
+    std::thread::sleep(Duration::from_millis(100));
+    
+    // Send notification data to the window
+    notification_window.emit("notification-data", &notification)
+        .map_err(|e| format!("Failed to send notification: {}", e))?;
     
     // Add to notification manager
     {
