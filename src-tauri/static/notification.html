@@ -155,7 +155,10 @@
         
         // Listen for notification data
         listen('notification-data', (event) => {
-            debugLog('✅ RECEIVED notification-data event:', event);
+
+            document.getElementById('notification-title').textContent = 'EVENT';
+
+                debugLog('✅ RECEIVED notification-data event:', event);
             
             try {
                 const notification = event.payload;
