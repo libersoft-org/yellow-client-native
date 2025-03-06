@@ -3,7 +3,7 @@ mod notification;
 use std::sync::Arc;
 use std::sync::Mutex;
 use log::{LevelFilter, info, error};
-use tauri::{Event, Listener, Manager};
+use tauri::{Event, Listener, Manager, Emitter};
 
 // Extension trait to get window label from event
 trait EventExt {
@@ -12,13 +12,13 @@ trait EventExt {
 
 impl EventExt for Event {
     fn window_label(&self) -> Option<&str> {
-        self.target().and_then(|target| {
-            if target.starts_with("window-") {
-                Some(&target["window-".len()..])
-            } else {
-                None
+        // In Tauri 2, we can get the window label from the event source
+        if let Some(source) = self.label() {
+            if source.starts_with("window-") {
+                return Some(&source["window-".len()..]);
             }
-        })
+        }
+        None
     }
 }
 
