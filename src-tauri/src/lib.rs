@@ -88,8 +88,31 @@ pub fn run() {
                 }
             });
 
-
-
+            // Listen for notification-clicked events
+            let click_handle = app_handle.clone();
+            click_handle.listen("notification-clicked", move |event| {
+                info!("Received notification-clicked event");
+                if let Some(window_label) = event.window_label() {
+                    info!("Notification clicked: {}", window_label);
+                    // Close the notification window
+                    if let Some(window) = click_handle.get_webview_window(&window_label) {
+                        if let Err(e) = window.close() {
+                            error!("Failed to close notification window: {}", e);
+                        } else {
+                            info!("Successfully closed notification window: {}", window_label);
+                            
+                            // Remove from notification manager
+                            let state = click_handle.state::<notification::NotificationManagerState>();
+                            let mut manager = state.lock().unwrap();
+                            if manager.remove_notification(&window_label).is_some() {
+                                manager.reposition_notifications(&click_handle);
+                            }
+                        }
+                    } else {
+                        error!("No notification window found for label: {}", window_label);
+                    }
+                }
+            });
 
             Ok(())
         })
