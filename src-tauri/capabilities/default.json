@@ -6,6 +6,18 @@
   "permissions": [
     "core:default",
     "opener:default",
-    "core:webview:allow-set-webview-zoom"
+    "core:webview:allow-set-webview-zoom",
+    "window:create",
+    "window:close",
+    "window:position",
+    "window:center",
+    "window:set-always-on-top",
+    "window:set-decorations",
+    "window:set-skip-taskbar",
+    "window:set-size",
+    "window:set-position",
+    "event:emit",
+    "event:listen",
+    "monitor:all"
   ]
 }

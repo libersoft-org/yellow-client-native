@@ -1,21 +1,45 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
-  import {getCurrentWebview} from "@tauri-apps/api/webview";
+  import { getCurrentWebview } from "@tauri-apps/api/webview";
+  import { listen } from "@tauri-apps/api/event";
+  import { onMount } from "svelte";
 
   let name = $state("");
   let greetMsg = $state("");
+  let notificationTitle = $state("Test Notification");
+  let notificationMessage = $state("This is a test notification message");
+  let notificationDuration = $state(5);
+  let notificationClicks = $state<string[]>([]);
+
+  onMount(async () => {
+    // Listen for notification clicks
+    await listen("notification-clicked", (event) => {
+      const data = event.payload as { id: string };
+      notificationClicks = [...notificationClicks, `Clicked notification: ${data.id}`];
+    });
+  });
 
   async function greet(event: Event) {
     await getCurrentWebview().setZoom(1.2);
     console.log(await getCurrentWebview());
     await getCurrentWebview().setZoomFactor(2.2);
 
-
     event.preventDefault();
     // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
     greetMsg = await invoke("greet", { name });
-    //await __TAURI__.tauri.invoke("zoom_window", {scaleFactor:6.2});
+  }
 
+  async function showNotification() {
+    try {
+      const notificationId = await invoke("create_notification", {
+        title: notificationTitle,
+        message: notificationMessage,
+        duration: notificationDuration
+      });
+      console.log("Created notification:", notificationId);
+    } catch (error) {
+      console.error("Failed to create notification:", error);
+    }
   }
 </script>
 
@@ -40,6 +64,55 @@
     <button type="submit">Greet</button>
   </form>
   <p>{greetMsg}</p>
+
+  <div class="notification-section">
+    <h2>Notifications</h2>
+    <div class="notification-form">
+      <div class="form-group">
+        <label for="notification-title">Title:</label>
+        <input 
+          id="notification-title" 
+          placeholder="Notification title" 
+          bind:value={notificationTitle} 
+        />
+      </div>
+      
+      <div class="form-group">
+        <label for="notification-message">Message:</label>
+        <textarea 
+          id="notification-message" 
+          placeholder="Notification message" 
+          bind:value={notificationMessage}
+        ></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="notification-duration">Duration (seconds):</label>
+        <input 
+          id="notification-duration" 
+          type="number" 
+          min="1" 
+          max="30" 
+          bind:value={notificationDuration} 
+        />
+      </div>
+      
+      <button type="button" on:click={showNotification}>
+        Show Notification
+      </button>
+    </div>
+
+    {#if notificationClicks.length > 0}
+      <div class="notification-clicks">
+        <h3>Notification Clicks:</h3>
+        <ul>
+          {#each notificationClicks as click}
+            <li>{click}</li>
+          {/each}
+        </ul>
+      </div>
+    {/if}
+  </div>
 </main>
 
 <style>
@@ -49,6 +122,71 @@
 
 .logo.svelte-kit:hover {
   filter: drop-shadow(0 0 2em #ff3e00);
+}
+
+.notification-section {
+  margin-top: 2rem;
+  padding: 1rem;
+  border-top: 1px solid #ddd;
+  text-align: left;
+}
+
+.notification-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+textarea {
+  min-height: 80px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-family: inherit;
+  background-color: #ffffff;
+  transition: border-color 0.25s;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+  resize: vertical;
+}
+
+.notification-clicks {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+
+.notification-clicks ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.notification-clicks li {
+  margin-bottom: 0.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .notification-section {
+    border-top: 1px solid #444;
+  }
+  
+  .notification-clicks {
+    background-color: #333;
+  }
+  
+  textarea {
+    color: #ffffff;
+    background-color: #0f0f0f98;
+  }
 }
 
 :root {

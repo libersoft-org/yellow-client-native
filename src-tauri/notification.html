@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notification-container {
+            padding: 12px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .notification-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin: 0;
+            color: #333;
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #999;
+        }
+
+        .notification-message {
+            font-size: 14px;
+            color: #555;
+            flex: 1;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background-color: #e0e0e0;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            position: absolute;
+            height: 100%;
+            background-color: #4a86e8;
+            width: 100%;
+            animation-name: progress;
+            animation-timing-function: linear;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes progress {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: rgba(45, 45, 45, 0.9);
+            }
+            
+            .notification-title {
+                color: #f0f0f0;
+            }
+            
+            .notification-message {
+                color: #d0d0d0;
+            }
+            
+            .progress-bar {
+                background-color: #444;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="notification-container" id="notification-container">
+        <div class="notification-header">
+            <h3 class="notification-title" id="notification-title">Notification Title</h3>
+            <button class="close-button" id="close-button">×</button>
+        </div>
+        <div class="notification-message" id="notification-message">
+            Notification message goes here.
+        </div>
+    </div>
+    <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+    </div>
+
+    <script>
+        // Listen for the notification data from the Rust backend
+        const { listen } = window.__TAURI__.event;
+        const { invoke } = window.__TAURI__.core;
+        
+        let notificationId = '';
+        
+        // Listen for notification data
+        listen('notification-data', (event) => {
+            const notification = JSON.parse(event.payload);
+            notificationId = notification.id;
+            
+            document.getElementById('notification-title').textContent = notification.title;
+            document.getElementById('notification-message').textContent = notification.message;
+            
+            // Set the progress bar animation duration
+            document.getElementById('progress').style.animationDuration = `${notification.duration}s`;
+        });
+        
+        // Handle click on notification
+        document.getElementById('notification-container').addEventListener('click', () => {
+            // Emit an event that the notification was clicked
+            window.__TAURI__.event.emit('notification-clicked', { id: notificationId });
+            
+            // Close the notification
+            invoke('close_notification', { notificationId });
+        });
+        
+        // Handle close button click
+        document.getElementById('close-button').addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent triggering the container click
+            invoke('close_notification', { notificationId });
+        });
+    </script>
+</body>
+</html>
