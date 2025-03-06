@@ -98,7 +98,7 @@ async fn create_notification(
     // Start from top right corner
     let notification_width = 300;
     let notification_height = 100;
-    let mut x = monitor_size.width - notification_width - 20; // 20px margin from right
+    let x = monitor_size.width - notification_width - 20; // 20px margin from right
     let mut y = 20; // Start 20px from top
     
     // Check existing notifications and stack this one below
@@ -142,7 +142,7 @@ async fn create_notification(
     // Set up auto-close timer
     let notification_id_clone = notification_id.clone();
     let app_handle = app.clone();
-    let state_clone = state.clone();
+    let state_clone = Arc::clone(&state.inner());
     
     std::thread::spawn(move || {
         std::thread::sleep(Duration::from_secs(duration));
