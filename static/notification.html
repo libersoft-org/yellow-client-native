@@ -220,6 +220,9 @@
                         const notification = event.payload;
                         notificationId = notification.id;
 
+                        debugLog('Notification data:', JSON.stringify(notification));
+                        debugLog('Notification ID:', notificationId);
+
                         document.getElementById('notification-title').textContent = notification.title;
                         document.getElementById('notification-message').textContent = notification.message;
 

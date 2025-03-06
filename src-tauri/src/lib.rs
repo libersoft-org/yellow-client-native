@@ -80,7 +80,7 @@ pub fn run() {
             let log_handle = app_handle.clone();
             log_handle.listen("my-log", move |event| {
                 let payload = event.payload();
-                info!("Notification log: {}", payload);
+                info!("my-log: {}", payload);
             });
 
             // Listen globally for notification-ready events
