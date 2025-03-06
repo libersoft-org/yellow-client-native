@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, Window};
-use tauri::window::{WindowBuilder, WindowUrl};
 use uuid::Uuid;
 
 // Notification data structure
@@ -109,10 +108,10 @@ async fn create_notification(
     }
     
     // Create a new window for the notification
-    let notification_window = WindowBuilder::new(
+    let notification_window = tauri::WindowBuilder::new(
         &app,
         notification_id.clone(),
-        WindowUrl::App("notification.html".into())
+        tauri::WindowUrl::App("notification.html".into())
     )
     .title("Notification")
     .inner_size(notification_width, notification_height)
