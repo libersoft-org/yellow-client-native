@@ -4,22 +4,45 @@ mod notification;
 use std::sync::Arc;
 use std::sync::Mutex;
 use log::{LevelFilter, info, error};
+use serde_json::Value;
 use tauri::{Event, Listener, Manager, Emitter};
 
-// ai! improve the code below to parse payload as json and provide id
-
-// Extension trait to get window label from event
+// Extension trait to get window label and id from event
 trait EventExt {
     fn window_label(&self) -> Option<String>;
+    fn notification_id(&self) -> Option<String>;
+    fn parse_payload(&self) -> Option<Value>;
 }
 
 impl EventExt for Event {
+    fn parse_payload(&self) -> Option<Value> {
+        serde_json::from_str::<Value>(self.payload()).ok()
+    }
+    
     fn window_label(&self) -> Option<String> {
-        // In Tauri 2, we need to extract window label from payload
+        // First try to parse as JSON
+        if let Some(json) = self.parse_payload() {
+            // Try to get window label from JSON
+            if let Some(window) = json.get("window").and_then(|w| w.as_str()) {
+                return Some(window.to_string());
+            }
+        }
+        
+        // Fallback to the old method
         let payload = self.payload();
-        // payload is already a &str
         if payload.starts_with("window-") {
             return Some(payload["window-".len()..].to_string());
+        }
+        None
+    }
+    
+    fn notification_id(&self) -> Option<String> {
+        // Try to parse payload as JSON and extract id
+        if let Some(json) = self.parse_payload() {
+            // Try to get notification id from JSON
+            if let Some(id) = json.get("id").and_then(|id| id.as_str()) {
+                return Some(id.to_string());
+            }
         }
         None
     }
@@ -96,11 +119,21 @@ pub fn run() {
             let click_app_handle = app_handle.clone(); // Clone for use inside closure
             click_handle.clone().listen("notification-clicked", move |event| {
                 info!("Received notification-clicked event");
-                 info!("Notification clicked: {}", event.payload());
+                info!("Notification clicked payload: {}", event.payload());
+                
+                // Try to get notification ID first
+                let notification_id = event.notification_id();
+                if let Some(id) = &notification_id {
+                    info!("Notification ID from payload: {}", id);
+                }
+                
                 if let Some(window_label) = event.window_label() {
-                    info!("Notification clicked: {}", window_label);
+                    info!("Notification window label: {}", window_label);
+                    // Use notification ID if available, otherwise use window label
+                    let id_to_use = notification_id.as_ref().unwrap_or(&window_label);
+                    
                     // Close the notification window
-                    if let Some(window) = click_app_handle.get_webview_window(&window_label) {
+                    if let Some(window) = click_app_handle.get_webview_window(id_to_use) {
                         if let Err(e) = window.close() {
                             error!("Failed to close notification window: {}", e);
                         } else {
@@ -109,7 +142,7 @@ pub fn run() {
                             // Remove from notification manager
                             let state = click_app_handle.state::<notification::NotificationManagerState>();
                             let mut manager = state.lock().unwrap();
-                            if manager.remove_notification(&window_label).is_some() {
+                            if manager.remove_notification(id_to_use).is_some() {
                                 manager.reposition_notifications(&click_app_handle);
                             }
                         }
