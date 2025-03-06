@@ -157,7 +157,7 @@ pub async fn create_notification(
     let notification_window = tauri::WebviewWindowBuilder::new(
         &app,
         notification_id.clone(),
-        tauri::WebviewUrl::App("notification.html".into())
+        tauri::WebviewUrl::App("/notification.html".into())
     )
     .title("Notification")
     .inner_size(notification_width as f64, notification_height as f64)
