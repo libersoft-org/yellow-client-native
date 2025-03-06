@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tauri::{AppHandle, Manager, PhysicalPosition, WebviewWindow};
 use uuid::Uuid;
+use log::{LevelFilter, info, error};
 
 // Notification data structure
 #[derive(Clone, serde::Serialize)]
@@ -210,6 +211,10 @@ pub async fn create_notification(
 // Command to close a notification manually
 #[tauri::command]
 pub fn close_notification(
+
+    // ai! fix this macro call
+    info!("Closing notification: {}", notification_id);
+
     app: AppHandle,
     notification_id: String,
     state: tauri::State<'_, NotificationManagerState>,
