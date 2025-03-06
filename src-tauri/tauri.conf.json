@@ -14,9 +14,10 @@
     "windows": [
       {
         "title": "tauri-app",
-        "width": 800,
-        "height": 600,
-        "zoomHotkeysEnabled": true
+        "width": 1200,
+        "height": 800,
+        "zoomHotkeysEnabled": true,
+        "center": true
       }
     ],
     "security": {
