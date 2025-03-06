@@ -34,9 +34,8 @@ pub fn run() {
             // Set up event listener for notification logs
             let app_handle = app.handle();
             app_handle.listen("notification-log", move |event| {
-                if let Some(payload) = event.payload() {
-                    info!("Notification log: {}", payload);
-                }
+                let payload = event.payload();
+                info!("Notification log: {}", payload);
             });
             Ok(())
         })
