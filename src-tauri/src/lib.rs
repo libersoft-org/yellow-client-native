@@ -34,9 +34,9 @@ impl NotificationManager {
     }
 
     fn remove_notification(&mut self, id: &str) -> Option<(u32, u32)> {
-        if let Some(window) = self.notifications.remove(id) {
+        if let Some(_window) = self.notifications.remove(id) {
             // Find the position of this notification
-            if let Some(index) = self.positions.iter().position(|&pos| {
+            if let Some(index) = self.positions.iter().position(|&_pos| {
                 // We would need to store position with notification ID to make this accurate
                 // This is a simplification
                 true
@@ -108,18 +108,17 @@ async fn create_notification(
     }
     
     // Create a new window for the notification
-    let notification_window = app.create_webview_window(
+    let notification_window = tauri::WebviewWindowBuilder::new(
+        &app,
         notification_id.clone(),
-        tauri::WebviewUrl::App("notification.html".into()),
-        |window_builder| {
-            window_builder
-                .title("Notification")
-                .inner_size(notification_width, notification_height)
-                .decorations(false)
-                .skip_taskbar(true)
-                .always_on_top(true)
-        }
+        tauri::WebviewUrl::App("notification.html".into())
     )
+    .title("Notification")
+    .inner_size(notification_width, notification_height)
+    .decorations(false)
+    .skip_taskbar(true)
+    .always_on_top(true)
+    .build()
     .map_err(|e| format!("Failed to create notification window: {}", e))?;
     
     // Center the window
