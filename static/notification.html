@@ -119,7 +119,7 @@
 <body>
 <div class="notification-container" id="notification-container">
     <div class="log" id="log">
-        aaaaaaa
+        <!-- Debug logs will appear here -->
     </div>
     <div class="notification-header">
         <h3 class="notification-title" id="notification-title">Notification Title</h3>
@@ -240,6 +240,13 @@
                         debugLog('Error processing notification:', error.toString());
                         // Visual indicator for error
                         document.body.style.border = '2px solid red';
+                        
+                        // Send error acknowledgment
+                        window.__TAURI__.event.emit('notification-data-received', { 
+                            id: notificationId || 'unknown',
+                            status: 'error',
+                            error: error.toString()
+                        });
                     }
                 });
 
