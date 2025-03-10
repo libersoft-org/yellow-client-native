@@ -173,7 +173,13 @@ pub async fn create_notification(
     .always_on_top(true)
     .build()
     .map_err(|e| format!("Failed to create notification window: {}", e))?;
-    
+    let label = notification_window.label().to_string();
+    info!("Created notification window: {}", label);
+
+    let webview = app.get_webview_window(&notification_id);
+    webview.unwrap().listen("notification-ready", move |window, _| {
+        info!("Notification window ready: {}", window.label());
+    });
     // Store the notification data in the manager so it can be sent when the window is ready
     // The actual emission is handled by the notification-ready event listener in lib.rs
     
