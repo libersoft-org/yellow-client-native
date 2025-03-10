@@ -168,9 +168,9 @@ pub async fn create_notification(
     )
     .title("Notification")
     .inner_size(notification_width as f64, notification_height as f64)
-    // .decorations(false)
-    // .skip_taskbar(true)
-    // .always_on_top(true)
+    .decorations(false)
+    .skip_taskbar(true)
+    .always_on_top(true)
     .build()
     .map_err(|e| format!("Failed to create notification window: {}", e))?;
     
