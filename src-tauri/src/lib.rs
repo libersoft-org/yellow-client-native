@@ -204,8 +204,6 @@ pub fn run() {
             timeout_handle.listen("notification-timeout", move |event| {
                 handle_notification_close(event, "timeout");
             });
-                // This is now handled by the handle_notification_close function
-            });
 
             Ok(())
         })
