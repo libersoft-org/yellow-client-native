@@ -101,7 +101,7 @@ pub fn run() {
                             info!("Successfully emitted notification-data event to window: {}", window_label);
                         }
                     } else {
-                        error!("No notification window found for label: {}", window_label);
+                        error!("No notification window found for label: {:?}", window_label);
                     }
                 }
             });
@@ -173,7 +173,7 @@ pub fn run() {
                             }
                         }
                     } else {
-                        error!("No notification window found for label: {}", window_label);
+                        error!("No notification window found for label: {:?}", window_label);
                     }
                 }
             });
