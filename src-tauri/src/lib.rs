@@ -132,11 +132,11 @@ pub fn run() {
                 
                 // Parse the payload to get structured data
                 let mut notification_id = None;
-                let mut action = "clicked";
+                let mut action = String::from("clicked");
                 
                 if let Some(json) = event.parse_payload() {
                     notification_id = json.get("id").and_then(|id| id.as_str()).map(String::from);
-                    action = json.get("action").and_then(|a| a.as_str()).unwrap_or("clicked");
+                    action = json.get("action").and_then(|a| a.as_str()).unwrap_or("clicked").to_string();
                     
                     if let Some(timestamp) = json.get("timestamp").and_then(|t| t.as_str()) {
                         info!("Notification clicked at: {}", timestamp);
