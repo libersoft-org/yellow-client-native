@@ -34,11 +34,20 @@ impl EventExt for Event {
             }
         }
         
-        // Last fallback to the payload
+        // Try to get from event payload if it's a window event
+        // This is based on the RunEvent::WindowEvent structure in Tauri
         let payload = self.payload();
+        if let Ok(value) = serde_json::from_str::<serde_json::Value>(payload) {
+            if let Some(label) = value.get("label").and_then(|l| l.as_str()) {
+                return Some(label.to_string());
+            }
+        }
+        
+        // Last fallback to the payload format
         if payload.starts_with("window-") {
             return Some(payload["window-".len()..].to_string());
         }
+        
         None
     }
     
