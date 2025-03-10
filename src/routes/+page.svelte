@@ -9,7 +9,7 @@
   let notificationTitle = $state("Test Notification");
   let notificationMessage = $state("This is a test notification message");
   let notificationCount = $state(0);
-  let notificationDuration = $state(50000);
+  let notificationDuration = $state(5000);
   let notificationClicks = $state<string[]>([]);
 
 

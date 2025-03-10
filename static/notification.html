@@ -224,8 +224,7 @@
         
         // Update size debug info immediately and periodically
         updateSizeDebug();
-        setInterval(updateSizeDebug, 1000);
-
+        setInterval(updateSizeDebug, 10000);
 
         // Set initial title to show window is loading
         document.getElementById('notification-title').textContent = 'Loading...';
@@ -266,7 +265,7 @@
 
                             // Set the progress bar animation duration and activate it
                             const progressBar = document.getElementById('progress');
-                            progressBar.style.animationDuration = `${notificationData.duration}s`;
+                            progressBar.style.animationDuration = `${notificationData.duration}ms`;
                             
                             // Ensure the animation starts from the beginning by removing and re-adding the element
                             const parent = progressBar.parentNode;
@@ -277,6 +276,9 @@
                             // Trigger the animation after a small delay to ensure it's properly reset
                             setTimeout(() => {
                                 document.getElementById('progress').classList.add('active');
+                                setTimeout(() => {
+                                    closeWithAnimation();
+                                }, notificationData.duration);
                             }, 50);
 
                             // Add a visual indicator that the data was received
