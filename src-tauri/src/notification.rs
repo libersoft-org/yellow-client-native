@@ -171,12 +171,11 @@ pub async fn create_notification(
     .decorations(false)
     .skip_taskbar(true)
     .always_on_top(true)
-        .on_window_event("notification-ready", move |window, _| {
-            info!("Notification window ready: {}", window.label());
-            window.emit("notification-data", notification.clone()).unwrap();
-        })
-        .build()
+    .build()
     .map_err(|e| format!("Failed to create notification window: {}", e))?;
+    
+    // Store the notification data in the manager so it can be sent when the window is ready
+    // The actual emission is handled by the notification-ready event listener in lib.rs
     
     // Position the window
     notification_window.set_position(PhysicalPosition::new(x, y))
