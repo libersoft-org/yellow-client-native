@@ -18,7 +18,7 @@
             width: 100vw;
             display: flex;
             flex-direction: column;
-            animation: fade-in 0.3s ease-out;
+            animation: fade-in 0.1s ease-out;
         }
 
         @keyframes fade-in {
@@ -223,7 +223,7 @@
                             document.body.style.border = '2px solid green';
                             setTimeout(() => {
                                 document.body.style.border = '1px solid rgba(0, 0, 0, 0.1)';
-                            }, 1000);
+                            }, 0);
 
                             // Send acknowledgment that we received and processed the notification data
                             window.__TAURI__.event.emit('notification-data-received', {
@@ -259,7 +259,7 @@
                 document.body.style.border = '2px solid red';
             }
 
-        }, 1000);
+        }, 0);
 
 
         function closeWithAnimation() {
@@ -267,7 +267,7 @@
 
             setTimeout(() => {
                 invoke('close_notification', {notification_id: notificationId});
-            }, 200);
+            }, 0);
         }
 
         // Handle click on notification
