@@ -14,7 +14,6 @@
 
 
 
-
   async function testDebug()
   {
     const { listen } = window.__TAURI__.event;
