@@ -188,7 +188,7 @@ pub async fn create_notification(
 
     let webview = app.get_webview_window(&notification_id).unwrap();
     webview.listen("notification-ready", | event | {
-        info!("Notification window ready: {}", event.windowLabel);
+        info!("Notification window ready: {}", event.payload());
     });
 
     // Store the notification data in the manager so it can be sent when the window is ready
