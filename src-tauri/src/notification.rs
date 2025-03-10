@@ -178,9 +178,10 @@ pub async fn create_notification(
 
     // Set up a listener for the notification-ready event
     let notification_id_for_listener = notification_id.clone();
+    let app_handle_for_listener = app.clone();
     app.listen(format!("notification-ready://{}", notification_id_for_listener), move |event| {
         info!("Notification window ready: {}", notification_id_for_listener);
-        if let Some(window) = app.get_webview_window(&notification_id_for_listener) {
+        if let Some(window) = app_handle_for_listener.get_webview_window(&notification_id_for_listener) {
             info!("Found window: {}", window.label());
         }
     });
