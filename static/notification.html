@@ -253,9 +253,7 @@
         setTimeout(() => {
             setupEventListeners();
             debugLog('Event listener for notification-data has been registered, emit notification-ready event');
-            const windowLabel = window.__TAURI__.window.getCurrent().label;
             window.__TAURI__.event.emit('notification-ready', {
-                window: windowLabel,
                 timestamp: new Date().toISOString()
             });
             debugLog('Sent notification-ready event with window label:', windowLabel);
