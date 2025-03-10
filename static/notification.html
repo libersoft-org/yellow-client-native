@@ -235,7 +235,14 @@
                             document.body.style.border = '1px solid rgba(0, 0, 0, 0.1)';
                         }, 1000);
 
+                        // Send acknowledgment that we received and processed the notification data
+                        window.__TAURI__.event.emit('notification-data-received', { 
+                            id: notificationId,
+                            status: 'success'
+                        });
+
                         debugLog('Notification data applied successfully:', JSON.stringify(notification));
+                        debugLog('Sent acknowledgment for notification:', notificationId);
                     } catch (error) {
                         debugLog('Error processing notification:', error.toString());
                         // Visual indicator for error
