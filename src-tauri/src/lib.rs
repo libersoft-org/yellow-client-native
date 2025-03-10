@@ -22,13 +22,8 @@ impl EventExt for Event {
     
     fn label(&self) -> Option<&str> {
         // Extract the window label from the event
-        self.target().and_then(|target| {
-            if target.starts_with("window-") {
-                Some(&target["window-".len()..])
-            } else {
-                None
-            }
-        })
+        // Use window_label() if available
+        self.window_label().as_deref()
     }
     
     fn window_label(&self) -> Option<String> {
@@ -39,12 +34,12 @@ impl EventExt for Event {
             }
         }
         
-        // Try to get window label from event metadata
-        if let Some(window_label) = self.label() {
-            return Some(window_label.to_string());
+        // Try to get from the event's window method if it exists
+        if let Some(window) = self.window() {
+            return Some(window.label().to_string());
         }
         
-        // Last fallback to the old method
+        // Last fallback to the payload
         let payload = self.payload();
         if payload.starts_with("window-") {
             return Some(payload["window-".len()..].to_string());
@@ -111,19 +106,8 @@ pub fn run() {
             ready_handle.listen("notification-ready", move |event| {
                 info!("Received notification-ready event: {}", event.payload());
                 
-                // Try to get window label from event target
-                let window_label = event.target()
-                    .and_then(|target| {
-                        if target.starts_with("window-") {
-                            Some(&target["window-".len()..])
-                        } else {
-                            None
-                        }
-                    })
-                    .or_else(|| {
-                        // Fallback to window_label method
-                        event.window_label().as_deref()
-                    });
+                // Try to get window label from event
+                let window_label = event.window_label().as_deref();
                 
                 if let Some(window_label) = window_label {
                     info!("Received notification-ready event from window: {}", window_label);
