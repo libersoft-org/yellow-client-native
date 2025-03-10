@@ -274,8 +274,12 @@
 
         // Handle click on notification
         document.getElementById('notification-container').addEventListener('click', () => {
-            // Emit an event that the notification was clicked
-            window.__TAURI__.event.emit('notification-clicked', {id: notificationId});
+            // Emit an event that the notification was clicked with structured payload
+            window.__TAURI__.event.emit('notification-clicked', {
+                id: notificationId,
+                action: 'clicked',
+                timestamp: new Date().toISOString()
+            });
 
             // Close the notification with animation
             closeWithAnimation();

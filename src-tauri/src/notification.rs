@@ -25,7 +25,7 @@ pub struct NotificationPosition {
 
 // Notification manager to keep track of active notifications
 pub struct NotificationManager {
-    notifications: HashMap<String, WebviewWindow>,
+    notifications: HashMap<String, (WebviewWindow, Notification)>,
     positions: HashMap<String, NotificationPosition>, // Map notification ID to position
     next_position_id: usize,
     notification_width: u32,
@@ -45,7 +45,7 @@ impl NotificationManager {
         }
     }
 
-    pub fn add_notification(&mut self, window: WebviewWindow, x: u32, y: u32) {
+    pub fn add_notification(&mut self, window: WebviewWindow, notification: Notification, x: u32, y: u32) {
         let id = window.label().to_string();
         let position = NotificationPosition {
             id: self.next_position_id,
@@ -54,7 +54,7 @@ impl NotificationManager {
             height: self.notification_height,
         };
         self.next_position_id += 1;
-        self.notifications.insert(id.clone(), window);
+        self.notifications.insert(id.clone(), (window, notification));
         self.positions.insert(id, position);
     }
 
@@ -109,7 +109,17 @@ impl NotificationManager {
     
     // Get a notification window by ID
     pub fn get_notification_window(&self, id: &str) -> Option<&WebviewWindow> {
-        self.notifications.get(id)
+        self.notifications.get(id).map(|(window, _)| window)
+    }
+    
+    // Get notification data by ID
+    pub fn get_notification_data(&self, id: &str) -> Option<&Notification> {
+        self.notifications.get(id).map(|(_, notification)| notification)
+    }
+    
+    // Get both window and notification data
+    pub fn get_notification(&self, id: &str) -> Option<(&WebviewWindow, &Notification)> {
+        self.notifications.get(id).map(|(window, notification)| (window, notification))
     }
 }
 
@@ -129,7 +139,7 @@ pub async fn create_notification(
     let duration = duration.unwrap_or(5); // Default 5 seconds
     
     // Create notification data
-    let _notification = Notification {
+    let notification = Notification {
         id: notification_id.clone(),
         title,
         message,
@@ -182,7 +192,7 @@ pub async fn create_notification(
     // Add to notification manager
     {
         let mut manager = state.lock().unwrap();
-        manager.add_notification(notification_window.clone(), x, y);
+        manager.add_notification(notification_window.clone(), notification.clone(), x, y);
     }
     
     // Set up auto-close timer
@@ -223,7 +233,10 @@ pub fn close_notification(
     // Remove from manager
     let mut manager = state.lock().unwrap();
     if manager.remove_notification(&notification_id).is_some() {
+        info!("Notification removed from manager: {}", notification_id);
         manager.reposition_notifications(&app);
+    } else {
+        info!("Notification not found in manager: {}", notification_id);
     }
     
     Ok(())

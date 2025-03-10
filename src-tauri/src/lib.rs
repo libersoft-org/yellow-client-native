@@ -93,16 +93,8 @@ pub fn run() {
                     info!("Received notification-ready event from window: {}", window_label);
                     let state = ready_app_handle.state::<notification::NotificationManagerState>();
                     let manager = state.lock().unwrap();
-                    if let Some(window) = manager.get_notification_window(&window_label) {
-                        // Retrieve notification data from window label or other storage if needed
-                        // For simplicity, assuming notification data is stored or retrievable here
-                        // You might need to adjust this logic based on your actual data storage
-                        let notification_data = notification::Notification {
-                            id: window_label.clone(),
-                            title: "Notification".into(),
-                            message: "You have a new notification.".into(),
-                            duration: 5,
-                        };
+                    if let Some((window, notification_data)) = manager.get_notification(&window_label) {
+                        // Use the stored notification data
                         if let Err(e) = window.emit("notification-data", &notification_data) {
                             error!("Failed to emit notification-data event: {}", e);
                         } else {
@@ -114,6 +106,23 @@ pub fn run() {
                 }
             });
 
+            // Listen for notification-data-received acknowledgments
+            let ack_handle = app_handle.clone();
+            ack_handle.listen("notification-data-received", move |event| {
+                if let Some(json) = event.parse_payload() {
+                    if let Some(id) = json.get("id").and_then(|id| id.as_str()) {
+                        let status = json.get("status").and_then(|s| s.as_str()).unwrap_or("unknown");
+                        info!("Notification data received acknowledgment: id={}, status={}", id, status);
+                        
+                        if status != "success" {
+                            if let Some(error) = json.get("error").and_then(|e| e.as_str()) {
+                                error!("Error in notification {}: {}", id, error);
+                            }
+                        }
+                    }
+                }
+            });
+            
             // Listen for notification-clicked events
             let click_handle = app_handle.clone();
             let click_app_handle = app_handle.clone(); // Clone for use inside closure
@@ -121,16 +130,33 @@ pub fn run() {
                 info!("Received notification-clicked event");
                 info!("Notification clicked payload: {}", event.payload());
                 
-                // Try to get notification ID first
-                let notification_id = event.notification_id();
-                if let Some(id) = &notification_id {
-                    info!("Notification ID from payload: {}", id);
+                // Parse the payload to get structured data
+                let mut notification_id = None;
+                let mut action = "clicked";
+                
+                if let Some(json) = event.parse_payload() {
+                    notification_id = json.get("id").and_then(|id| id.as_str()).map(String::from);
+                    action = json.get("action").and_then(|a| a.as_str()).unwrap_or("clicked");
+                    
+                    if let Some(timestamp) = json.get("timestamp").and_then(|t| t.as_str()) {
+                        info!("Notification clicked at: {}", timestamp);
+                    }
                 }
                 
-                if let Some(window_label) = event.window_label() {
-                    info!("Notification window label: {}", window_label);
+                // Fallback to event.notification_id() if not found in payload
+                if notification_id.is_none() {
+                    notification_id = event.notification_id();
+                }
+                
+                if let Some(id) = &notification_id {
+                    info!("Notification ID from payload: {}", id);
+                    info!("Action: {}", action);
+                    
+                    // Get window label as fallback
+                    let window_label = event.window_label();
+                    
                     // Use notification ID if available, otherwise use window label
-                    let id_to_use = notification_id.as_ref().unwrap_or(&window_label);
+                    let id_to_use = id;
                     
                     // Close the notification window
                     if let Some(window) = click_app_handle.get_webview_window(id_to_use) {
