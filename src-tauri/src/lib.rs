@@ -58,6 +58,8 @@ fn greet(name: &str) -> String {
 fn setup_logging() {
     env_logger::Builder::new()
         .filter_level(LevelFilter::Debug)
+        //add milliseconds to the logs
+        .format_timestamp(Some(env_logger::fmt::TimestampPrecision::Millis))
         .init();
     info!("Logging initialized");
 }
@@ -87,7 +89,7 @@ pub fn run() {
             let ready_handle = app_handle.clone();
             let ready_app_handle = app_handle.clone(); // Clone for use inside closure
             ready_handle.listen("notification-ready", move |event| {
-                info!("Received notification-ready event");
+                info!("Received notification-ready event: {}", event.payload());
                 // Extract window label from event payload or use a default approach
                 if let Some(window_label) = event.window_label() {
                     info!("Received notification-ready event from window: {}", window_label);
@@ -103,6 +105,9 @@ pub fn run() {
                     } else {
                         error!("No notification window found for label: {:?}", window_label);
                     }
+                }
+                else {
+                    error!("No window label found in notification-ready event");
                 }
             });
 

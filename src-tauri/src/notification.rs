@@ -67,7 +67,9 @@ impl NotificationManager {
         // Start from top right corner
         let base_x = screen_width - self.notification_width - 20; // 20px margin from right
         let base_y = 20; // Start 20px from top
-        
+
+        info!("base_x: {}, base_y: {}, self.notification_width: {}, self.notification_height: {}", base_x, base_y, self.notification_width, self.notification_height);
+
         if self.positions.is_empty() {
             return (base_x, base_y);
         }
@@ -77,7 +79,9 @@ impl NotificationManager {
             .map(|pos| pos.y + pos.height + self.margin)
             .max()
             .unwrap_or(base_y);
-            
+
+        info!("max_y: {}", max_y);
+
         (base_x, max_y)
     }
 
@@ -106,17 +110,7 @@ impl NotificationManager {
     pub fn get_dimensions(&self) -> (u32, u32) {
         (self.notification_width, self.notification_height)
     }
-    
-    // Get a notification window by ID
-    pub fn get_notification_window(&self, id: &str) -> Option<&WebviewWindow> {
-        self.notifications.get(id).map(|(window, _)| window)
-    }
-    
-    // Get notification data by ID
-    pub fn get_notification_data(&self, id: &str) -> Option<&Notification> {
-        self.notifications.get(id).map(|(_, notification)| notification)
-    }
-    
+
     // Get both window and notification data
     pub fn get_notification(&self, id: &str) -> Option<(&WebviewWindow, &Notification)> {
         self.notifications.get(id).map(|(window, notification)| (window, notification))
@@ -162,6 +156,7 @@ pub async fn create_notification(
     // Calculate position for the notification
     let (x, y) = {
         let manager = state.lock().unwrap();
+        info!("Getting next position for notification, monitor width: {}, monitor height: {}", monitor_size.width, monitor_size.height);
         manager.get_next_position(monitor_size.width)
     };
     
@@ -173,15 +168,11 @@ pub async fn create_notification(
     )
     .title("Notification")
     .inner_size(notification_width as f64, notification_height as f64)
-    .decorations(false)
-    .skip_taskbar(true)
-    .always_on_top(true)
+    // .decorations(false)
+    // .skip_taskbar(true)
+    // .always_on_top(true)
     .build()
     .map_err(|e| format!("Failed to create notification window: {}", e))?;
-    
-    // Center the window
-    notification_window.center()
-        .map_err(|e| format!("Failed to center notification window: {}", e))?;
     
     // Position the window
     notification_window.set_position(PhysicalPosition::new(x, y))
