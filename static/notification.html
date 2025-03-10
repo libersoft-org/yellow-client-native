@@ -142,6 +142,7 @@
         const {invoke} = window.__TAURI__.core;
 
         let notificationId = '';
+        let windowLabel = '';
 
         // Debug flag
         const DEBUG = true;
@@ -206,9 +207,11 @@
 
                         try {
                             notificationId = notificationData.id;
+                            windowLabel = notificationData.window_label;
 
                             debugLog('Notification ', JSON.stringify(notificationData));
                             debugLog('Notification ID:', notificationId);
+                            debugLog('Window Label:', windowLabel);
 
                             document.getElementById('notification-title').textContent = notificationData.title;
                             document.getElementById('notification-message').textContent = notificationData.message;
@@ -225,6 +228,7 @@
                             // Send acknowledgment that we received and processed the notification data
                             window.__TAURI__.event.emit('notification-data-received', {
                                 id: notificationId,
+                                window_label: windowLabel,
                                 status: 'success'
                             });
 
@@ -237,6 +241,7 @@
                             // Send error acknowledgment
                             window.__TAURI__.event.emit('notification-data-received', {
                                 id: notificationId || 'unknown',
+                                window_label: windowLabel || 'unknown',
                                 status: 'error',
                                 error: error.toString()
                             });
@@ -269,6 +274,8 @@
         document.getElementById('notification-container').addEventListener('click', () => {
             // Emit an event that the notification was clicked with structured payload
             window.__TAURI__.event.emit('notification-clicked', {
+                id: notificationId,
+                window_label: windowLabel,
                 action: 'clicked',
                 timestamp: new Date().toISOString()
             });

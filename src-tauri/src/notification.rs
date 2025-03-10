@@ -12,6 +12,7 @@ pub struct Notification {
     pub title: String,
     pub message: String,
     pub duration: u64, // in seconds
+    pub window_label: String, // Window label for tracking
 }
 
 // Position information for a notification
@@ -138,6 +139,7 @@ pub async fn create_notification(
         title,
         message,
         duration,
+        window_label: notification_id.clone(), // Window label is the same as notification ID
     };
 
     // Get primary monitor dimensions
