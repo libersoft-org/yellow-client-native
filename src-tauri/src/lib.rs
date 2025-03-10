@@ -163,7 +163,7 @@ pub fn run() {
                         if let Err(e) = window.close() {
                             error!("Failed to close notification window: {}", e);
                         } else {
-                            info!("Successfully closed notification window: {}", window_label);
+                            info!("Successfully closed notification window: {:?}", window_label);
                             
                             // Remove from notification manager
                             let state = click_app_handle.state::<notification::NotificationManagerState>();
