@@ -225,25 +225,9 @@ pub async fn create_notification(
         manager.add_notification(notification_window.clone(), notification.clone(), x, y, actual_height);
     }
     
-    // Set up auto-close timer
-    let notification_id_clone = notification_id.clone();
-    let app_handle = app.clone();
-    let state_clone = Arc::clone(&state.inner());
-    
-    std::thread::spawn(move || {
-        std::thread::sleep(Duration::from_secs(duration));
-        
-        // Close the notification after duration
-        if let Some(window) = app_handle.get_webview_window(&notification_id_clone) {
-            let _ = window.close();
-        }
-        
-        // Remove from manager
-        let mut manager = state_clone.lock().unwrap();
-        if manager.remove_notification(&notification_id_clone).is_some() {
-            manager.reposition_notifications(&app_handle);
-        }
-    });
+    // We don't need the auto-close timer here anymore
+    // The frontend will handle the timeout and emit an event
+    // which will trigger the close_notification command
     
     Ok(notification_id)
 }

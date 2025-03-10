@@ -122,26 +122,18 @@ pub fn run() {
                 }
             });
             
-            // Listen for notification-clicked events
+            // Listen for notification-clicked and notification-timeout events
             let click_handle = app_handle.clone();
             let click_app_handle = app_handle.clone(); // Clone for use inside closure
-            click_handle.clone().listen("notification-clicked", move |event| {
-                info!("Received notification-clicked event");
-                info!("Notification clicked payload: {}", event.payload());
-                
-                // Get action from payload
-                let mut action = String::from("clicked");
-                if let Some(json) = event.parse_payload() {
-                    action = json.get("action").and_then(|a| a.as_str()).unwrap_or("clicked").to_string();
-                    
-                    if let Some(timestamp) = json.get("timestamp").and_then(|t| t.as_str()) {
-                        info!("Notification clicked at: {}", timestamp);
-                    }
-                }
+            
+            // Helper function to handle notification close events
+            let handle_notification_close = move |event: Event, action: &str| {
+                info!("Received notification-{} event", action);
+                info!("Notification {} payload: {}", action, event.payload());
                 
                 // Try to get the window label from the event
                 if let Some(window_label) = event.window_label() {
-                    info!("Notification clicked from window: {}", window_label);
+                    info!("Notification {} from window: {}", action, window_label);
                     info!("Action: {}", action);
                     
                     // Get the window by label and close it
@@ -199,6 +191,20 @@ pub fn run() {
                         error!("Could not determine notification ID from event");
                     }
                 }
+            };
+            
+            // Listen for notification-clicked events
+            click_handle.clone().listen("notification-clicked", move |event| {
+                handle_notification_close(event, "clicked");
+            });
+            
+            // Listen for notification-timeout events
+            let timeout_handle = app_handle.clone();
+            let timeout_app_handle = app_handle.clone(); // Clone for use inside closure
+            timeout_handle.listen("notification-timeout", move |event| {
+                handle_notification_close(event, "timeout");
+            });
+                // This is now handled by the handle_notification_close function
             });
 
             Ok(())

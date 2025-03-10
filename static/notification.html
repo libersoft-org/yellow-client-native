@@ -276,7 +276,18 @@
                             // Trigger the animation after a small delay to ensure it's properly reset
                             setTimeout(() => {
                                 document.getElementById('progress').classList.add('active');
+                                
+                                // Set timeout to close the notification when duration expires
                                 setTimeout(() => {
+                                    // Emit an event that the notification is closing due to timeout
+                                    window.__TAURI__.event.emit('notification-timeout', {
+                                        id: notificationId,
+                                        window_label: windowLabel,
+                                        action: 'timeout',
+                                        timestamp: new Date().toISOString()
+                                    });
+                                    
+                                    // Then close with animation
                                     closeWithAnimation();
                                 }, notificationData.duration);
                             }, 50);
