@@ -207,7 +207,8 @@ pub fn run() {
             greet,
             notification::create_notification,
             notification::close_notification,
-            notification::notification_ready
+            notification::notification_ready,
+            notification::get_window_size
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

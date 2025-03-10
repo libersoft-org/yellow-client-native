@@ -121,6 +121,9 @@
     <div class="log" id="log">
         <!-- Debug logs will appear here -->
     </div>
+    <div id="size-debug" style="position: fixed; bottom: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; padding: 3px 6px; font-size: 10px; border-radius: 3px; z-index: 9999;">
+        Size: calculating...
+    </div>
     <div class="notification-header">
         <h3 class="notification-title" id="notification-title">Notification Title</h3>
         <button class="close-button" id="close-button">×</button>
@@ -174,9 +177,38 @@
                 }
             }
         }
+        
+        // Function to update size debug info
+        function updateSizeDebug() {
+            const sizeDebug = document.getElementById('size-debug');
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const outerWidth = window.outerWidth || width;
+            const outerHeight = window.outerHeight || height;
+            
+            // Get size from Rust as well
+            window.__TAURI__.core.invoke('get_window_size')
+                .then(([rustWidth, rustHeight]) => {
+                    sizeDebug.textContent = `JS: ${width}×${height} | Rust: ${rustWidth}×${rustHeight}`;
+                    debugLog('Window size:', { 
+                        js: { width, height, outerWidth, outerHeight },
+                        rust: { width: rustWidth, height: rustHeight }
+                    });
+                })
+                .catch(err => {
+                    sizeDebug.textContent = `JS: ${width}×${height} | Rust: error`;
+                    debugLog('Error getting window size from Rust:', err);
+                });
+            
+            return { width, height, outerWidth, outerHeight };
+        }
 
         // Immediately log that the notification window has loaded
         debugLog('[NOTIFICATION DEBUG] ❤Window loaded at', new Date().toISOString());
+        
+        // Update size debug info immediately and periodically
+        updateSizeDebug();
+        setInterval(updateSizeDebug, 1000);
 
 
         // Set initial title to show window is loading

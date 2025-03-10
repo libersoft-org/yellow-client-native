@@ -162,6 +162,9 @@ pub async fn create_notification(
         manager.get_next_position(monitor_size.width)
     };
     
+    // Log the requested size
+    info!("Creating notification window with requested size: {}x{}", notification_width, notification_height);
+    
     // Create a new window for the notification
     let notification_window = tauri::WebviewWindowBuilder::new(
         &app,
@@ -175,7 +178,16 @@ pub async fn create_notification(
     .always_on_top(true)
     .build()
     .map_err(|e| format!("Failed to create notification window: {}", e))?;
+    
     let label = notification_window.label().to_string();
+    
+    // Try to get the actual size after creation
+    if let Ok(size) = notification_window.inner_size() {
+        info!("Actual window inner size after creation: {}x{}", size.width, size.height);
+    } else {
+        info!("Could not get actual window size after creation");
+    }
+    
     info!("Created notification window: {}", label);
 
     // No need for event listeners - we'll use commands instead
@@ -236,6 +248,18 @@ pub fn notification_ready(
     } else {
         error!("No notification data found for window: {}", window_label);
         Err(format!("No notification data found for window: {}", window_label))
+    }
+}
+
+// Command to get window size
+#[tauri::command]
+pub fn get_window_size(window: tauri::Window) -> Result<(u32, u32), String> {
+    match window.inner_size() {
+        Ok(size) => {
+            info!("Window {} size: {}x{}", window.label(), size.width, size.height);
+            Ok((size.width, size.height))
+        },
+        Err(e) => Err(format!("Failed to get window size: {}", e))
     }
 }
 
