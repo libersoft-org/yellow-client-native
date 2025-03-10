@@ -171,7 +171,11 @@ pub async fn create_notification(
     .decorations(false)
     .skip_taskbar(true)
     .always_on_top(true)
-    .build()
+        .on_window_event("notification-ready", move |window, _| {
+            info!("Notification window ready: {}", window.label());
+            window.emit("notification-data", notification.clone()).unwrap();
+        })
+        .build()
     .map_err(|e| format!("Failed to create notification window: {}", e))?;
     
     // Position the window
