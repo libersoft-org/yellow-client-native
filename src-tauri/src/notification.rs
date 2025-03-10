@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use tauri::{AppHandle, Manager, PhysicalPosition, WebviewWindow};
+use tauri::{AppHandle, Manager, PhysicalPosition, WebviewWindow, Listener};
 use uuid::Uuid;
 use log::{info};
 
@@ -176,9 +176,13 @@ pub async fn create_notification(
     let label = notification_window.label().to_string();
     info!("Created notification window: {}", label);
 
-    let webview = app.get_webview_window(&notification_id);
-    webview.unwrap().listen("notification-ready", move |window, _| {
-        info!("Notification window ready: {}", window.label());
+    // Set up a listener for the notification-ready event
+    let notification_id_for_listener = notification_id.clone();
+    app.listen(format!("notification-ready://{}", notification_id_for_listener), move |event| {
+        info!("Notification window ready: {}", notification_id_for_listener);
+        if let Some(window) = app.get_webview_window(&notification_id_for_listener) {
+            info!("Found window: {}", window.label());
+        }
     });
     // Store the notification data in the manager so it can be sent when the window is ready
     // The actual emission is handled by the notification-ready event listener in lib.rs
