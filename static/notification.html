@@ -254,6 +254,7 @@
             debugLog('Event listener for notification-data has been registered, emit notification-ready event');
             window.__TAURI__.event.emit('notification-ready', {});
             debugLog('Sent notification-ready event');
+            debugLog('window.__TAURI__.window:', window.__TAURI__.window);
         }, 1000);
 
 
