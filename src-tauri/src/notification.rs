@@ -235,7 +235,7 @@ pub async fn create_notification(
 // Command for notification window to signal it's ready
 #[tauri::command]
 pub fn notification_ready(
-    app: AppHandle,
+    _app: AppHandle,  // Prefix with underscore to indicate intentional non-use
     window: tauri::Window,
     state: tauri::State<'_, NotificationManagerState>,
 ) -> Result<Notification, String> {

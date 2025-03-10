@@ -126,8 +126,9 @@ pub fn run() {
             let click_handle = app_handle.clone();
             let click_app_handle = app_handle.clone(); // Clone for use inside closure
             
-            // Helper function to handle notification close events
-            let handle_notification_close = move |event: Event, action: &str| {
+            // Helper function to handle notification close events - make it a separate function
+            // instead of a closure to avoid move issues
+            fn handle_notification_close(event: Event, action: &str, app_handle: &AppHandle) {
                 info!("Received notification-{} event", action);
                 info!("Notification {} payload: {}", action, event.payload());
                 
@@ -137,14 +138,14 @@ pub fn run() {
                     info!("Action: {}", action);
                     
                     // Get the window by label and close it
-                    if let Some(window) = click_app_handle.get_webview_window(&window_label) {
+                    if let Some(window) = app_handle.get_webview_window(&window_label) {
                         if let Err(e) = window.close() {
                             error!("Failed to close notification window: {}", e);
                         } else {
                             info!("Successfully closed notification window: {}", window_label);
                             
                             // Remove from notification manager
-                            let state = click_app_handle.state::<notification::NotificationManagerState>();
+                            let state = app_handle.state::<notification::NotificationManagerState>();
                             let mut manager = state.lock().unwrap();
                             if manager.remove_notification(&window_label).is_some() {
                                 manager.reposition_notifications(&click_app_handle);
@@ -171,14 +172,14 @@ pub fn run() {
                         info!("Action: {}", action);
                         
                         // Close the notification window
-                        if let Some(window) = click_app_handle.get_webview_window(id) {
+                        if let Some(window) = app_handle.get_webview_window(id) {
                             if let Err(e) = window.close() {
                                 error!("Failed to close notification window: {}", e);
                             } else {
                                 info!("Successfully closed notification window: {}", id);
                                 
                                 // Remove from notification manager
-                                let state = click_app_handle.state::<notification::NotificationManagerState>();
+                                let state = app_handle.state::<notification::NotificationManagerState>();
                                 let mut manager = state.lock().unwrap();
                                 if manager.remove_notification(id).is_some() {
                                     manager.reposition_notifications(&click_app_handle);
@@ -195,14 +196,13 @@ pub fn run() {
             
             // Listen for notification-clicked events
             click_handle.clone().listen("notification-clicked", move |event| {
-                handle_notification_close(event, "clicked");
+                handle_notification_close(event, "clicked", &click_app_handle);
             });
             
             // Listen for notification-timeout events
             let timeout_handle = app_handle.clone();
-            let timeout_app_handle = app_handle.clone(); // Clone for use inside closure
             timeout_handle.listen("notification-timeout", move |event| {
-                handle_notification_close(event, "timeout");
+                handle_notification_close(event, "timeout", &timeout_handle);
             });
 
             Ok(())
