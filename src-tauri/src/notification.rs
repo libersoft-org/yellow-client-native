@@ -220,9 +220,10 @@ pub async fn create_notification(
 #[tauri::command]
 pub fn notification_ready(
     app: AppHandle,
-    window_label: String,
+    window: tauri::Window,
     state: tauri::State<'_, NotificationManagerState>,
 ) -> Result<Notification, String> {
+    let window_label = window.label().to_string();
     info!("Notification window ready: {}", window_label);
     
     // Get the notification data from the manager

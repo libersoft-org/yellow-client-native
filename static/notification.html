@@ -195,7 +195,7 @@
             try {
                 // Use invoke to call the notification_ready command
                 window.__TAURI__.core.invoke('notification_ready', {
-
+                    // No need to send window_label, it will be obtained from the Window context
                 })
                     .then(notificationData => {
                         debugLog('✅ RECEIVED notification data from command:', JSON.stringify(notificationData));
