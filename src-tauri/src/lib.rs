@@ -21,9 +21,9 @@ impl EventExt for Event {
     }
     
     fn label(&self) -> Option<&str> {
-        // Extract the window label from the event
-        // Use window_label() if available
-        self.window_label().as_deref()
+        // We can't directly return a reference from window_label()
+        // since it returns an owned String
+        None
     }
     
     fn window_label(&self) -> Option<String> {
@@ -32,11 +32,6 @@ impl EventExt for Event {
             if let Some(window) = json.get("window").and_then(|w| w.as_str()) {
                 return Some(window.to_string());
             }
-        }
-        
-        // Try to get from the event's window method if it exists
-        if let Some(window) = self.window() {
-            return Some(window.label().to_string());
         }
         
         // Last fallback to the payload
@@ -107,13 +102,13 @@ pub fn run() {
                 info!("Received notification-ready event: {}", event.payload());
                 
                 // Try to get window label from event
-                let window_label = event.window_label().as_deref();
+                let window_label = event.window_label();
                 
                 if let Some(window_label) = window_label {
                     info!("Received notification-ready event from window: {}", window_label);
                     
                     // Get the window by label
-                    if let Some(window) = ready_app_handle.get_webview_window(window_label) {
+                    if let Some(window) = ready_app_handle.get_webview_window(&window_label) {
                         let state = ready_app_handle.state::<Arc<Mutex<notification::NotificationManager>>>();
                         let manager = state.lock().unwrap();
                         
@@ -125,10 +120,10 @@ pub fn run() {
                                 info!("Successfully emitted notification-data event to window: {}", window_label);
                             }
                         } else {
-                            error!("No notification data found for window: {}", window_label);
+                            error!("No notification data found for window: {}", &window_label);
                         }
                     } else {
-                        error!("Could not find window with label: {}", window_label);
+                        error!("Could not find window with label: {}", &window_label);
                     }
                 } else {
                     error!("Could not determine window label from event");
