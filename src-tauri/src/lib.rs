@@ -21,9 +21,14 @@ impl EventExt for Event {
     }
     
     fn label(&self) -> Option<&str> {
-        // Try to extract the window label from the event
-        // This is a simplified implementation since Event doesn't have a direct window() method
-        None
+        // Extract the window label from the event
+        self.target().and_then(|target| {
+            if target.starts_with("window-") {
+                Some(&target["window-".len()..])
+            } else {
+                None
+            }
+        })
     }
     
     fn window_label(&self) -> Option<String> {
@@ -106,27 +111,40 @@ pub fn run() {
             ready_handle.listen("notification-ready", move |event| {
                 info!("Received notification-ready event: {}", event.payload());
                 
-                if let Some(window_label) = event.label() {
-
-                    info!("Received notification-ready event from window: {:?}", window_label);
+                // Try to get window label from event target
+                let window_label = event.target()
+                    .and_then(|target| {
+                        if target.starts_with("window-") {
+                            Some(&target["window-".len()..])
+                        } else {
+                            None
+                        }
+                    })
+                    .or_else(|| {
+                        // Fallback to window_label method
+                        event.window_label().as_deref()
+                    });
+                
+                if let Some(window_label) = window_label {
+                    info!("Received notification-ready event from window: {}", window_label);
                     
                     // Get the window by label
-                    if let Some(window) = ready_app_handle.get_webview_window(&window_label) {
-                        let state = ready_app_handle.state::<notification::NotificationManagerState>();
+                    if let Some(window) = ready_app_handle.get_webview_window(window_label) {
+                        let state = ready_app_handle.state::<Arc<Mutex<notification::NotificationManager>>>();
                         let manager = state.lock().unwrap();
                         
-                        if let Some((_, notification_data)) = manager.get_notification(&window_label) {
+                        if let Some((_, notification_data)) = manager.get_notification(window_label) {
                             // Use the stored notification data
                             if let Err(e) = window.emit("notification-data", &notification_data) {
                                 error!("Failed to emit notification-data event: {}", e);
                             } else {
-                                info!("Successfully emitted notification-data event to window: {:?}", window_label);
+                                info!("Successfully emitted notification-data event to window: {}", window_label);
                             }
                         } else {
-                            error!("No notification window found for label: {:?}", window_label);
+                            error!("No notification data found for window: {}", window_label);
                         }
                     } else {
-                        error!("Could not find window with label: {:?}", window_label);
+                        error!("Could not find window with label: {}", window_label);
                     }
                 } else {
                     error!("Could not determine window label from event");
