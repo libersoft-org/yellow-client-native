@@ -105,8 +105,6 @@ pub fn run() {
             let ready_app_handle = app_handle.clone(); // Clone for use inside closure
             ready_handle.listen("notification-ready", move |event| {
                 info!("Received notification-ready event: {}", event.payload());
-
-                // ai! do we have to cast the even to WindowEvent first?
                 
                 if let Some(window_label) = event.label() {
 
