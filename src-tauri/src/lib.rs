@@ -206,7 +206,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet,
             notification::create_notification,
-            notification::close_notification
+            notification::close_notification,
+            notification::notification_ready
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

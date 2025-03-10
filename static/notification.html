@@ -253,13 +253,62 @@
         setTimeout(() => {
             setupEventListeners();
             const windowLabel = window.__TAURI__.window.getCurrent().label;
-            debugLog('Event listener for notification-data has been registered, emit notification-ready event');
-            window.__TAURI__.event.emit('notification-ready', {
-                window: windowLabel,
-                timestamp: new Date().toISOString()
+            debugLog('Window is ready, calling notification_ready command with label:', windowLabel);
+            
+            // Use invoke to call the notification_ready command
+            window.__TAURI__.core.invoke('notification_ready', { 
+                window_label: windowLabel 
+            })
+            .then(notificationData => {
+                debugLog('✅ RECEIVED notification data from command:', JSON.stringify(notificationData));
+                
+                // Set a visual indicator immediately
+                document.getElementById('notification-title').textContent = 'DATA RECEIVED';
+                document.body.style.border = '2px solid blue';
+                
+                try {
+                    notificationId = notificationData.id;
+                    
+                    debugLog('Notification ', JSON.stringify(notificationData));
+                    debugLog('Notification ID:', notificationId);
+                    
+                    document.getElementById('notification-title').textContent = notificationData.title;
+                    document.getElementById('notification-message').textContent = notificationData.message;
+                    
+                    // Set the progress bar animation duration
+                    document.getElementById('progress').style.animationDuration = `${notificationData.duration}s`;
+                    
+                    // Add a visual indicator that the data was received
+                    document.body.style.border = '2px solid green';
+                    setTimeout(() => {
+                        document.body.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+                    }, 1000);
+                    
+                    // Send acknowledgment that we received and processed the notification data
+                    window.__TAURI__.event.emit('notification-data-received', { 
+                        id: notificationId,
+                        status: 'success'
+                    });
+                    
+                    debugLog('Notification data applied successfully:', JSON.stringify(notificationData));
+                } catch (error) {
+                    debugLog('Error processing notification:', error.toString());
+                    // Visual indicator for error
+                    document.body.style.border = '2px solid red';
+                    
+                    // Send error acknowledgment
+                    window.__TAURI__.event.emit('notification-data-received', { 
+                        id: notificationId || 'unknown',
+                        status: 'error',
+                        error: error.toString()
+                    });
+                }
+            })
+            .catch(error => {
+                debugLog('Error calling notification_ready command:', error.toString());
+                document.getElementById('notification-title').textContent = 'Error: ' + error.message;
+                document.body.style.border = '2px solid red';
             });
-            debugLog('Sent notification-ready event with window label:', windowLabel);
-            debugLog('window.__TAURI__.window:', window.__TAURI__.window);
         }, 1000);
 
 

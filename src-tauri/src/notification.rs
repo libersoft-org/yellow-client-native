@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use tauri::{AppHandle, Manager, PhysicalPosition, WebviewWindow, Listener};
+use tauri::{AppHandle, Manager, PhysicalPosition, WebviewWindow};
 use uuid::Uuid;
-use log::{info};
+use log::{info, error};
 
 // Notification data structure
 #[derive(Clone, serde::Serialize)]
@@ -176,22 +176,7 @@ pub async fn create_notification(
     let label = notification_window.label().to_string();
     info!("Created notification window: {}", label);
 
-    // Set up a listener for the notification-ready event
-    let notification_id_for_listener = notification_id.clone();
-    let app_handle_for_listener = app.clone();
-    app.listen(format!("notification-ready://{}", notification_id_for_listener), move |event| {
-        info!("Notification window ready: {}", notification_id_for_listener);
-
-        if let Some(window) = app_handle_for_listener.get_webview_window(&notification_id_for_listener) {
-            info!("Found window: {}", window.label());
-        }
-        else { info!("Window not found"); }
-    });
-
-    let webview = app.get_webview_window(&notification_id).unwrap();
-    webview.listen("notification-ready", | event | {
-
-    });
+    // No need for event listeners - we'll use commands instead
 
     // Store the notification data in the manager so it can be sent when the window is ready
     // The actual emission is handled by the notification-ready event listener in lib.rs
@@ -229,6 +214,26 @@ pub async fn create_notification(
     });
     
     Ok(notification_id)
+}
+
+// Command for notification window to signal it's ready
+#[tauri::command]
+pub fn notification_ready(
+    app: AppHandle,
+    window_label: String,
+    state: tauri::State<'_, NotificationManagerState>,
+) -> Result<Notification, String> {
+    info!("Notification window ready: {}", window_label);
+    
+    // Get the notification data from the manager
+    let manager = state.lock().unwrap();
+    if let Some((_, notification_data)) = manager.get_notification(&window_label) {
+        // Return the notification data to the window
+        Ok(notification_data.clone())
+    } else {
+        error!("No notification data found for window: {}", window_label);
+        Err(format!("No notification data found for window: {}", window_label))
+    }
 }
 
 // Command to close a notification manually
