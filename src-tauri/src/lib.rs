@@ -104,40 +104,6 @@ pub fn run() {
                 info!("my-log: {}", payload);
             });
 
-            // Listen globally for notification-ready events
-            let ready_handle = app_handle.clone();
-            let ready_app_handle = app_handle.clone(); // Clone for use inside closure
-            ready_handle.listen("notification-ready", move |event| {
-                info!("Received notification-ready event: {}", event.payload());
-                
-                // Try to get window label from event
-                let window_label = event.window_label();
-                
-                if let Some(window_label) = window_label {
-                    info!("Received notification-ready event from window: {}", window_label);
-                    
-                    // Get the window by label
-                    if let Some(window) = ready_app_handle.get_webview_window(&window_label) {
-                        let state = ready_app_handle.state::<Arc<Mutex<notification::NotificationManager>>>();
-                        let manager = state.lock().unwrap();
-                        
-                        if let Some((_, notification_data)) = manager.get_notification(&window_label) {
-                            // Use the stored notification data
-                            if let Err(e) = window.emit("notification-data", &notification_data) {
-                                error!("Failed to emit notification-data event: {}", e);
-                            } else {
-                                info!("Successfully emitted notification-data event to window: {}", window_label);
-                            }
-                        } else {
-                            error!("No notification data found for window: {}", &window_label);
-                        }
-                    } else {
-                        error!("Could not find window with label: {}", &window_label);
-                    }
-                } else {
-                    error!("Could not determine window label from event");
-                }
-            });
 
             // Listen for notification-data-received acknowledgments
             let ack_handle = app_handle.clone();

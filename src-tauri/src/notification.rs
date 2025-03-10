@@ -181,14 +181,16 @@ pub async fn create_notification(
     let app_handle_for_listener = app.clone();
     app.listen(format!("notification-ready://{}", notification_id_for_listener), move |event| {
         info!("Notification window ready: {}", notification_id_for_listener);
+
         if let Some(window) = app_handle_for_listener.get_webview_window(&notification_id_for_listener) {
             info!("Found window: {}", window.label());
         }
+        else { info!("Window not found"); }
     });
 
     let webview = app.get_webview_window(&notification_id).unwrap();
     webview.listen("notification-ready", | event | {
-        info!("Notification window ready: {}", event.payload());
+
     });
 
     // Store the notification data in the manager so it can be sent when the window is ready
