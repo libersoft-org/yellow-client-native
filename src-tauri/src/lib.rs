@@ -27,7 +27,7 @@ impl EventExt for Event {
     }
     
     fn window_label(&self) -> Option<String> {
-        // Try to parse from JSON payload
+        // First try to parse from JSON payload
         if let Some(json) = self.parse_payload() {
             if let Some(window) = json.get("window").and_then(|w| w.as_str()) {
                 return Some(window.to_string());
