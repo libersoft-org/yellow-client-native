@@ -80,6 +80,11 @@
             animation-name: progress;
             animation-timing-function: linear;
             animation-fill-mode: forwards;
+            animation-play-state: paused; /* Start paused */
+        }
+        
+        .progress.active {
+            animation-play-state: running; /* Will be activated via JS */
         }
 
         .log {
@@ -259,8 +264,20 @@
                             document.getElementById('notification-title').textContent = notificationData.title;
                             document.getElementById('notification-message').textContent = notificationData.message;
 
-                            // Set the progress bar animation duration
-                            document.getElementById('progress').style.animationDuration = `${notificationData.duration}s`;
+                            // Set the progress bar animation duration and activate it
+                            const progressBar = document.getElementById('progress');
+                            progressBar.style.animationDuration = `${notificationData.duration}s`;
+                            
+                            // Ensure the animation starts from the beginning by removing and re-adding the element
+                            const parent = progressBar.parentNode;
+                            const newProgressBar = progressBar.cloneNode(true);
+                            parent.removeChild(progressBar);
+                            parent.appendChild(newProgressBar);
+                            
+                            // Trigger the animation after a small delay to ensure it's properly reset
+                            setTimeout(() => {
+                                document.getElementById('progress').classList.add('active');
+                            }, 50);
 
                             // Add a visual indicator that the data was received
                             document.body.style.border = '2px solid green';
