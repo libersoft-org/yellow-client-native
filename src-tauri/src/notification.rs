@@ -46,13 +46,14 @@ impl NotificationManager {
         }
     }
 
-    pub fn add_notification(&mut self, window: WebviewWindow, notification: Notification, x: u32, y: u32) {
+    pub fn add_notification(&mut self, window: WebviewWindow, notification: Notification, x: u32, y: u32, actual_height: Option<u32>) {
         let id = window.label().to_string();
+        let height = actual_height.unwrap_or(self.notification_height);
         let position = NotificationPosition {
             id: self.next_position_id,
             x,
             y,
-            height: self.notification_height,
+            height,
         };
         self.next_position_id += 1;
         self.notifications.insert(id.clone(), (window, notification));
@@ -103,6 +104,11 @@ impl NotificationManager {
                 
                 // Update window position
                 let _ = window.set_position(PhysicalPosition::new(x, current_y));
+                
+                // Log the repositioning
+                info!("Repositioned notification {} to y={}, height={}", id, current_y, height);
+                
+                // Move to next position
                 current_y += height + self.margin;
             }
         }
@@ -165,6 +171,16 @@ pub async fn create_notification(
     // Log the requested size
     info!("Creating notification window with requested size: {}x{}", notification_width, notification_height);
     
+    // Get the monitor's scale factor
+    let scale_factor = monitor.scale_factor();
+    info!("Monitor scale factor: {}", scale_factor);
+    
+    // Adjust size for DPI scaling
+    let logical_width = notification_width as f64;
+    let logical_height = notification_height as f64;
+    
+    info!("Creating notification window with logical size: {}x{}", logical_width, logical_height);
+    
     // Create a new window for the notification
     let notification_window = tauri::WebviewWindowBuilder::new(
         &app,
@@ -172,7 +188,7 @@ pub async fn create_notification(
         tauri::WebviewUrl::App("notification.html".into())
     )
     .title("Notification")
-    .inner_size(notification_width as f64, notification_height as f64)
+    .inner_size(logical_width, logical_height)
     .decorations(false)
     .skip_taskbar(true)
     .always_on_top(true)
@@ -181,12 +197,14 @@ pub async fn create_notification(
     
     let label = notification_window.label().to_string();
     
-    // Try to get the actual size after creation
-    if let Ok(size) = notification_window.inner_size() {
+    // Get the actual size after creation to account for DPI scaling
+    let actual_height = if let Ok(size) = notification_window.inner_size() {
         info!("Actual window inner size after creation: {}x{}", size.width, size.height);
+        Some(size.height)
     } else {
         info!("Could not get actual window size after creation");
-    }
+        None
+    };
     
     info!("Created notification window: {}", label);
 
@@ -204,7 +222,7 @@ pub async fn create_notification(
     // Add to notification manager
     {
         let mut manager = state.lock().unwrap();
-        manager.add_notification(notification_window.clone(), notification.clone(), x, y);
+        manager.add_notification(notification_window.clone(), notification.clone(), x, y, actual_height);
     }
     
     // Set up auto-close timer
@@ -260,6 +278,18 @@ pub fn get_window_size(window: tauri::Window) -> Result<(u32, u32), String> {
             Ok((size.width, size.height))
         },
         Err(e) => Err(format!("Failed to get window size: {}", e))
+    }
+}
+
+// Command to get the monitor's scale factor
+#[tauri::command]
+pub fn get_scale_factor(window: tauri::Window) -> Result<f64, String> {
+    match window.scale_factor() {
+        Ok(scale) => {
+            info!("Window {} scale factor: {}", window.label(), scale);
+            Ok(scale)
+        },
+        Err(e) => Err(format!("Failed to get scale factor: {}", e))
     }
 }
 

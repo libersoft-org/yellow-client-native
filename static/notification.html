@@ -185,26 +185,37 @@
             const height = window.innerHeight;
             const outerWidth = window.outerWidth || width;
             const outerHeight = window.outerHeight || height;
+            const devicePixelRatio = window.devicePixelRatio || 1;
             
             // Get size from Rust as well
             window.__TAURI__.core.invoke('get_window_size')
                 .then(([rustWidth, rustHeight]) => {
-                    sizeDebug.textContent = `JS: ${width}×${height} | Rust: ${rustWidth}×${rustHeight}`;
+                    sizeDebug.textContent = `JS: ${width}×${height} | Rust: ${rustWidth}×${rustHeight} | DPI: ${devicePixelRatio.toFixed(2)}`;
                     debugLog('Window size:', { 
-                        js: { width, height, outerWidth, outerHeight },
+                        js: { width, height, outerWidth, outerHeight, devicePixelRatio },
                         rust: { width: rustWidth, height: rustHeight }
                     });
                 })
                 .catch(err => {
-                    sizeDebug.textContent = `JS: ${width}×${height} | Rust: error`;
+                    sizeDebug.textContent = `JS: ${width}×${height} | DPI: ${devicePixelRatio.toFixed(2)} | Rust: error`;
                     debugLog('Error getting window size from Rust:', err);
                 });
             
-            return { width, height, outerWidth, outerHeight };
+            return { width, height, outerWidth, outerHeight, devicePixelRatio };
         }
 
         // Immediately log that the notification window has loaded
         debugLog('[NOTIFICATION DEBUG] ❤Window loaded at', new Date().toISOString());
+        
+        // Get scale factor from Rust
+        window.__TAURI__.core.invoke('get_scale_factor')
+            .then(scaleFactor => {
+                debugLog('Scale factor from Rust:', scaleFactor);
+                document.documentElement.style.setProperty('--scale-factor', scaleFactor);
+            })
+            .catch(err => {
+                debugLog('Error getting scale factor from Rust:', err);
+            });
         
         // Update size debug info immediately and periodically
         updateSizeDebug();
