@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
 use tauri::{AppHandle, Manager, PhysicalPosition, WebviewWindow};
 use uuid::Uuid;
 use log::{info, error};

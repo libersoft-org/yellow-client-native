@@ -5,7 +5,7 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use log::{LevelFilter, info, error};
 use serde_json::Value;
-use tauri::{Event, Listener, Manager, Emitter};
+use tauri::{AppHandle, Event, Listener, Manager};
 
 // Extension trait to get window label and id from event
 trait EventExt {
@@ -126,9 +126,8 @@ pub fn run() {
             let click_handle = app_handle.clone();
             let click_app_handle = app_handle.clone(); // Clone for use inside closure
             
-            // Helper function to handle notification close events - make it a separate function
-            // instead of a closure to avoid move issues
-            fn handle_notification_close(event: Event, action: &str, app_handle: &AppHandle) {
+            // Helper closure to handle notification close events
+            let handle_notification_close = |event: Event, action: &str, app_handle: &AppHandle| {
                 info!("Received notification-{} event", action);
                 info!("Notification {} payload: {}", action, event.payload());
                 
@@ -148,7 +147,7 @@ pub fn run() {
                             let state = app_handle.state::<notification::NotificationManagerState>();
                             let mut manager = state.lock().unwrap();
                             if manager.remove_notification(&window_label).is_some() {
-                                manager.reposition_notifications(&click_app_handle);
+                                manager.reposition_notifications(app_handle);
                             }
                         }
                     } else {
@@ -182,7 +181,7 @@ pub fn run() {
                                 let state = app_handle.state::<notification::NotificationManagerState>();
                                 let mut manager = state.lock().unwrap();
                                 if manager.remove_notification(id).is_some() {
-                                    manager.reposition_notifications(&click_app_handle);
+                                    manager.reposition_notifications(app_handle);
                                 }
                             }
                         } else {
