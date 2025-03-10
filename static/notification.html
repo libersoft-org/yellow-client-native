@@ -177,9 +177,6 @@
         // Immediately log that the notification window has loaded
         debugLog('[NOTIFICATION DEBUG] ❤Window loaded at', new Date().toISOString());
 
-        // Get window label
-        const windowLabel = window.__TAURI__.window.getCurrent().label;
-        debugLog('Window label:', windowLabel);
 
         // Set initial title to show window is loading
         document.getElementById('notification-title').textContent = 'Loading...';
@@ -256,9 +253,7 @@
         setTimeout(() => {
             setupEventListeners();
             debugLog('Event listener for notification-data has been registered, emit notification-ready event');
-            const windowLabel = window.__TAURI__.window.getCurrent().label;
-            window.__TAURI__.event.emit('notification-ready', { 
-                window: windowLabel,
+            window.__TAURI__.event.emit('notification-ready', {
                 timestamp: new Date().toISOString()
             });
             debugLog('Sent notification-ready event with window label:', windowLabel);
