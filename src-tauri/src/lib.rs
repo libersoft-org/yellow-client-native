@@ -105,10 +105,12 @@ pub fn run() {
             let ready_app_handle = app_handle.clone(); // Clone for use inside closure
             ready_handle.listen("notification-ready", move |event| {
                 info!("Received notification-ready event: {}", event.payload());
+
+                // ai! do we have to cast the even to WindowEvent first?
                 
-                // Try to get the window label from the event
-                if let Some(window_label) = event.window_label() {
-                    info!("Received notification-ready event from window: {}", window_label);
+                if let Some(window_label) = event.label() {
+
+                    info!("Received notification-ready event from window: {:?}", window_label);
                     
                     // Get the window by label
                     if let Some(window) = ready_app_handle.get_webview_window(&window_label) {
@@ -120,16 +122,16 @@ pub fn run() {
                             if let Err(e) = window.emit("notification-data", &notification_data) {
                                 error!("Failed to emit notification-data event: {}", e);
                             } else {
-                                info!("Successfully emitted notification-data event to window: {}", window_label);
+                                info!("Successfully emitted notification-data event to window: {:?}", window_label);
                             }
                         } else {
-                            error!("No notification window found for label: {}", window_label);
+                            error!("No notification window found for label: {:?}", window_label);
                         }
                     } else {
-                        error!("Could not find window with label: {}", window_label);
+                        error!("Could not find window with label: {:?}", window_label);
                     }
                 } else {
-                    error!("No window label found in notification-ready event");
+                    error!("Could not determine window label from event");
                 }
             });
 
