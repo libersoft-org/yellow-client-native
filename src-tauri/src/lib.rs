@@ -112,7 +112,7 @@ pub fn run() {
                         let state = ready_app_handle.state::<Arc<Mutex<notification::NotificationManager>>>();
                         let manager = state.lock().unwrap();
                         
-                        if let Some((_, notification_data)) = manager.get_notification(window_label) {
+                        if let Some((_, notification_data)) = manager.get_notification(&window_label) {
                             // Use the stored notification data
                             if let Err(e) = window.emit("notification-data", &notification_data) {
                                 error!("Failed to emit notification-data event: {}", e);
