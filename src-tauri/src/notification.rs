@@ -185,6 +185,12 @@ pub async fn create_notification(
             info!("Found window: {}", window.label());
         }
     });
+
+    let webview = app.get_webview_window(&notification_id).unwrap();
+    webview.listen("notification-ready", | event | {
+        info!("Notification window ready: {}", event.windowLabel);
+    });
+
     // Store the notification data in the manager so it can be sent when the window is ready
     // The actual emission is handled by the notification-ready event listener in lib.rs
     
