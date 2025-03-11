@@ -200,8 +200,9 @@ pub fn run() {
             
             // Listen for notification-timeout events
             let timeout_handle = app_handle.clone();
+            let timeout_app_handle = app_handle.clone(); // Clone for use inside closure
             timeout_handle.listen("notification-timeout", move |event| {
-                handle_notification_close(event, "timeout", &timeout_handle);
+                handle_notification_close(event, "timeout", &timeout_app_handle);
             });
 
             Ok(())
