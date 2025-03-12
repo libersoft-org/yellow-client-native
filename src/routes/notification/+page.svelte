@@ -158,6 +158,9 @@
         windowId = window.__TAURI__.window.label;
         debugLog('Window ID:', windowId);
         
+        // Add keyboard event listener for accessibility
+        window.addEventListener('keydown', handleKeyDown);
+        
         // Get scale factor from Rust
         invoke('get_scale_factor')
             .then(scaleFactor => {
