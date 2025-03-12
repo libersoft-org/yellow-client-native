@@ -4,8 +4,6 @@
   import { listen } from "@tauri-apps/api/event";
   import { onMount } from "svelte";
 
-  let name = $state("");
-  let greetMsg = $state("");
   let notificationTitle = $state("Test Notification");
   let notificationMessage = $state("This is a test notification message");
   let notificationCount = $state(0);
@@ -59,19 +57,17 @@
     });
   });
 
-  async function greet(event: Event) {
+  async function setscale(event: Event) {
     await getCurrentWebview().setZoom(1.2);
     console.log(await getCurrentWebview());
     await getCurrentWebview().setZoomFactor(2.2);
-
     event.preventDefault();
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    greetMsg = await invoke("greet", { name });
   }
 
   async function showNotification() {
     try {
       const notificationId = await invoke("create_notification", {
+        type: 'new_message',
         title: notificationTitle,
         message: notificationMessage + ` (${notificationCount++})`,
         duration: notificationDuration
@@ -85,11 +81,9 @@
 
 <main class="container">
 
-  <form class="row" onsubmit={greet}>
-    <input id="greet-input" placeholder="Enter a name..." bind:value={name} />
-    <button type="submit">Greet</button>
+  <form class="row" onsubmit={setscale}>
+    <button type="submit">setscale</button>
   </form>
-  <p>{greetMsg}</p>
 
   <div class="notification-section">
     <h2>Notifications</h2>
@@ -181,6 +175,7 @@ textarea {
   padding: 1rem;
   background-color: #f5f5f5;
   border-radius: 8px;
+  overflow: scroll;
 }
 
 .notification-clicks ul {
@@ -266,10 +261,6 @@ button:active {
 input,
 button {
   outline: none;
-}
-
-#greet-input {
-  margin-right: 5px;
 }
 
 @media (prefers-color-scheme: dark) {

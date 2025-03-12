@@ -1,15 +1,20 @@
 <script>
     import { onMount } from "svelte";
+    import NewMessage from './components/NewMessage.svelte';
 
-    const { listen } = window.__TAURI__.event;
     const { invoke } = window.__TAURI__.core;
 
-    let notificationId = '';
-    let windowLabel = '';
     const DEBUG = true;
-    let title = 'Notification Title';
-    let message = 'Notification message goes here.';
+    let windowId = '';
+
+    /* assigned through assign_notification from Rust.
+    * make sure rust sets a timestamp when it first assigns the notification.
+    *  */
+    let data;
+
     let duration = 0;
+
+    let view;
     let progressActive = false;
     let sizeInfo = 'Size: calculating...';
 
@@ -67,34 +72,19 @@
         return { width, height, outerWidth, outerHeight, devicePixelRatio };
     }
 
-    function closeWithAnimation() {
-        document.body.style.animation = 'fade-out 0.2s ease-out forwards';
-
-        setTimeout(() => {
-            invoke('close_notification', { notification_id: notificationId });
-        }, 200);
-    }
-
     function handleContainerClick() {
-        // Emit an event that the notification was clicked with structured payload
-        window.__TAURI__.event.emit('notification-clicked', {
-            id: notificationId,
-            window_label: windowLabel,
-            action: 'clicked',
-            timestamp: new Date().toISOString()
-        });
-
-        // Close the notification with animation
-        closeWithAnimation();
+        view?.windowClick?.();
     }
 
     function handleCloseButtonClick(e) {
-        e.stopPropagation(); // Prevent triggering the container click
-        closeWithAnimation();
+        e.stopPropagation();
+        window.__TAURI__.event.emit('user_closed_notification', {
+            id: windowId,
+            timestamp: new Date().toISOString()
+        });
     }
 
     onMount(async () => {
-        // Immediately log that the notification window has loaded
         debugLog('[NOTIFICATION DEBUG] ❤Window loaded at', new Date().toISOString());
         
         // Get scale factor from Rust
@@ -111,23 +101,16 @@
         updateSizeDebug();
         const sizeInterval = setInterval(updateSizeDebug, 10000);
         
-        // Set initial title to show window is loading
-        title = 'Loading...';
-
         // Log all available Tauri APIs
         debugLog('Available Tauri APIs:', Object.keys(window.__TAURI__ || {}));
 
         // Set a visual indicator that we're initializing
-        title = 'Initializing...';
-        document.body.style.border = '2px solid orange';
 
-        // Wait a moment before calling the notification_ready command to ensure Tauri is ready
-        setTimeout(() => {
-            debugLog('Window is ready, calling notification_ready command');
+            debugLog('Window is ready, calling notification_window_ready command');
 
             try {
-                // Use invoke to call the notification_ready command
-                invoke('notification_ready')
+                // Use invoke to call the notification_window_ready command
+                invoke('notification_window_ready')
                     .then(notificationData => {
                         debugLog('✅ RECEIVED notification data from command:', JSON.stringify(notificationData));
 
@@ -136,11 +119,11 @@
                         document.body.style.border = '2px solid blue';
 
                         try {
-                            notificationId = notificationData.id;
+                            windowId = notificationData.id;
                             windowLabel = notificationData.window_label;
 
                             debugLog('Notification ', JSON.stringify(notificationData));
-                            debugLog('Notification ID:', notificationId);
+                            debugLog('Notification ID:', windowId);
                             debugLog('Window Label:', windowLabel);
 
                             title = notificationData.title;
@@ -168,7 +151,7 @@
                                         setTimeout(() => {
                                             // Emit an event that the notification is closing due to timeout
                                             window.__TAURI__.event.emit('notification-timeout', {
-                                                id: notificationId,
+                                                id: windowId,
                                                 window_label: windowLabel,
                                                 action: 'timeout',
                                                 timestamp: new Date().toISOString()
@@ -189,7 +172,7 @@
 
                             // Send acknowledgment that we received and processed the notification data
                             window.__TAURI__.event.emit('notification-data-received', {
-                                id: notificationId,
+                                id: windowId,
                                 window_label: windowLabel,
                                 status: 'success'
                             });
@@ -202,7 +185,7 @@
 
                             // Send error acknowledgment
                             window.__TAURI__.event.emit('notification-data-received', {
-                                id: notificationId || 'unknown',
+                                id: windowId || 'unknown',
                                 window_label: windowLabel || 'unknown',
                                 status: 'error',
                                 error: error.toString()
@@ -210,22 +193,22 @@
                         }
                     })
                     .catch(error => {
-                        debugLog('Error calling notification_ready command:', error.toString());
+                        debugLog('Error calling notification_window_ready command:', error.toString());
                         title = 'Error: ' + error.message;
                         document.body.style.border = '2px solid red';
                     });
 
             } catch (error) {
-                debugLog('Error calling notification_ready command:', error.toString());
+                debugLog('Error calling notification_window_ready command:', error.toString());
                 title = 'Error: ' + error.message;
                 document.body.style.border = '2px solid red';
             }
-        }, 100);
 
         return () => {
             clearInterval(sizeInterval);
         };
     });
+
 </script>
 
 <style>
@@ -256,36 +239,6 @@
         display: flex;
         flex-direction: column;
         cursor: pointer;
-    }
-
-    .notification-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 8px;
-    }
-
-    .notification-title {
-        font-weight: bold;
-        font-size: 18px;
-        margin: 0;
-        color: #333;
-    }
-
-    .close-button {
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 18px;
-        color: #999;
-    }
-
-    .notification-message {
-        font-size: 16px;
-        color: #555;
-        flex: 1;
-        margin-top: 10px;
-        line-height: 1.4;
     }
 
     .progress-bar {
@@ -357,17 +310,20 @@
     }
 </style>
 
-<div class="progress-bar">
-    <div class="progress" id="progress" class:active={progressActive}></div>
-</div>
 <div class="notification-container" id="notification-container" on:click={handleContainerClick}>
-    <div class="notification-header">
-        <h3 class="notification-title" id="notification-title">{title}</h3>
-        <button class="close-button" id="close-button" on:click={handleCloseButtonClick}>×</button>
+
+    {#if duration > 0}
+    <div class="progress-bar">
+        <div class="progress" id="progress" class:active={progressActive}></div>
     </div>
-    <div class="notification-message" id="notification-message">
-        {message}
-    </div>
+        {/if}
+
+    {#if {data.type === 'new_message'}}
+        <NewMessage {data} />
+    {:else}
+        unknown notification type
+    {/if}
+
     <div class="log" id="log">
         <!-- Debug logs will appear here -->
     </div>
