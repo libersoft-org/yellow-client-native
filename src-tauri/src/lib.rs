@@ -1,5 +1,4 @@
 #![feature(str_as_str)]
-mod notification;
 
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -276,7 +275,7 @@ impl NotificationManager {
     }
 
     // Reposition all notification windows
-    pub fn reposition_notifications(&mut self, app_handle: &AppHandle) {
+    pub fn reposition_notifications(&mut self, _app_handle: &AppHandle) {
         // Sort positions by their y coordinate
         let mut positions: Vec<_> = self.positions.iter()
             .map(|(id, pos)| (id.clone(), pos.id, pos.x, pos.height))
@@ -429,7 +428,7 @@ pub async fn create_notification(
 
 // Process the notification queue, creating windows as needed
 fn process_notification_queue(
-    app: &AppHandle,
+    _app: &AppHandle,
     state: NotificationManagerState,
 ) -> Result<(), String> {
     let action = {
@@ -895,11 +894,11 @@ pub fn run() {
             });
             
             // Listen for notification-clicked and notification-timeout events
-            let click_handle = app_handle.clone();
-            let click_app_handle = app_handle.clone(); // Clone for use inside closure
+            let _click_handle = app_handle.clone();
+            let _click_app_handle = app_handle.clone(); // Clone for use inside closure
             
             // Helper closure to handle notification close events
-            let handle_notification_close = |event: Event, action: &str, app_handle: &AppHandle| {
+            let _handle_notification_close = |event: Event, action: &str, app_handle: &AppHandle| {
                 info!("Received notification-{} event", action);
                 info!("Notification {} payload: {}", action, event.payload());
                 
