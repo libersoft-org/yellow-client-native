@@ -84,6 +84,15 @@
         // Call close notification
         closeNotification();
     }
+    
+    // Handle keyboard navigation
+    function handleKeyDown(event) {
+        if (event.key === 'Escape') {
+            handleCloseButtonClick(event);
+        } else if (event.key === 'Enter' || event.key === ' ') {
+            handleContainerClick();
+        }
+    }
 
     function handleCloseButtonClick(e) {
         e.stopPropagation();
@@ -223,6 +232,7 @@
 
         return () => {
             clearInterval(sizeInterval);
+            window.removeEventListener('keydown', handleKeyDown);
         };
     });
 </script>
@@ -243,6 +253,16 @@
         flex-direction: column;
         animation: fade-in 0.1s ease-out;
     }
+    
+    /* Focus styles for accessibility */
+    :global(:focus) {
+        outline: 2px solid #4a86e8;
+        outline-offset: 2px;
+    }
+    
+    :global(:focus:not(:focus-visible)) {
+        outline: none;
+    }
 
     @keyframes fade-in {
         from { opacity: 0; transform: translateY(-10px); }
@@ -255,6 +275,16 @@
         display: flex;
         flex-direction: column;
         cursor: pointer;
+        outline: none; /* We'll use custom focus styles */
+    }
+    
+    /* Accessibility - indicate interactive element */
+    .notification-container:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+    
+    .notification-container:focus {
+        background-color: rgba(0, 0, 0, 0.03);
     }
 
     .progress-bar {
@@ -326,9 +356,17 @@
     }
 </style>
 
-<div class="notification-container" id="notification-container" on:click={handleContainerClick}>
+<div 
+    class="notification-container" 
+    id="notification-container" 
+    on:click={handleContainerClick}
+    role="alert"
+    aria-live="assertive"
+    tabindex="0"
+    on:keydown={e => e.key === 'Enter' && handleContainerClick()}
+>
     {#if duration > 0}
-    <div class="progress-bar">
+    <div class="progress-bar" aria-hidden="true">
         <div class="progress" id="progress" class:active={progressActive}></div>
     </div>
     {/if}
@@ -337,10 +375,15 @@
         <NewMessage {title} {message} onClose={handleCloseButtonClick} />
     {:else if data}
         <div class="notification-header">
-            <h3 class="notification-title">{title}</h3>
-            <button class="close-button" on:click={handleCloseButtonClick}>×</button>
+            <h3 class="notification-title" id="notification-title">{title}</h3>
+            <button 
+                class="close-button" 
+                on:click={handleCloseButtonClick}
+                aria-label="Close notification"
+                tabindex="0"
+            >×</button>
         </div>
-        <div class="notification-message">
+        <div class="notification-message" id="notification-message">
             {message}
         </div>
     {:else}
@@ -352,10 +395,10 @@
         </div>
     {/if}
 
-    <div class="log" id="log">
+    <div class="log" id="log" aria-hidden="true">
         <!-- Debug logs will appear here -->
     </div>
-    <div class="size-debug" id="size-debug">
+    <div class="size-debug" id="size-debug" aria-hidden="true">
         {sizeInfo}
     </div>
 </div>

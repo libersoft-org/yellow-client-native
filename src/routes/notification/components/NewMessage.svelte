@@ -42,7 +42,13 @@
 
 <div class="notification-header">
     <h3 class="notification-title" id="notification-title">{title}</h3>
-    <button class="close-button" id="close-button" on:click={onClose}>×</button>
+    <button 
+        class="close-button" 
+        id="close-button" 
+        on:click={onClose}
+        aria-label="Close notification"
+        tabindex="0"
+    >×</button>
 </div>
 <div class="notification-message" id="notification-message">
     {message}

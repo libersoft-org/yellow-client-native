@@ -7,8 +7,10 @@
   let notificationTitle = $state("Test Notification");
   let notificationMessage = $state("This is a test notification message");
   let notificationCount = $state(0);
-  let notificationDuration = $state(5000);
+  let notificationDuration = $state(5);
   let notificationClicks = $state<string[]>([]);
+  let notificationHistory = $state<any[]>([]);
+  let showHistory = $state(false);
 
 
 
@@ -49,13 +51,24 @@
   onMount(async () => {
     await testDebug();
 
-
     // Listen for notification clicks
     await listen("notification-clicked", (event) => {
       const data = event.payload as { id: string };
       notificationClicks = [...notificationClicks, `Clicked notification: ${data.id}`];
     });
+    
+    // Load notification history
+    await loadNotificationHistory();
   });
+  
+  async function loadNotificationHistory() {
+    try {
+      notificationHistory = await invoke("get_notification_history");
+      console.log("Loaded notification history:", notificationHistory);
+    } catch (error) {
+      console.error("Failed to load notification history:", error);
+    }
+  }
 
   async function setscale(event: Event) {
     await getCurrentWebview().setZoom(1.2);
@@ -120,7 +133,35 @@
       <button type="button" onclick={showNotification}>
         Show Notification
       </button>
+      
+      <button type="button" onclick={() => showHistory = !showHistory}>
+        {showHistory ? 'Hide History' : 'Show History'}
+      </button>
     </div>
+    
+    {#if showHistory}
+      <div class="notification-history">
+        <h3>Notification History</h3>
+        {#if notificationHistory.length === 0}
+          <p>No notification history available.</p>
+        {:else}
+          <ul>
+            {#each notificationHistory as notification}
+              <li>
+                <strong>{notification.title}</strong>
+                <p>{notification.message}</p>
+                <small>
+                  {notification.timestamp 
+                    ? new Date(notification.timestamp * 1000).toLocaleString() 
+                    : 'No timestamp'}
+                </small>
+              </li>
+            {/each}
+          </ul>
+        {/if}
+        <button type="button" onclick={loadNotificationHistory}>Refresh History</button>
+      </div>
+    {/if}
 
     {#if notificationClicks.length > 0}
       <div class="notification-clicks">
@@ -170,21 +211,39 @@ textarea {
   resize: vertical;
 }
 
-.notification-clicks {
+.notification-clicks, .notification-history {
   margin-top: 1.5rem;
   padding: 1rem;
   background-color: #f5f5f5;
   border-radius: 8px;
-  overflow: scroll;
+  overflow: auto;
+  max-height: 300px;
 }
 
-.notification-clicks ul {
+.notification-clicks ul, .notification-history ul {
   margin: 0;
   padding-left: 1.5rem;
+  list-style-type: none;
 }
 
-.notification-clicks li {
+.notification-clicks li, .notification-history li {
   margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.notification-history li {
+  background-color: white;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.notification-history small {
+  color: #666;
+  display: block;
+  margin-top: 5px;
 }
 
 @media (prefers-color-scheme: dark) {

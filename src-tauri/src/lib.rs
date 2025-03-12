@@ -33,6 +33,28 @@ pub struct NotificationPosition {
     height: u32,
 }
 
+// Configuration for notification system
+#[derive(Clone, Copy)]
+pub struct NotificationConfig {
+    pub max_history_size: usize,
+    pub cleanup_interval_ms: u64,
+    pub notification_width: u32,
+    pub notification_height: u32,
+    pub margin: u32,
+}
+
+impl Default for NotificationConfig {
+    fn default() -> Self {
+        Self {
+            max_history_size: 100,
+            cleanup_interval_ms: 60000, // 1 minute
+            notification_width: 400,
+            notification_height: 500,
+            margin: 10,
+        }
+    }
+}
+
 // Notification manager to keep track of active notifications and windows
 pub struct NotificationManager {
     // Windows available for displaying notifications
@@ -43,35 +65,104 @@ pub struct NotificationManager {
     window_assignments: HashMap<String, String>, // window_id -> notification_id
     // Positions of windows
     positions: HashMap<String, NotificationPosition>, // window_id -> position
+    // Window pool - windows that are hidden but ready to be reused
+    window_pool: Vec<String>, // window_ids of pooled windows
+    // History of displayed notifications
+    notification_history: Vec<Notification>,
+    // Configuration
+    config: NotificationConfig,
+    // Internal state
     next_position_id: usize,
-    notification_width: u32,
-    notification_height: u32,
-    margin: u32,
+    last_cleanup: u64,
 }
 
 impl NotificationManager {
     pub fn new() -> Self {
+        let config = NotificationConfig::default();
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis() as u64;
+            
         NotificationManager {
             windows: HashMap::new(),
             notification_queue: Vec::new(),
             window_assignments: HashMap::new(),
             positions: HashMap::new(),
+            window_pool: Vec::new(),
+            notification_history: Vec::new(),
+            config,
             next_position_id: 0,
-            notification_width: 400,
-            notification_height: 500,
-            margin: 10,
+            last_cleanup: now,
         }
+    }
+    
+    // Configure the notification manager
+    pub fn configure(&mut self, config: NotificationConfig) {
+        self.config = config;
     }
 
     // Add a new notification to the queue
     pub fn add_notification(&mut self, notification: Notification) {
+        // Check if we need to run cleanup
+        self.maybe_cleanup();
+        
+        // Add to queue
         self.notification_queue.push(notification);
+    }
+    
+    // Run cleanup if needed
+    fn maybe_cleanup(&mut self) {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis() as u64;
+            
+        // Check if it's time to clean up
+        if now - self.last_cleanup > self.config.cleanup_interval_ms {
+            self.cleanup();
+            self.last_cleanup = now;
+        }
+    }
+    
+    // Clean up old notifications and manage window pool
+    fn cleanup(&mut self) {
+        info!("Running notification cleanup");
+        
+        // Trim notification history to max size
+        if self.notification_history.len() > self.config.max_history_size {
+            let excess = self.notification_history.len() - self.config.max_history_size;
+            self.notification_history.drain(0..excess);
+            info!("Removed {} old notifications from history", excess);
+        }
+        
+        // Clean up any stale window pool entries
+        self.window_pool.retain(|window_id| {
+            self.windows.contains_key(window_id)
+        });
+        
+        // Remove any notifications that are too old (over 24 hours)
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs();
+            
+        let day_in_seconds = 24 * 60 * 60;
+        self.notification_queue.retain(|notification| {
+            if let Some(timestamp) = notification.timestamp {
+                // Keep if less than 24 hours old
+                now - timestamp < day_in_seconds
+            } else {
+                // Keep if no timestamp (not displayed yet)
+                true
+            }
+        });
     }
 
     // Register a window that can display notifications
     pub fn register_window(&mut self, window: WebviewWindow, x: u32, y: u32, actual_height: Option<u32>) -> String {
         let window_id = window.label().to_string();
-        let height = actual_height.unwrap_or(self.notification_height);
+        let height = actual_height.unwrap_or(self.config.notification_height);
         
         // Create position info
         let position = NotificationPosition {
@@ -88,6 +179,42 @@ impl NotificationManager {
         
         window_id
     }
+    
+    // Get a window from the pool or create a new one
+    pub fn get_or_create_window(&mut self, app: &AppHandle) -> Result<String, String> {
+        // First check if we have a window in the pool
+        if let Some(window_id) = self.window_pool.pop() {
+            info!("Reusing window from pool: {}", window_id);
+            
+            // Make sure the window is visible
+            if let Some(window) = self.windows.get(&window_id) {
+                window.show().map_err(|e| format!("Failed to show pooled window: {}", e))?;
+                return Ok(window_id);
+            }
+        }
+        
+        // If no pooled window available, create a new one
+        create_notification_window(app, Arc::new(Mutex::new(self.clone())))
+    }
+    
+    // Add a window to the pool instead of destroying it
+    pub fn pool_window(&mut self, window_id: &str) -> Result<(), String> {
+        // Check if the window exists
+        if let Some(window) = self.windows.get(window_id) {
+            // Hide the window
+            window.hide().map_err(|e| format!("Failed to hide window: {}", e))?;
+            
+            // Add to pool if not already there
+            if !self.window_pool.contains(&window_id.to_string()) {
+                self.window_pool.push(window_id.to_string());
+                info!("Added window to pool: {}", window_id);
+            }
+            
+            Ok(())
+        } else {
+            Err(format!("Window not found: {}", window_id))
+        }
+    }
 
     // Remove a notification from a window
     pub fn remove_notification(&mut self, window_id: &str) -> Option<Notification> {
@@ -95,20 +222,32 @@ impl NotificationManager {
             // Find and remove the notification from the queue if it's there
             if let Some(pos) = self.notification_queue.iter().position(|n| n.id == notification_id) {
                 let notification = self.notification_queue.remove(pos);
+                
+                // Add to history
+                self.notification_history.push(notification.clone());
+                
+                // Check if we need cleanup
+                self.maybe_cleanup();
+                
                 return Some(notification);
             }
         }
         None
     }
+    
+    // Get notification history
+    pub fn get_notification_history(&self) -> &[Notification] {
+        &self.notification_history
+    }
 
     // Get the next available position for a notification window
     pub fn get_next_position(&self, screen_width: u32) -> (u32, u32) {
         // Start from top right corner
-        let base_x = screen_width - self.notification_width - 20; // 20px margin from right
+        let base_x = screen_width - self.config.notification_width - 20; // 20px margin from right
         let base_y = 20; // Start 20px from top
 
-        info!("base_x: {}, base_y: {}, self.notification_width: {}, self.notification_height: {}", 
-              base_x, base_y, self.notification_width, self.notification_height);
+        info!("base_x: {}, base_y: {}, notification_width: {}, notification_height: {}", 
+              base_x, base_y, self.config.notification_width, self.config.notification_height);
 
         if self.positions.is_empty() {
             return (base_x, base_y);
@@ -116,7 +255,7 @@ impl NotificationManager {
 
         // Find the lowest position (highest y value)
         let max_y = self.positions.values()
-            .map(|pos| pos.y + pos.height + self.margin)
+            .map(|pos| pos.y + pos.height + self.config.margin)
             .max()
             .unwrap_or(base_y);
 
@@ -157,7 +296,7 @@ impl NotificationManager {
 
     // Get window dimensions
     pub fn get_dimensions(&self) -> (u32, u32) {
-        (self.notification_width, self.notification_height)
+        (self.config.notification_width, self.config.notification_height)
     }
 
     // Get notification assigned to a window
@@ -282,29 +421,47 @@ fn process_notification_queue(
     app: &AppHandle,
     state: NotificationManagerState,
 ) -> Result<(), String> {
-    let mut create_window = false;
-    let mut assign_to_window = None;
-    
-    // Check if we need to create a new window or use an existing one
-    {
-        let manager = state.lock().unwrap();
+    let action = {
+        let mut manager = state.lock().unwrap();
         
-        // If we have unassigned notifications and available window slots, create a new window
+        // Run cleanup if needed
+        manager.maybe_cleanup();
+        
+        // If we have unassigned notifications
         if manager.get_next_unassigned_notification().is_some() {
-            if manager.has_available_window_slots() {
-                create_window = true;
+            // First check if we have a pooled window
+            if !manager.window_pool.is_empty() {
+                // Use a pooled window
+                Some(("pool", manager.window_pool[0].clone()))
+            } else if manager.has_available_window_slots() {
+                // Create a new window
+                Some(("create", String::new()))
             } else if let Some(window_id) = manager.find_available_window() {
-                assign_to_window = Some(window_id);
+                // Use an existing window
+                Some(("assign", window_id))
+            } else {
+                None
             }
+        } else {
+            None
         }
-    }
+    };
     
-    // Create a new window if needed
-    if create_window {
-        create_notification_window(app, state.clone())?;
-    } else if let Some(window_id) = assign_to_window {
-        // Assign notification to existing window
-        assign_next_notification_to_window(app, &window_id, state.clone())?;
+    // Take action based on what we determined
+    match action {
+        Some(("pool", window_id)) => {
+            // Use a window from the pool
+            assign_next_notification_to_window(app, &window_id, state.clone())?;
+        },
+        Some(("create", _)) => {
+            // Create a new window
+            create_notification_window(app, state.clone())?;
+        },
+        Some(("assign", window_id)) => {
+            // Assign to existing window
+            assign_next_notification_to_window(app, &window_id, state.clone())?;
+        },
+        _ => {}
     }
     
     Ok(())
@@ -561,15 +718,38 @@ pub fn close_notification(
             // Assign next notification to this window
             assign_next_notification_to_window(&app, &window_id, state.inner().clone())?;
         } else {
-            // No more notifications, reposition windows
-            let mut manager = state.lock().unwrap();
-            manager.reposition_notifications(&app);
+            // No more notifications to display, add window to pool
+            let should_pool = {
+                let mut manager = state.lock().unwrap();
+                // Only pool if we're under the max windows limit
+                if manager.windows.len() <= MAX_WINDOWS {
+                    manager.pool_window(&window_id).is_ok()
+                } else {
+                    false
+                }
+            };
+            
+            if !should_pool {
+                // If we didn't pool the window, reposition the remaining windows
+                let mut manager = state.lock().unwrap();
+                manager.reposition_notifications(&app);
+            }
         }
     } else {
         info!("No notification found for window: {}", window_id);
     }
     
     Ok(())
+}
+
+// Command to get notification history
+#[tauri::command]
+pub fn get_notification_history(
+    state: tauri::State<'_, NotificationManagerState>,
+) -> Result<Vec<Notification>, String> {
+    let manager = state.lock().unwrap();
+    let history = manager.get_notification_history().to_vec();
+    Ok(history)
 }
 
 
@@ -763,7 +943,8 @@ pub fn run() {
             notification_window_ready,
             get_window_size,
             get_scale_factor,
-            assign_notification
+            assign_notification,
+            get_notification_history
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
