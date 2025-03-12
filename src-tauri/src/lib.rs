@@ -5,7 +5,7 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use log::{LevelFilter, info, error};
 use serde_json::Value;
-use tauri::{AppHandle, Event, Listener, Manager};
+use tauri::{AppHandle, Event, Listener, Manager, Emitter};
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::{PhysicalPosition, WebviewWindow};
@@ -56,6 +56,7 @@ impl Default for NotificationConfig {
 }
 
 // Notification manager to keep track of active notifications and windows
+#[derive(Clone)]
 pub struct NotificationManager {
     // Windows available for displaying notifications
     windows: HashMap<String, WebviewWindow>, // window_id -> WebviewWindow
@@ -289,7 +290,7 @@ impl NotificationManager {
                 info!("Repositioned notification {} to y={}, height={}", id, current_y, height);
 
                 // Move to next position
-                current_y += height + self.margin;
+                current_y += height + self.config.margin;
             }
         }
     }
@@ -411,7 +412,7 @@ pub async fn create_notification(
     }
 
     // Try to display the notification if we have available windows
-    process_notification_queue(&app, state.clone())?;
+    process_notification_queue(&app, state.inner().clone())?;
 
     Ok(notification_id)
 }
@@ -608,7 +609,7 @@ fn emit_notification_data_event(
     };
     
     // Emit the notification data to the window
-    window.emit("notification-data", &notification)
+    window.emit_to(window_id, "notification-data", &notification)
         .map_err(|e| format!("Failed to emit notification data: {}", e))?;
     
     info!("Emitted notification data to window {}: {:?}", window_id, notification.id);
@@ -831,7 +832,7 @@ pub fn run() {
     setup_logging();
     
     info!("Starting application");
-    let notification_manager = Arc::new(Mutex::new(notification::NotificationManager::new()));
+    let notification_manager = Arc::new(Mutex::new(NotificationManager::new()));
     
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
@@ -886,7 +887,7 @@ pub fn run() {
                             info!("Successfully closed notification window: {}", window_label);
                             
                             // Remove from notification manager
-                            let state = app_handle.state::<notification::NotificationManagerState>();
+                            let state = app_handle.state::<NotificationManagerState>();
                             let mut manager = state.lock().unwrap();
                             if manager.remove_notification(&window_label).is_some() {
                                 manager.reposition_notifications(app_handle);
@@ -920,7 +921,7 @@ pub fn run() {
                                 info!("Successfully closed notification window: {}", id);
                                 
                                 // Remove from notification manager
-                                let state = app_handle.state::<notification::NotificationManagerState>();
+                                let state = app_handle.state::<NotificationManagerState>();
                                 let mut manager = state.lock().unwrap();
                                 if manager.remove_notification(id).is_some() {
                                     manager.reposition_notifications(app_handle);
