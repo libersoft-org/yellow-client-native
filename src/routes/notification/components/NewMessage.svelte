@@ -1,8 +1,7 @@
 <script>
-
-    let title = 'Notification Title';
-    let message = 'Notification message goes here.';
-
+    export let title = 'Notification Title';
+    export let message = 'Notification message goes here.';
+    export let onClose = () => {};
 </script>
 
 <style>
@@ -43,7 +42,7 @@
 
 <div class="notification-header">
     <h3 class="notification-title" id="notification-title">{title}</h3>
-    <button class="close-button" id="close-button" on:click={handleCloseButtonClick}>×</button>
+    <button class="close-button" id="close-button" on:click={onClose}>×</button>
 </div>
 <div class="notification-message" id="notification-message">
     {message}

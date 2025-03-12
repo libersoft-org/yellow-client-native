@@ -67,10 +67,10 @@
   async function showNotification() {
     try {
       const notificationId = await invoke("create_notification", {
-        type: 'new_message',
         title: notificationTitle,
         message: notificationMessage + ` (${notificationCount++})`,
-        duration: notificationDuration
+        duration: notificationDuration,
+        notificationType: 'new_message'
       });
       console.log("Created notification:", notificationId);
     } catch (error) {

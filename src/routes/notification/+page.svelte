@@ -3,18 +3,19 @@
     import NewMessage from './components/NewMessage.svelte';
 
     const { invoke } = window.__TAURI__.core;
+    const { listen } = window.__TAURI__.event;
 
     const DEBUG = true;
     let windowId = '';
+    let notificationId = '';
 
-    /* assigned through assign_notification from Rust.
-    * make sure rust sets a timestamp when it first assigns the notification.
-    *  */
-    let data;
-
+    // Notification data received from Rust
+    let data = null;
+    let title = 'Loading...';
+    let message = 'Please wait...';
     let duration = 0;
+    let notificationType = '';
 
-    let view;
     let progressActive = false;
     let sizeInfo = 'Size: calculating...';
 
@@ -73,19 +74,80 @@
     }
 
     function handleContainerClick() {
-        view?.windowClick?.();
+        // Emit notification clicked event
+        window.__TAURI__.event.emit('notification-clicked', {
+            id: notificationId,
+            window_id: windowId,
+            timestamp: new Date().toISOString()
+        });
+        
+        // Call close notification
+        closeNotification();
     }
 
     function handleCloseButtonClick(e) {
         e.stopPropagation();
+        // Emit user closed notification event
         window.__TAURI__.event.emit('user_closed_notification', {
-            id: windowId,
+            id: notificationId,
+            window_id: windowId,
             timestamp: new Date().toISOString()
         });
+        
+        // Call close notification
+        closeNotification();
+    }
+    
+    function closeNotification() {
+        // Call the Rust command to close this notification
+        invoke('close_notification', { windowId })
+            .catch(err => {
+                debugLog('Error closing notification:', err);
+            });
+    }
+    
+    function setupProgressBar() {
+        if (!duration) return;
+        
+        // Set the progress bar animation duration and activate it
+        const progressBar = document.getElementById('progress');
+        if (progressBar) {
+            progressBar.style.animationDuration = `${duration}s`;
+            
+            // Ensure the animation starts from the beginning by removing and re-adding the element
+            const parent = progressBar.parentNode;
+            const newProgressBar = progressBar.cloneNode(true);
+            parent.removeChild(progressBar);
+            parent.appendChild(newProgressBar);
+            
+            // Trigger the animation after a small delay to ensure it's properly reset
+            setTimeout(() => {
+                const updatedProgressBar = document.getElementById('progress');
+                if (updatedProgressBar) {
+                    progressActive = true;
+                    
+                    // Set timeout to close the notification when duration expires
+                    setTimeout(() => {
+                        // Emit an event that the notification is closing due to timeout
+                        window.__TAURI__.event.emit('notification-timeout', {
+                            id: notificationId,
+                            window_id: windowId,
+                            action: 'timeout',
+                            timestamp: new Date().toISOString()
+                        });
+                        
+                        // Close the notification
+                        closeNotification();
+                    }, duration * 1000);
+                }
+            }, 50);
+        }
     }
 
     onMount(async () => {
-        debugLog('[NOTIFICATION DEBUG] ❤Window loaded at', new Date().toISOString());
+        debugLog('[NOTIFICATION DEBUG] Window loaded at', new Date().toISOString());
+        windowId = window.__TAURI__.window.label;
+        debugLog('Window ID:', windowId);
         
         // Get scale factor from Rust
         invoke('get_scale_factor')
@@ -101,114 +163,68 @@
         updateSizeDebug();
         const sizeInterval = setInterval(updateSizeDebug, 10000);
         
-        // Log all available Tauri APIs
-        debugLog('Available Tauri APIs:', Object.keys(window.__TAURI__ || {}));
-
-        // Set a visual indicator that we're initializing
-
-            debugLog('Window is ready, calling notification_window_ready command');
-
+        // Listen for notification data events
+        await listen('notification-data', (event) => {
+            debugLog('Received notification-data event:', event);
+            
             try {
-                // Use invoke to call the notification_window_ready command
-                invoke('notification_window_ready')
-                    .then(notificationData => {
-                        debugLog('✅ RECEIVED notification data from command:', JSON.stringify(notificationData));
-
-                        // Set a visual indicator immediately
-                        title = 'DATA RECEIVED';
-                        document.body.style.border = '2px solid blue';
-
-                        try {
-                            windowId = notificationData.id;
-                            windowLabel = notificationData.window_label;
-
-                            debugLog('Notification ', JSON.stringify(notificationData));
-                            debugLog('Notification ID:', windowId);
-                            debugLog('Window Label:', windowLabel);
-
-                            title = notificationData.title;
-                            message = notificationData.message;
-                            duration = notificationData.duration;
-
-                            // Set the progress bar animation duration and activate it
-                            const progressBar = document.getElementById('progress');
-                            if (progressBar) {
-                                progressBar.style.animationDuration = `${duration}s`;
-                                
-                                // Ensure the animation starts from the beginning by removing and re-adding the element
-                                const parent = progressBar.parentNode;
-                                const newProgressBar = progressBar.cloneNode(true);
-                                parent.removeChild(progressBar);
-                                parent.appendChild(newProgressBar);
-                                
-                                // Trigger the animation after a small delay to ensure it's properly reset
-                                setTimeout(() => {
-                                    const updatedProgressBar = document.getElementById('progress');
-                                    if (updatedProgressBar) {
-                                        progressActive = true;
-                                        
-                                        // Set timeout to close the notification when duration expires
-                                        setTimeout(() => {
-                                            // Emit an event that the notification is closing due to timeout
-                                            window.__TAURI__.event.emit('notification-timeout', {
-                                                id: windowId,
-                                                window_label: windowLabel,
-                                                action: 'timeout',
-                                                timestamp: new Date().toISOString()
-                                            });
-                                            
-                                            // Then close with animation
-                                            closeWithAnimation();
-                                        }, duration * 1000);
-                                    }
-                                }, 50);
-                            }
-
-                            // Add a visual indicator that the data was received
-                            document.body.style.border = '2px solid green';
-                            setTimeout(() => {
-                                document.body.style.border = '1px solid rgba(0, 0, 0, 0.1)';
-                            }, 500);
-
-                            // Send acknowledgment that we received and processed the notification data
-                            window.__TAURI__.event.emit('notification-data-received', {
-                                id: windowId,
-                                window_label: windowLabel,
-                                status: 'success'
-                            });
-
-                            debugLog('Notification data applied successfully:', JSON.stringify(notificationData));
-                        } catch (error) {
-                            debugLog('Error processing notification:', error.toString());
-                            // Visual indicator for error
-                            document.body.style.border = '2px solid red';
-
-                            // Send error acknowledgment
-                            window.__TAURI__.event.emit('notification-data-received', {
-                                id: windowId || 'unknown',
-                                window_label: windowLabel || 'unknown',
-                                status: 'error',
-                                error: error.toString()
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        debugLog('Error calling notification_window_ready command:', error.toString());
-                        title = 'Error: ' + error.message;
-                        document.body.style.border = '2px solid red';
-                    });
-
+                data = event.payload;
+                notificationId = data.id;
+                title = data.title;
+                message = data.message;
+                duration = data.duration;
+                notificationType = data.notification_type;
+                
+                debugLog('Notification data applied:', {
+                    id: notificationId,
+                    title,
+                    message,
+                    duration,
+                    type: notificationType
+                });
+                
+                // Setup progress bar for auto-close
+                setupProgressBar();
+                
+                // Visual indicator that data was received
+                document.body.style.border = '2px solid green';
+                setTimeout(() => {
+                    document.body.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+                }, 500);
+                
+                // Send acknowledgment
+                window.__TAURI__.event.emit('notification-data-received', {
+                    id: notificationId,
+                    window_id: windowId,
+                    status: 'success'
+                });
             } catch (error) {
-                debugLog('Error calling notification_window_ready command:', error.toString());
-                title = 'Error: ' + error.message;
+                debugLog('Error processing notification data:', error.toString());
                 document.body.style.border = '2px solid red';
+                
+                // Send error acknowledgment
+                window.__TAURI__.event.emit('notification-data-received', {
+                    window_id: windowId,
+                    status: 'error',
+                    error: error.toString()
+                });
             }
+        });
+        
+        // Notify Rust that the window is ready
+        debugLog('Window is ready, calling notification_window_ready command');
+        try {
+            await invoke('notification_window_ready');
+            debugLog('notification_window_ready command completed');
+        } catch (error) {
+            debugLog('Error calling notification_window_ready command:', error.toString());
+            document.body.style.border = '2px solid red';
+        }
 
         return () => {
             clearInterval(sizeInterval);
         };
     });
-
 </script>
 
 <style>
@@ -311,17 +327,29 @@
 </style>
 
 <div class="notification-container" id="notification-container" on:click={handleContainerClick}>
-
     {#if duration > 0}
     <div class="progress-bar">
         <div class="progress" id="progress" class:active={progressActive}></div>
     </div>
-        {/if}
+    {/if}
 
-    {#if {data.type === 'new_message'}}
-        <NewMessage {data} />
+    {#if data && notificationType === 'new_message'}
+        <NewMessage {title} {message} onClose={handleCloseButtonClick} />
+    {:else if data}
+        <div class="notification-header">
+            <h3 class="notification-title">{title}</h3>
+            <button class="close-button" on:click={handleCloseButtonClick}>×</button>
+        </div>
+        <div class="notification-message">
+            {message}
+        </div>
     {:else}
-        unknown notification type
+        <div class="notification-header">
+            <h3 class="notification-title">Loading...</h3>
+        </div>
+        <div class="notification-message">
+            Waiting for notification data...
+        </div>
     {/if}
 
     <div class="log" id="log">

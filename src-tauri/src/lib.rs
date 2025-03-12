@@ -6,28 +6,22 @@ use std::sync::Mutex;
 use log::{LevelFilter, info, error};
 use serde_json::Value;
 use tauri::{AppHandle, Event, Listener, Manager};
-
-
 use std::collections::HashMap;
-use std::random::random;
-use std::sync::{Arc, Mutex};
-use tauri::{AppHandle, Manager, PhysicalPosition, WebviewWindow};
+use std::time::{SystemTime, UNIX_EPOCH};
+use tauri::{PhysicalPosition, WebviewWindow};
 use uuid::Uuid;
-use log::{info, error};
 
-const max_windows = 4;
-
-
-
-
+const MAX_WINDOWS: usize = 4;
 // Notification data structure
-#[derive(Clone, serde::Serialize)]
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub struct Notification {
     pub id: String,
     pub title: String,
     pub message: String,
     pub duration: u64, // in seconds
-    pub window_label: String, // Window label for tracking
+    pub window_label: Option<String>, // Window label for tracking
+    pub timestamp: Option<u64>, // Timestamp when notification was first displayed
+    pub notification_type: String, // Type of notification (e.g., 'new_message')
 }
 
 // Position information for a notification
@@ -39,10 +33,16 @@ pub struct NotificationPosition {
     height: u32,
 }
 
-// Notification manager to keep track of active notifications
+// Notification manager to keep track of active notifications and windows
 pub struct NotificationManager {
-    notifications: HashMap<String, (WebviewWindow, Notification)>,
-    positions: HashMap<String, NotificationPosition>, // Map notification ID to position
+    // Windows available for displaying notifications
+    windows: HashMap<String, WebviewWindow>, // window_id -> WebviewWindow
+    // Notifications waiting to be displayed
+    notification_queue: Vec<Notification>,
+    // Mapping of which notification is assigned to which window
+    window_assignments: HashMap<String, String>, // window_id -> notification_id
+    // Positions of windows
+    positions: HashMap<String, NotificationPosition>, // window_id -> position
     next_position_id: usize,
     notification_width: u32,
     notification_height: u32,
@@ -52,7 +52,9 @@ pub struct NotificationManager {
 impl NotificationManager {
     pub fn new() -> Self {
         NotificationManager {
-            notifications: HashMap::new(),
+            windows: HashMap::new(),
+            notification_queue: Vec::new(),
+            window_assignments: HashMap::new(),
             positions: HashMap::new(),
             next_position_id: 0,
             notification_width: 400,
@@ -61,9 +63,17 @@ impl NotificationManager {
         }
     }
 
-    pub fn add_notification(&mut self, window: WebviewWindow, notification: Notification, x: u32, y: u32, actual_height: Option<u32>) {
-        let id = window.label().to_string();
+    // Add a new notification to the queue
+    pub fn add_notification(&mut self, notification: Notification) {
+        self.notification_queue.push(notification);
+    }
+
+    // Register a window that can display notifications
+    pub fn register_window(&mut self, window: WebviewWindow, x: u32, y: u32, actual_height: Option<u32>) -> String {
+        let window_id = window.label().to_string();
         let height = actual_height.unwrap_or(self.notification_height);
+        
+        // Create position info
         let position = NotificationPosition {
             id: self.next_position_id,
             x,
@@ -71,21 +81,34 @@ impl NotificationManager {
             height,
         };
         self.next_position_id += 1;
-        self.notifications.insert(id.clone(), (window, notification));
-        self.positions.insert(id, position);
+        
+        // Store window and position
+        self.windows.insert(window_id.clone(), window);
+        self.positions.insert(window_id.clone(), position);
+        
+        window_id
     }
 
-    pub fn remove_notification(&mut self, id: &str) -> Option<NotificationPosition> {
-        self.notifications.remove(id);
-        self.positions.remove(id)
+    // Remove a notification from a window
+    pub fn remove_notification(&mut self, window_id: &str) -> Option<Notification> {
+        if let Some(notification_id) = self.window_assignments.remove(window_id) {
+            // Find and remove the notification from the queue if it's there
+            if let Some(pos) = self.notification_queue.iter().position(|n| n.id == notification_id) {
+                let notification = self.notification_queue.remove(pos);
+                return Some(notification);
+            }
+        }
+        None
     }
 
+    // Get the next available position for a notification window
     pub fn get_next_position(&self, screen_width: u32) -> (u32, u32) {
         // Start from top right corner
         let base_x = screen_width - self.notification_width - 20; // 20px margin from right
         let base_y = 20; // Start 20px from top
 
-        info!("base_x: {}, base_y: {}, self.notification_width: {}, self.notification_height: {}", base_x, base_y, self.notification_width, self.notification_height);
+        info!("base_x: {}, base_y: {}, self.notification_width: {}, self.notification_height: {}", 
+              base_x, base_y, self.notification_width, self.notification_height);
 
         if self.positions.is_empty() {
             return (base_x, base_y);
@@ -102,16 +125,19 @@ impl NotificationManager {
         (base_x, max_y)
     }
 
+    // Reposition all notification windows
     pub fn reposition_notifications(&mut self, app_handle: &AppHandle) {
         // Sort positions by their y coordinate
-        let mut positions: Vec<_> = self.positions.iter().map(|(id, pos)| (id.clone(), pos.id, pos.x, pos.height)).collect();
+        let mut positions: Vec<_> = self.positions.iter()
+            .map(|(id, pos)| (id.clone(), pos.id, pos.x, pos.height))
+            .collect();
         positions.sort_by_key(|(_, pos_id, _, _)| *pos_id);
 
         // Start from the top
         let mut current_y = 20; // Start 20px from top
 
         for (id, _, x, height) in positions {
-            if let Some(window) = app_handle.get_webview_window(&id) {
+            if let Some(window) = self.windows.get(&id) {
                 // Update position in our map
                 if let Some(pos) = self.positions.get_mut(&id) {
                     pos.y = current_y;
@@ -129,13 +155,85 @@ impl NotificationManager {
         }
     }
 
+    // Get window dimensions
     pub fn get_dimensions(&self) -> (u32, u32) {
         (self.notification_width, self.notification_height)
     }
 
-    // Get both window and notification data
-    pub fn get_notification(&self, id: &str) -> Option<(&WebviewWindow, &Notification)> {
-        self.notifications.get(id).map(|(window, notification)| (window, notification))
+    // Get notification assigned to a window
+    pub fn get_notification_for_window(&self, window_id: &str) -> Option<&Notification> {
+        if let Some(notification_id) = self.window_assignments.get(window_id) {
+            self.notification_queue.iter().find(|n| &n.id == notification_id)
+        } else {
+            None
+        }
+    }
+
+    // Get window by ID
+    pub fn get_window(&self, window_id: &str) -> Option<&WebviewWindow> {
+        self.windows.get(window_id)
+    }
+
+    // Assign a notification to a window
+    pub fn assign_notification_to_window(&mut self, window_id: &str, notification_id: &str) -> bool {
+        // Check if window exists
+        if !self.windows.contains_key(window_id) {
+            return false;
+        }
+        
+        // Check if notification exists
+        if !self.notification_queue.iter().any(|n| n.id == notification_id) {
+            return false;
+        }
+        
+        // Assign notification to window
+        self.window_assignments.insert(window_id.to_string(), notification_id.to_string());
+        
+        // Update notification's window_label
+        for notification in &mut self.notification_queue {
+            if notification.id == notification_id {
+                notification.window_label = Some(window_id.to_string());
+                break;
+            }
+        }
+        
+        true
+    }
+
+    // Get next notification from queue that isn't already assigned
+    pub fn get_next_unassigned_notification(&self) -> Option<&Notification> {
+        let assigned_ids: Vec<String> = self.window_assignments.values().cloned().collect();
+        self.notification_queue.iter()
+            .find(|n| !assigned_ids.contains(&n.id))
+    }
+
+    // Check if we have available windows (under MAX_WINDOWS)
+    pub fn has_available_window_slots(&self) -> bool {
+        self.windows.len() < MAX_WINDOWS
+    }
+
+    // Find an available window that doesn't have a notification assigned
+    pub fn find_available_window(&self) -> Option<String> {
+        for window_id in self.windows.keys() {
+            if !self.window_assignments.contains_key(window_id) {
+                return Some(window_id.clone());
+            }
+        }
+        None
+    }
+
+    // Set timestamp for a notification when it's first displayed
+    pub fn set_notification_timestamp(&mut self, notification_id: &str) {
+        for notification in &mut self.notification_queue {
+            if notification.id == notification_id && notification.timestamp.is_none() {
+                let timestamp = SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_secs();
+                notification.timestamp = Some(timestamp);
+                break;
+            }
+        }
     }
 }
 
@@ -149,10 +247,12 @@ pub async fn create_notification(
     title: String,
     message: String,
     duration: Option<u64>,
+    notification_type: Option<String>,
     state: tauri::State<'_, NotificationManagerState>,
 ) -> Result<String, String> {
     let notification_id = Uuid::new_v4().to_string();
     let duration = duration.unwrap_or(5); // Default 5 seconds
+    let notification_type = notification_type.unwrap_or_else(|| "new_message".to_string());
 
     // Create notification data
     let notification = Notification {
@@ -160,9 +260,64 @@ pub async fn create_notification(
         title,
         message,
         duration,
-        window_label: notification_id.clone(), // Window label is the same as notification ID
+        window_label: None, // Will be set when assigned to a window
+        timestamp: None,    // Will be set when first displayed
+        notification_type,
     };
 
+    // Add notification to queue
+    {
+        let mut manager = state.lock().unwrap();
+        manager.add_notification(notification);
+    }
+
+    // Try to display the notification if we have available windows
+    process_notification_queue(&app, state.clone())?;
+
+    Ok(notification_id)
+}
+
+// Process the notification queue, creating windows as needed
+fn process_notification_queue(
+    app: &AppHandle,
+    state: NotificationManagerState,
+) -> Result<(), String> {
+    let mut create_window = false;
+    let mut assign_to_window = None;
+    
+    // Check if we need to create a new window or use an existing one
+    {
+        let manager = state.lock().unwrap();
+        
+        // If we have unassigned notifications and available window slots, create a new window
+        if manager.get_next_unassigned_notification().is_some() {
+            if manager.has_available_window_slots() {
+                create_window = true;
+            } else if let Some(window_id) = manager.find_available_window() {
+                assign_to_window = Some(window_id);
+            }
+        }
+    }
+    
+    // Create a new window if needed
+    if create_window {
+        create_notification_window(app, state.clone())?;
+    } else if let Some(window_id) = assign_to_window {
+        // Assign notification to existing window
+        assign_next_notification_to_window(app, &window_id, state.clone())?;
+    }
+    
+    Ok(())
+}
+
+// Create a new notification window
+fn create_notification_window(
+    app: &AppHandle,
+    state: NotificationManagerState,
+) -> Result<String, String> {
+    // Generate a unique window ID
+    let window_id = format!("notification-window-{}", Uuid::new_v4());
+    
     // Get primary monitor dimensions
     let monitor = app.primary_monitor()
         .map_err(|e| format!("Failed to get primary monitor: {}", e))?
@@ -170,7 +325,7 @@ pub async fn create_notification(
 
     let monitor_size = monitor.size();
 
-    // Get position for the notification from the manager
+    // Get position and dimensions for the notification window
     let (notification_width, notification_height) = {
         let manager = state.lock().unwrap();
         manager.get_dimensions()
@@ -179,7 +334,8 @@ pub async fn create_notification(
     // Calculate position for the notification
     let (x, y) = {
         let manager = state.lock().unwrap();
-        info!("Getting next position for notification, monitor width: {}, monitor height: {}", monitor_size.width, monitor_size.height);
+        info!("Getting next position for notification, monitor width: {}, monitor height: {}", 
+              monitor_size.width, monitor_size.height);
         manager.get_next_position(monitor_size.width)
     };
 
@@ -198,8 +354,8 @@ pub async fn create_notification(
 
     // Create a new window for the notification
     let notification_window = tauri::WebviewWindowBuilder::new(
-        &app,
-        notification_id.clone(),
+        app,
+        window_id.clone(),
         tauri::WebviewUrl::App("/notification".into())
     )
         .title("Notification")
@@ -210,8 +366,6 @@ pub async fn create_notification(
         .build()
         .map_err(|e| format!("Failed to create notification window: {}", e))?;
 
-    let label = notification_window.label().to_string();
-
     // Get the actual size after creation to account for DPI scaling
     let actual_height = if let Ok(size) = notification_window.inner_size() {
         info!("Actual window inner size after creation: {}x{}", size.width, size.height);
@@ -221,68 +375,138 @@ pub async fn create_notification(
         None
     };
 
-    info!("Created notification window: {}", label);
-
-    // No need for event listeners - we'll use commands instead
-
-    // Store the notification data in the manager so it can be sent when the window is ready
-    // The actual emission is handled by the notification-ready event listener in lib.rs
-
     // Position the window
     notification_window.set_position(PhysicalPosition::new(x, y))
         .map_err(|e| format!("Failed to position notification window: {}", e))?;
 
-    // Store notification data; actual emission handled globally in setup
-
-    // Add to notification manager
+    // Register the window with the notification manager
     {
         let mut manager = state.lock().unwrap();
-        manager.add_notification(notification_window.clone(), notification.clone(), x, y, actual_height);
+        manager.register_window(notification_window, x, y, actual_height);
     }
 
-    // We don't need the auto-close timer here anymore
-    // The frontend will handle the timeout and emit an event
-    // which will trigger the close_notification command
-
-    Ok(notification_id)
+    info!("Created notification window: {}", window_id);
+    
+    // The window will call notification_window_ready when it's ready
+    // and we'll assign a notification to it then
+    
+    Ok(window_id)
 }
 
-
-#[tauri::command]
-pub fn add_notification(data: any) -> Result<(), String> {
-    notifications[data.id] = data;
+// Assign the next notification in queue to a window
+fn assign_next_notification_to_window(
+    app: &AppHandle,
+    window_id: &str,
+    state: NotificationManagerState,
+) -> Result<(), String> {
+    let notification_id = {
+        let manager = state.lock().unwrap();
+        manager.get_next_unassigned_notification()
+            .map(|n| n.id.clone())
+            .ok_or_else(|| "No unassigned notifications available".to_string())?
+    };
+    
+    // Assign notification to window
+    {
+        let mut manager = state.lock().unwrap();
+        if !manager.assign_notification_to_window(window_id, &notification_id) {
+            return Err("Failed to assign notification to window".to_string());
+        }
+    }
+    
+    // Emit notification data to the window
+    emit_notification_data_event(app, window_id, state.clone())?;
+    
     Ok(())
 }
 
+// Emit notification data to a specific window
+fn emit_notification_data_event(
+    app: &AppHandle,
+    window_id: &str,
+    state: NotificationManagerState,
+) -> Result<(), String> {
+    let notification = {
+        let mut manager = state.lock().unwrap();
+        
+        // Get the notification assigned to this window
+        let notification = manager.get_notification_for_window(window_id)
+            .ok_or_else(|| format!("No notification assigned to window {}", window_id))?
+            .clone();
+        
+        // Set timestamp if not already set
+        if notification.timestamp.is_none() {
+            manager.set_notification_timestamp(&notification.id);
+        }
+        
+        notification
+    };
+    
+    // Get the window
+    let window = {
+        let manager = state.lock().unwrap();
+        manager.get_window(window_id)
+            .ok_or_else(|| format!("Window {} not found", window_id))?
+            .clone()
+    };
+    
+    // Emit the notification data to the window
+    window.emit("notification-data", &notification)
+        .map_err(|e| format!("Failed to emit notification data: {}", e))?;
+    
+    info!("Emitted notification data to window {}: {:?}", window_id, notification.id);
+    
+    Ok(())
+}
+
+// Command to assign a notification to a window
 #[tauri::command]
-pub fn assign_notification(window_idx, notification_id) -> Result<(), String> {
-    if (len(windows) <= window_idx) {
-        let window = tauri::Window::new(window_idx, data);
-        window.create().map_err(|e| format!("Failed to create window: {}", e));
-        window_notifications.set(window_idx, notification_id);
+pub fn assign_notification(
+    app: AppHandle,
+    window_id: String,
+    notification_id: String,
+    state: tauri::State<'_, NotificationManagerState>,
+) -> Result<(), String> {
+    // Assign notification to window
+    {
+        let mut manager = state.lock().unwrap();
+        if !manager.assign_notification_to_window(&window_id, &notification_id) {
+            return Err(format!("Failed to assign notification {} to window {}", notification_id, window_id));
+        }
     }
+    
+    // Emit notification data to the window
+    emit_notification_data_event(&app, &window_id, state.inner().clone())?;
+    
+    Ok(())
 }
 
 
 
 #[tauri::command]
 pub fn notification_window_ready(
-    _app: AppHandle,
+    app: AppHandle,
     window: tauri::Window,
     state: tauri::State<'_, NotificationManagerState>,
-) -> Result<Notification, String> {
-    let window_label = window.label().to_string();
-    info!("Notification window ready: {}", window_label);
+) -> Result<(), String> {
+    let window_id = window.label().to_string();
+    info!("Notification window ready: {}", window_id);
 
-    // Get the notification data from the manager
-    let manager = state.lock().unwrap();
-    if let Some((_, notification_data)) = manager.get_notification(&window_label) {
-        // Return the notification data to the window
-        Ok(notification_data.clone())
+    // Check if there's already a notification assigned to this window
+    let has_notification = {
+        let manager = state.lock().unwrap();
+        manager.get_notification_for_window(&window_id).is_some()
+    };
+
+    if has_notification {
+        // If there's already a notification assigned, emit it
+        emit_notification_data_event(&app, &window_id, state.inner().clone())?;
     } else {
-        error!("No notification data found for window: {}", window_label);
-        Err(format!("No notification data found for window: {}", window_label))
+        // Otherwise, try to assign the next notification in queue
+        assign_next_notification_to_window(&app, &window_id, state.inner().clone())?;
     }
+
+    Ok(())
 }
 
 // Command to get window size
@@ -313,23 +537,38 @@ pub fn get_scale_factor(window: tauri::Window) -> Result<f64, String> {
 #[tauri::command]
 pub fn close_notification(
     app: AppHandle,
-    notification_id: String,
+    window_id: String,
     state: tauri::State<'_, NotificationManagerState>,
 ) -> Result<(), String> {
-    info!("Closing notification: {}", notification_id);
-    if let Some(window) = app.get_webview_window(&notification_id) {
-        window.close().map_err(|e| format!("Failed to close notification: {}", e))?;
-    }
-
-    // Remove from manager
-    let mut manager = state.lock().unwrap();
-    if manager.remove_notification(&notification_id).is_some() {
-        info!("Notification removed from manager: {}", notification_id);
-        manager.reposition_notifications(&app);
+    info!("Closing notification in window: {}", window_id);
+    
+    // Remove notification from window
+    let removed = {
+        let mut manager = state.lock().unwrap();
+        manager.remove_notification(&window_id)
+    };
+    
+    if removed.is_some() {
+        info!("Notification removed from window: {}", window_id);
+        
+        // Check if there are more notifications in the queue
+        let has_more_notifications = {
+            let manager = state.lock().unwrap();
+            manager.get_next_unassigned_notification().is_some()
+        };
+        
+        if has_more_notifications {
+            // Assign next notification to this window
+            assign_next_notification_to_window(&app, &window_id, state.inner().clone())?;
+        } else {
+            // No more notifications, reposition windows
+            let mut manager = state.lock().unwrap();
+            manager.reposition_notifications(&app);
+        }
     } else {
-        info!("Notification not found in manager: {}", notification_id);
+        info!("No notification found for window: {}", window_id);
     }
-
+    
     Ok(())
 }
 
@@ -519,12 +758,12 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            greet,
-            notification::create_notification,
-            notification::close_notification,
-            notification::notification_window_ready,
-            notification::get_window_size,
-            notification::get_scale_factor
+            create_notification,
+            close_notification,
+            notification_window_ready,
+            get_window_size,
+            get_scale_factor,
+            assign_notification
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
