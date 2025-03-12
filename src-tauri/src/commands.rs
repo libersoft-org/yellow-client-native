@@ -71,7 +71,7 @@ pub fn notification_window_ready(
     app: AppHandle,
     window: Window,
     state: State<'_, NotificationManagerState>,
-) -> Result<(), String> {
+) -> Result<String, String> {
     let window_id = window.label().to_string();
     info!("Notification window ready: {}", window_id);
 
@@ -89,7 +89,8 @@ pub fn notification_window_ready(
         assign_next_notification_to_window(&app, &window_id, state.inner().clone())?;
     }
 
-    Ok(())
+    // Return the window ID to the frontend
+    Ok(window_id)
 }
 
 // Command to get window size

@@ -109,6 +109,11 @@
     
     function closeNotification() {
         // Call the Rust command to close this notification
+        if (!windowId) {
+            debugLog('Cannot close notification: window_id is undefined');
+            return;
+        }
+        
         debugLog('Closing notification with window_id:', windowId);
         
         // Create the parameters object with the correct key
@@ -121,6 +126,25 @@
             })
             .catch(err => {
                 debugLog('Error closing notification:', err);
+                
+                // Try with the current window as a fallback
+                try {
+                    const currentWindow = window.__TAURI__.window.getCurrent();
+                    const currentWindowId = currentWindow.label;
+                    
+                    if (currentWindowId && currentWindowId !== windowId) {
+                        debugLog('Trying with current window ID:', currentWindowId);
+                        invoke('close_notification', { window_id: currentWindowId })
+                            .then(() => {
+                                debugLog('Successfully closed notification with current window ID');
+                            })
+                            .catch(innerErr => {
+                                debugLog('Error closing notification with current window ID:', innerErr);
+                            });
+                    }
+                } catch (windowErr) {
+                    debugLog('Error getting current window:', windowErr);
+                }
             });
     }
     
@@ -164,8 +188,18 @@
 
     onMount(async () => {
         debugLog('[NOTIFICATION DEBUG] Window loaded at', new Date().toISOString());
-        windowId = window.__TAURI__.window.label;
-        debugLog('Window ID:', windowId);
+        
+        // Get window ID from Tauri
+        try {
+            windowId = window.__TAURI__.window.getCurrent().label;
+            debugLog('Window ID:', windowId);
+        } catch (error) {
+            debugLog('Error getting window ID:', error);
+            // Fallback to getting window ID from URL hash or query params
+            const urlParams = new URLSearchParams(window.location.search);
+            windowId = urlParams.get('window_id') || window.location.hash.substring(1);
+            debugLog('Fallback window ID:', windowId);
+        }
         
         // Add keyboard event listener for accessibility
         window.addEventListener('keydown', handleKeyDown);
@@ -235,8 +269,15 @@
         // Notify Rust that the window is ready
         debugLog('Window is ready, calling notification_window_ready command');
         try {
-            await invoke('notification_window_ready');
-            debugLog('notification_window_ready command completed');
+            // Get window ID from the command response
+            const returnedWindowId = await invoke('notification_window_ready');
+            debugLog('notification_window_ready command completed, returned window ID:', returnedWindowId);
+            
+            // Update window ID if it was undefined
+            if (!windowId && returnedWindowId) {
+                windowId = returnedWindowId;
+                debugLog('Updated window ID from command response:', windowId);
+            }
         } catch (error) {
             debugLog('Error calling notification_window_ready command:', error.toString());
             document.body.style.border = '2px solid red';
