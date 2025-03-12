@@ -11,6 +11,8 @@
   let notificationClicks = $state<string[]>([]);
   let notificationHistory = $state<any[]>([]);
   let showHistory = $state(false);
+  let windowPoolStatus = $state<any>(null);
+  let showPoolStatus = $state(false);
 
 
 
@@ -57,8 +59,16 @@
       notificationClicks = [...notificationClicks, `Clicked notification: ${data.id}`];
     });
     
-    // Load notification history
+    // Load notification history and window pool status
     await loadNotificationHistory();
+    await loadWindowPoolStatus();
+    
+    // Refresh window pool status periodically
+    const poolStatusInterval = setInterval(loadWindowPoolStatus, 5000);
+    
+    return () => {
+      clearInterval(poolStatusInterval);
+    };
   });
   
   async function loadNotificationHistory() {
@@ -67,6 +77,15 @@
       console.log("Loaded notification history:", notificationHistory);
     } catch (error) {
       console.error("Failed to load notification history:", error);
+    }
+  }
+  
+  async function loadWindowPoolStatus() {
+    try {
+      windowPoolStatus = await invoke("get_window_pool_status");
+      console.log("Window pool status:", windowPoolStatus);
+    } catch (error) {
+      console.error("Failed to load window pool status:", error);
     }
   }
 
@@ -137,6 +156,10 @@
       <button type="button" onclick={() => showHistory = !showHistory}>
         {showHistory ? 'Hide History' : 'Show History'}
       </button>
+      
+      <button type="button" onclick={() => showPoolStatus = !showPoolStatus}>
+        {showPoolStatus ? 'Hide Window Pool' : 'Show Window Pool'}
+      </button>
     </div>
     
     {#if showHistory}
@@ -160,6 +183,44 @@
           </ul>
         {/if}
         <button type="button" onclick={loadNotificationHistory}>Refresh History</button>
+      </div>
+    {/if}
+    
+    {#if showPoolStatus}
+      <div class="window-pool-status">
+        <h3>Window Pool Status</h3>
+        {#if !windowPoolStatus}
+          <p>Loading window pool status...</p>
+        {:else}
+          <div class="pool-stats">
+            <div class="stat-item">
+              <span class="stat-label">Pooled Windows:</span>
+              <span class="stat-value">{windowPoolStatus.pooled_windows}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Total Windows:</span>
+              <span class="stat-value">{windowPoolStatus.total_windows}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Max Windows:</span>
+              <span class="stat-value">{windowPoolStatus.max_windows}</span>
+            </div>
+          </div>
+          
+          {#if windowPoolStatus.window_ids && windowPoolStatus.window_ids.length > 0}
+            <div class="pool-window-list">
+              <h4>Pooled Window IDs:</h4>
+              <ul>
+                {#each windowPoolStatus.window_ids as windowId}
+                  <li>{windowId}</li>
+                {/each}
+              </ul>
+            </div>
+          {:else}
+            <p>No windows in pool.</p>
+          {/if}
+        {/if}
+        <button type="button" onclick={loadWindowPoolStatus}>Refresh Pool Status</button>
       </div>
     {/if}
 
@@ -211,7 +272,7 @@ textarea {
   resize: vertical;
 }
 
-.notification-clicks, .notification-history {
+.notification-clicks, .notification-history, .window-pool-status {
   margin-top: 1.5rem;
   padding: 1rem;
   background-color: #f5f5f5;
@@ -220,13 +281,13 @@ textarea {
   max-height: 300px;
 }
 
-.notification-clicks ul, .notification-history ul {
+.notification-clicks ul, .notification-history ul, .window-pool-status ul {
   margin: 0;
   padding-left: 1.5rem;
   list-style-type: none;
 }
 
-.notification-clicks li, .notification-history li {
+.notification-clicks li, .notification-history li, .window-pool-status li {
   margin-bottom: 0.5rem;
   padding: 0.5rem;
   border-bottom: 1px solid #ddd;
@@ -244,6 +305,42 @@ textarea {
   color: #666;
   display: block;
   margin-top: 5px;
+}
+
+.pool-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.stat-item {
+  background-color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.pool-window-list {
+  margin-top: 1rem;
+}
+
+.pool-window-list h4 {
+  margin-bottom: 0.5rem;
 }
 
 @media (prefers-color-scheme: dark) {

@@ -67,6 +67,8 @@ pub struct NotificationManager {
     // Positions of windows
     positions: HashMap<String, NotificationPosition>, // window_id -> position
     // Window pool - windows that are hidden but ready to be reused
+    // Instead of destroying windows when notifications are closed,
+    // we hide them and keep them in this pool for future reuse
     window_pool: Vec<String>, // window_ids of pooled windows
     // History of displayed notifications
     notification_history: Vec<Notification>,
@@ -182,6 +184,7 @@ impl NotificationManager {
     }
     
     // Get a window from the pool or create a new one
+    // This is the main entry point for window recycling
     pub fn get_or_create_window(&mut self, app: &AppHandle) -> Result<String, String> {
         // First check if we have a window in the pool
         if let Some(window_id) = self.window_pool.pop() {
@@ -189,7 +192,12 @@ impl NotificationManager {
             
             // Make sure the window is visible
             if let Some(window) = self.windows.get(&window_id) {
+                // Show the hidden window
                 window.show().map_err(|e| format!("Failed to show pooled window: {}", e))?;
+                
+                // Reset window state if needed
+                window.set_focus().ok(); // Ignore errors
+                
                 return Ok(window_id);
             }
         }
@@ -199,10 +207,12 @@ impl NotificationManager {
     }
     
     // Add a window to the pool instead of destroying it
+    // This improves performance by reusing existing windows rather than
+    // creating new ones for each notification
     pub fn pool_window(&mut self, window_id: &str) -> Result<(), String> {
         // Check if the window exists
         if let Some(window) = self.windows.get(window_id) {
-            // Hide the window
+            // Hide the window instead of closing it
             window.hide().map_err(|e| format!("Failed to hide window: {}", e))?;
             
             // Add to pool if not already there
@@ -719,13 +729,17 @@ pub fn close_notification(
             // Assign next notification to this window
             assign_next_notification_to_window(&app, &window_id, state.inner().clone())?;
         } else {
-            // No more notifications to display, add window to pool
+            // No more notifications to display, add window to pool instead of destroying it
             let should_pool = {
                 let mut manager = state.lock().unwrap();
                 // Only pool if we're under the max windows limit
                 if manager.windows.len() <= MAX_WINDOWS {
-                    manager.pool_window(&window_id).is_ok()
+                    // Add to window pool for future reuse
+                    let result = manager.pool_window(&window_id);
+                    info!("Adding window {} to pool: {:?}", window_id, result.is_ok());
+                    result.is_ok()
                 } else {
+                    info!("Not pooling window {} because we're at max capacity", window_id);
                     false
                 }
             };
@@ -751,6 +765,21 @@ pub fn get_notification_history(
     let manager = state.lock().unwrap();
     let history = manager.get_notification_history().to_vec();
     Ok(history)
+}
+
+// Command to get window pool status
+#[tauri::command]
+pub fn get_window_pool_status(
+    state: tauri::State<'_, NotificationManagerState>,
+) -> Result<serde_json::Value, String> {
+    let manager = state.lock().unwrap();
+    let status = serde_json::json!({
+        "pooled_windows": manager.window_pool.len(),
+        "total_windows": manager.windows.len(),
+        "max_windows": MAX_WINDOWS,
+        "window_ids": manager.window_pool.clone(),
+    });
+    Ok(status)
 }
 
 
@@ -945,7 +974,8 @@ pub fn run() {
             get_window_size,
             get_scale_factor,
             assign_notification,
-            get_notification_history
+            get_notification_history,
+            get_window_pool_status
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
