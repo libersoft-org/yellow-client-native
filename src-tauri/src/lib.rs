@@ -556,7 +556,7 @@ fn assign_next_notification_to_window(
 
 // Emit notification data to a specific window
 fn emit_notification_data_event(
-    app: &AppHandle,
+    _app: &AppHandle,
     window_id: &str,
     state: NotificationManagerState,
 ) -> Result<(), String> {

@@ -109,7 +109,7 @@
     
     function closeNotification() {
         // Call the Rust command to close this notification
-        invoke('close_notification', { windowId })
+        invoke('close_notification', { window_id: windowId })
             .catch(err => {
                 debugLog('Error closing notification:', err);
             });

@@ -1,10 +1,10 @@
 use crate::{
     NotificationManagerState, Notification, 
-    create_notification_window, assign_next_notification_to_window,
+    assign_next_notification_to_window,
     emit_notification_data_event, process_notification_queue
 };
-use tauri::{AppHandle, Window, State, Manager};
-use log::{info, error};
+use tauri::{AppHandle, Window, State};
+use log::info;
 use serde_json::json;
 
 // Command to create a new notification
