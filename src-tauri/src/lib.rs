@@ -61,17 +61,17 @@ impl Default for NotificationConfig {
 #[derive(Clone)]
 pub struct NotificationManager {
     // Windows available for displaying notifications
-    windows: HashMap<String, WebviewWindow>, // window_id -> WebviewWindow
+    windows: HashMap<String, WebviewWindow>, // windowId -> WebviewWindow
     // Notifications waiting to be displayed
     notification_queue: Vec<Notification>,
     // Mapping of which notification is assigned to which window
-    window_assignments: HashMap<String, String>, // window_id -> notification_id
+    window_assignments: HashMap<String, String>, // windowId -> notification_id
     // Positions of windows
-    positions: HashMap<String, NotificationPosition>, // window_id -> position
+    positions: HashMap<String, NotificationPosition>, // windowId -> position
     // Window pool - windows that are hidden but ready to be reused
     // Instead of destroying windows when notifications are closed,
     // we hide them and keep them in this pool for future reuse
-    window_pool: Vec<String>, // window_ids of pooled windows
+    window_pool: Vec<String>, // windowIds of pooled windows
     // History of displayed notifications
     notification_history: Vec<Notification>,
     // Configuration
@@ -142,8 +142,8 @@ impl NotificationManager {
         }
         
         // Clean up any stale window pool entries
-        self.window_pool.retain(|window_id| {
-            self.windows.contains_key(window_id)
+        self.window_pool.retain(|windowId| {
+            self.windows.contains_key(windowId)
         });
         
         // Remove any notifications that are too old (over 24 hours)
@@ -166,7 +166,7 @@ impl NotificationManager {
 
     // Register a window that can display notifications
     pub fn register_window(&mut self, window: WebviewWindow, x: u32, y: u32, actual_height: Option<u32>) -> String {
-        let window_id = window.label().to_string();
+        let windowId = window.label().to_string();
         let height = actual_height.unwrap_or(self.config.notification_height);
         
         // Create position info
@@ -179,28 +179,28 @@ impl NotificationManager {
         self.next_position_id += 1;
         
         // Store window and position
-        self.windows.insert(window_id.clone(), window);
-        self.positions.insert(window_id.clone(), position);
+        self.windows.insert(windowId.clone(), window);
+        self.positions.insert(windowId.clone(), position);
         
-        window_id
+        windowId
     }
     
     // Get a window from the pool or create a new one
     // This is the main entry point for window recycling
     pub fn get_or_create_window(&mut self, app: &AppHandle) -> Result<String, String> {
         // First check if we have a window in the pool
-        if let Some(window_id) = self.window_pool.pop() {
-            info!("Reusing window from pool: {}", window_id);
+        if let Some(windowId) = self.window_pool.pop() {
+            info!("Reusing window from pool: {}", windowId);
             
             // Make sure the window is visible
-            if let Some(window) = self.windows.get(&window_id) {
+            if let Some(window) = self.windows.get(&windowId) {
                 // Show the hidden window
                 window.show().map_err(|e| format!("Failed to show pooled window: {}", e))?;
                 
                 // Reset window state if needed
                 window.set_focus().ok(); // Ignore errors
                 
-                return Ok(window_id);
+                return Ok(windowId);
             }
         }
         
@@ -211,27 +211,27 @@ impl NotificationManager {
     // Add a window to the pool instead of destroying it
     // This improves performance by reusing existing windows rather than
     // creating new ones for each notification
-    pub fn pool_window(&mut self, window_id: &str) -> Result<(), String> {
+    pub fn pool_window(&mut self, windowId: &str) -> Result<(), String> {
         // Check if the window exists
-        if let Some(window) = self.windows.get(window_id) {
+        if let Some(window) = self.windows.get(windowId) {
             // Hide the window instead of closing it
             window.hide().map_err(|e| format!("Failed to hide window: {}", e))?;
             
             // Add to pool if not already there
-            if !self.window_pool.contains(&window_id.to_string()) {
-                self.window_pool.push(window_id.to_string());
-                info!("Added window to pool: {}", window_id);
+            if !self.window_pool.contains(&windowId.to_string()) {
+                self.window_pool.push(windowId.to_string());
+                info!("Added window to pool: {}", windowId);
             }
             
             Ok(())
         } else {
-            Err(format!("Window not found: {}", window_id))
+            Err(format!("Window not found: {}", windowId))
         }
     }
 
     // Remove a notification from a window
-    pub fn remove_notification(&mut self, window_id: &str) -> Option<Notification> {
-        if let Some(notification_id) = self.window_assignments.remove(window_id) {
+    pub fn remove_notification(&mut self, windowId: &str) -> Option<Notification> {
+        if let Some(notification_id) = self.window_assignments.remove(windowId) {
             // Find and remove the notification from the queue if it's there
             if let Some(pos) = self.notification_queue.iter().position(|n| n.id == notification_id) {
                 let notification = self.notification_queue.remove(pos);
@@ -313,8 +313,8 @@ impl NotificationManager {
     }
 
     // Get notification assigned to a window
-    pub fn get_notification_for_window(&self, window_id: &str) -> Option<&Notification> {
-        if let Some(notification_id) = self.window_assignments.get(window_id) {
+    pub fn get_notification_for_window(&self, windowId: &str) -> Option<&Notification> {
+        if let Some(notification_id) = self.window_assignments.get(windowId) {
             self.notification_queue.iter().find(|n| &n.id == notification_id)
         } else {
             None
@@ -322,14 +322,14 @@ impl NotificationManager {
     }
 
     // Get window by ID
-    pub fn get_window(&self, window_id: &str) -> Option<&WebviewWindow> {
-        self.windows.get(window_id)
+    pub fn get_window(&self, windowId: &str) -> Option<&WebviewWindow> {
+        self.windows.get(windowId)
     }
 
     // Assign a notification to a window
-    pub fn assign_notification_to_window(&mut self, window_id: &str, notification_id: &str) -> bool {
+    pub fn assign_notification_to_window(&mut self, windowId: &str, notification_id: &str) -> bool {
         // Check if window exists
-        if !self.windows.contains_key(window_id) {
+        if !self.windows.contains_key(windowId) {
             return false;
         }
         
@@ -339,12 +339,12 @@ impl NotificationManager {
         }
         
         // Assign notification to window
-        self.window_assignments.insert(window_id.to_string(), notification_id.to_string());
+        self.window_assignments.insert(windowId.to_string(), notification_id.to_string());
         
         // Update notification's window_label
         for notification in &mut self.notification_queue {
             if notification.id == notification_id {
-                notification.window_label = Some(window_id.to_string());
+                notification.window_label = Some(windowId.to_string());
                 break;
             }
         }
@@ -366,9 +366,9 @@ impl NotificationManager {
 
     // Find an available window that doesn't have a notification assigned
     pub fn find_available_window(&self) -> Option<String> {
-        for window_id in self.windows.keys() {
-            if !self.window_assignments.contains_key(window_id) {
-                return Some(window_id.clone());
+        for windowId in self.windows.keys() {
+            if !self.window_assignments.contains_key(windowId) {
+                return Some(windowId.clone());
             }
         }
         None
@@ -413,9 +413,9 @@ fn process_notification_queue(
             } else if manager.has_available_window_slots() {
                 // Create a new window
                 Some(("create", String::new()))
-            } else if let Some(window_id) = manager.find_available_window() {
+            } else if let Some(windowId) = manager.find_available_window() {
                 // Use an existing window
-                Some(("assign", window_id))
+                Some(("assign", windowId))
             } else {
                 None
             }
@@ -426,17 +426,17 @@ fn process_notification_queue(
     
     // Take action based on what we determined
     match action {
-        Some(("pool", window_id)) => {
+        Some(("pool", windowId)) => {
             // Use a window from the pool
-            assign_next_notification_to_window(app, &window_id, state.clone())?;
+            assign_next_notification_to_window(app, &windowId, state.clone())?;
         },
         Some(("create", _)) => {
             // Create a new window
             create_notification_window(app, state.clone())?;
         },
-        Some(("assign", window_id)) => {
+        Some(("assign", windowId)) => {
             // Assign to existing window
-            assign_next_notification_to_window(app, &window_id, state.clone())?;
+            assign_next_notification_to_window(app, &windowId, state.clone())?;
         },
         _ => {}
     }
@@ -450,7 +450,7 @@ fn create_notification_window(
     state: NotificationManagerState,
 ) -> Result<String, String> {
     // Generate a unique window ID
-    let window_id = format!("notification-window-{}", Uuid::new_v4());
+    let windowId = format!("notification-window-{}", Uuid::new_v4());
     
     // Get primary monitor dimensions
     let monitor = app.primary_monitor()
@@ -489,7 +489,7 @@ fn create_notification_window(
     // Create a new window for the notification
     let notification_window = tauri::WebviewWindowBuilder::new(
         app,
-        window_id.clone(),
+        windowId.clone(),
         tauri::WebviewUrl::App("/notification".into())
     )
         .title("Notification")
@@ -519,18 +519,18 @@ fn create_notification_window(
         manager.register_window(notification_window, x, y, actual_height);
     }
 
-    info!("Created notification window: {}", window_id);
+    info!("Created notification window: {}", windowId);
     
     // The window will call notification_window_ready when it's ready
     // and we'll assign a notification to it then
     
-    Ok(window_id)
+    Ok(windowId)
 }
 
 // Assign the next notification in queue to a window
 fn assign_next_notification_to_window(
     app: &AppHandle,
-    window_id: &str,
+    windowId: &str,
     state: NotificationManagerState,
 ) -> Result<(), String> {
     let notification_id = {
@@ -543,13 +543,13 @@ fn assign_next_notification_to_window(
     // Assign notification to window
     {
         let mut manager = state.lock().unwrap();
-        if !manager.assign_notification_to_window(window_id, &notification_id) {
+        if !manager.assign_notification_to_window(windowId, &notification_id) {
             return Err("Failed to assign notification to window".to_string());
         }
     }
     
     // Emit notification data to the window
-    emit_notification_data_event(app, window_id, state.clone())?;
+    emit_notification_data_event(app, windowId, state.clone())?;
     
     Ok(())
 }
@@ -557,15 +557,15 @@ fn assign_next_notification_to_window(
 // Emit notification data to a specific window
 fn emit_notification_data_event(
     _app: &AppHandle,
-    window_id: &str,
+    windowId: &str,
     state: NotificationManagerState,
 ) -> Result<(), String> {
     let notification = {
         let mut manager = state.lock().unwrap();
         
         // Get the notification assigned to this window
-        let notification = manager.get_notification_for_window(window_id)
-            .ok_or_else(|| format!("No notification assigned to window {}", window_id))?
+        let notification = manager.get_notification_for_window(windowId)
+            .ok_or_else(|| format!("No notification assigned to window {}", windowId))?
             .clone();
         
         // Set timestamp if not already set
@@ -579,16 +579,16 @@ fn emit_notification_data_event(
     // Get the window
     let window = {
         let manager = state.lock().unwrap();
-        manager.get_window(window_id)
-            .ok_or_else(|| format!("Window {} not found", window_id))?
+        manager.get_window(windowId)
+            .ok_or_else(|| format!("Window {} not found", windowId))?
             .clone()
     };
     
     // Emit the notification data to the window
-    window.emit_to(window_id, "notification-data", &notification)
+    window.emit_to(windowId, "notification-data", &notification)
         .map_err(|e| format!("Failed to emit notification data: {}", e))?;
     
-    info!("Emitted notification data to window {}: {:?}", window_id, notification.id);
+    info!("Emitted notification data to window {}: {:?}", windowId, notification.id);
     
     Ok(())
 }

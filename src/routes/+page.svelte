@@ -113,12 +113,13 @@
 
 <main class="container">
 
+  <h3>App</h3>
   <form class="row" onsubmit={setscale}>
     <button type="submit">setscale</button>
   </form>
 
   <div class="notification-section">
-    <h2>Notifications</h2>
+    <h3>Notifications</h3>
     <div class="notification-form">
       <div class="form-group">
         <label for="notification-title">Title:</label>
@@ -207,11 +208,11 @@
             </div>
           </div>
           
-          {#if windowPoolStatus.window_ids && windowPoolStatus.window_ids.length > 0}
+          {#if windowPoolStatus.windowIds && windowPoolStatus.windowIds.length > 0}
             <div class="pool-window-list">
               <h4>Pooled Window IDs:</h4>
               <ul>
-                {#each windowPoolStatus.window_ids as windowId}
+                {#each windowPoolStatus.windowIds as windowId}
                   <li>{windowId}</li>
                 {/each}
               </ul>
@@ -239,16 +240,12 @@
 
 <style>
 .notification-section {
-  margin-top: 2rem;
-  padding: 1rem;
-  border-top: 1px solid #ddd;
   text-align: left;
 }
 
 .notification-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
   max-width: 500px;
   margin: 0 auto;
 }
@@ -256,14 +253,12 @@
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
 }
 
 textarea {
   min-height: 80px;
   border-radius: 8px;
   border: 1px solid transparent;
-  padding: 0.6em 1.2em;
   font-size: 1em;
   font-family: inherit;
   background-color: #ffffff;
@@ -273,7 +268,6 @@ textarea {
 }
 
 .notification-clicks, .notification-history, .window-pool-status {
-  margin-top: 1.5rem;
   padding: 1rem;
   background-color: #f5f5f5;
   border-radius: 8px;
@@ -296,15 +290,12 @@ textarea {
 .notification-history li {
   background-color: white;
   border-radius: 4px;
-  padding: 10px;
-  margin-bottom: 10px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .notification-history small {
   color: #666;
   display: block;
-  margin-top: 5px;
 }
 
 .pool-stats {
@@ -316,7 +307,6 @@ textarea {
 
 .stat-item {
   background-color: white;
-  padding: 0.5rem 1rem;
   border-radius: 4px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   display: flex;
@@ -340,7 +330,6 @@ textarea {
 }
 
 .pool-window-list h4 {
-  margin-bottom: 0.5rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -360,8 +349,8 @@ textarea {
 
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 10px;
+  line-height: 12px;
   font-weight: 400;
 
   color: #0f0f0f;
@@ -376,7 +365,6 @@ textarea {
 
 .container {
   margin: 0;
-  padding-top: 10vh;
   display: flex;
   flex-direction: column;
   justify-content: center;

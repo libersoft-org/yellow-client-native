@@ -48,20 +48,20 @@ pub async fn create_notification(
 #[tauri::command]
 pub fn assign_notification(
     app: AppHandle,
-    window_id: String,
+    windowId: String,
     notification_id: String,
     state: State<'_, NotificationManagerState>,
 ) -> Result<(), String> {
     // Assign notification to window
     {
         let mut manager = state.lock().unwrap();
-        if !manager.assign_notification_to_window(&window_id, &notification_id) {
-            return Err(format!("Failed to assign notification {} to window {}", notification_id, window_id));
+        if !manager.assign_notification_to_window(&windowId, &notification_id) {
+            return Err(format!("Failed to assign notification {} to window {}", notification_id, windowId));
         }
     }
     
     // Emit notification data to the window
-    emit_notification_data_event(&app, &window_id, state.inner().clone())?;
+    emit_notification_data_event(&app, &windowId, state.inner().clone())?;
     
     Ok(())
 }
@@ -72,25 +72,25 @@ pub fn notification_window_ready(
     window: Window,
     state: State<'_, NotificationManagerState>,
 ) -> Result<String, String> {
-    let window_id = window.label().to_string();
-    info!("Notification window ready: {}", window_id);
+    let windowId = window.label().to_string();
+    info!("Notification window ready: {}", windowId);
 
     // Check if there's already a notification assigned to this window
     let has_notification = {
         let manager = state.lock().unwrap();
-        manager.get_notification_for_window(&window_id).is_some()
+        manager.get_notification_for_window(&windowId).is_some()
     };
 
     if has_notification {
         // If there's already a notification assigned, emit it
-        emit_notification_data_event(&app, &window_id, state.inner().clone())?;
+        emit_notification_data_event(&app, &windowId, state.inner().clone())?;
     } else {
         // Otherwise, try to assign the next notification in queue
-        assign_next_notification_to_window(&app, &window_id, state.inner().clone())?;
+        assign_next_notification_to_window(&app, &windowId, state.inner().clone())?;
     }
 
     // Return the window ID to the frontend
-    Ok(window_id)
+    Ok(windowId)
 }
 
 // Command to get window size
@@ -121,19 +121,19 @@ pub fn get_scale_factor(window: Window) -> Result<f64, String> {
 #[tauri::command]
 pub fn close_notification(
     app: AppHandle,
-    window_id: String,
+    windowId: String,
     state: State<'_, NotificationManagerState>,
 ) -> Result<(), String> {
-    info!("Closing notification in window: {}", window_id);
+    info!("Closing notification in window: {}", windowId);
     
     // Remove notification from window
     let removed = {
         let mut manager = state.lock().unwrap();
-        manager.remove_notification(&window_id)
+        manager.remove_notification(&windowId)
     };
     
     if removed.is_some() {
-        info!("Notification removed from window: {}", window_id);
+        info!("Notification removed from window: {}", windowId);
         
         // Check if there are more notifications in the queue
         let has_more_notifications = {
@@ -143,7 +143,7 @@ pub fn close_notification(
         
         if has_more_notifications {
             // Assign next notification to this window
-            assign_next_notification_to_window(&app, &window_id, state.inner().clone())?;
+            assign_next_notification_to_window(&app, &windowId, state.inner().clone())?;
         } else {
             // No more notifications to display, add window to pool instead of destroying it
             let should_pool = {
@@ -151,11 +151,11 @@ pub fn close_notification(
                 // Only pool if we're under the max windows limit
                 if manager.windows.len() <= crate::MAX_WINDOWS {
                     // Add to window pool for future reuse
-                    let result = manager.pool_window(&window_id);
-                    info!("Adding window {} to pool: {:?}", window_id, result.is_ok());
+                    let result = manager.pool_window(&windowId);
+                    info!("Adding window {} to pool: {:?}", windowId, result.is_ok());
                     result.is_ok()
                 } else {
-                    info!("Not pooling window {} because we're at max capacity", window_id);
+                    info!("Not pooling window {} because we're at max capacity", windowId);
                     false
                 }
             };
@@ -167,7 +167,7 @@ pub fn close_notification(
             }
         }
     } else {
-        info!("No notification found for window: {}", window_id);
+        info!("No notification found for window: {}", windowId);
     }
     
     Ok(())
@@ -193,7 +193,7 @@ pub fn get_window_pool_status(
         "pooled_windows": manager.window_pool.len(),
         "total_windows": manager.windows.len(),
         "max_windows": crate::MAX_WINDOWS,
-        "window_ids": manager.window_pool.clone(),
+        "windowIds": manager.window_pool.clone(),
     });
     Ok(status)
 }

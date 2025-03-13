@@ -77,7 +77,7 @@
         // Emit notification clicked event
         window.__TAURI__.event.emit('notification-clicked', {
             id: notificationId,
-            window_id: windowId,
+            windowId: windowId,
             timestamp: new Date().toISOString()
         });
         
@@ -99,7 +99,7 @@
         // Emit user closed notification event
         window.__TAURI__.event.emit('user_closed_notification', {
             id: notificationId,
-            window_id: windowId,
+            windowId: windowId,
             timestamp: new Date().toISOString()
         });
         
@@ -110,14 +110,14 @@
     function closeNotification() {
         // Call the Rust command to close this notification
         if (!windowId) {
-            debugLog('Cannot close notification: window_id is undefined');
+            debugLog('Cannot close notification: windowId is undefined');
             return;
         }
         
-        debugLog('Closing notification with window_id:', windowId);
+        debugLog('Closing notification with windowId:', windowId);
         
         // Create the parameters object with the correct key
-        const params = { window_id: windowId };
+        const params = { windowId: windowId };
         debugLog('Params for close_notification:', params);
         
         invoke('close_notification', params)
@@ -134,7 +134,7 @@
                     
                     if (currentWindowId && currentWindowId !== windowId) {
                         debugLog('Trying with current window ID:', currentWindowId);
-                        invoke('close_notification', { window_id: currentWindowId })
+                        invoke('close_notification', { windowId: currentWindowId })
                             .then(() => {
                                 debugLog('Successfully closed notification with current window ID');
                             })
@@ -173,7 +173,7 @@
                         // Emit an event that the notification is closing due to timeout
                         window.__TAURI__.event.emit('notification-timeout', {
                             id: notificationId,
-                            window_id: windowId,
+                            windowId: windowId,
                             action: 'timeout',
                             timestamp: new Date().toISOString()
                         });
@@ -197,7 +197,7 @@
             debugLog('Error getting window ID:', error);
             // Fallback to getting window ID from URL hash or query params
             const urlParams = new URLSearchParams(window.location.search);
-            windowId = urlParams.get('window_id') || window.location.hash.substring(1);
+            windowId = urlParams.get('windowId') || window.location.hash.substring(1);
             debugLog('Fallback window ID:', windowId);
         }
         
@@ -216,7 +216,7 @@
         
         // Update size debug info immediately and periodically
         updateSizeDebug();
-        const sizeInterval = setInterval(updateSizeDebug, 10000);
+        //const sizeInterval = setInterval(updateSizeDebug, 10000);
         
         // Listen for notification data events
         await listen('notification-data', (event) => {
@@ -250,7 +250,7 @@
                 // Send acknowledgment
                 window.__TAURI__.event.emit('notification-data-received', {
                     id: notificationId,
-                    window_id: windowId,
+                    windowId: windowId,
                     status: 'success'
                 });
             } catch (error) {
@@ -259,7 +259,7 @@
                 
                 // Send error acknowledgment
                 window.__TAURI__.event.emit('notification-data-received', {
-                    window_id: windowId,
+                    windowId: windowId,
                     status: 'error',
                     error: error.toString()
                 });
