@@ -3718,6 +3718,7 @@ dependencies = [
  "tauri-plugin-opener",
  "uuid",
  "webkit2gtk",
+ "window-vibrancy",
 ]
 
 [[package]]
