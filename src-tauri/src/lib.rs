@@ -1,30 +1,17 @@
 #![feature(str_as_str)]
 
 mod commands;
-mod notification;
+mod notifications;
 
 use std::sync::Arc;
 use std::sync::Mutex;
-use log::{LevelFilter, info, error};
+use log::{LevelFilter, debug, info, error};
 use serde_json::Value;
 use tauri::{AppHandle, Event, Listener, Manager, Emitter};
-use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::{PhysicalPosition, WebviewWindow};
 use uuid::Uuid;
 
-const MAX_WINDOWS: usize = 4;
-// Notification data structure
-#[derive(Clone, serde::Serialize, serde::Deserialize)]
-pub struct Notification {
-    pub id: String,
-    pub title: String,
-    pub message: String,
-    pub duration: u64, // in seconds
-    pub window_label: Option<String>, // Window label for tracking
-    pub timestamp: Option<u64>, // Timestamp when notification was first displayed
-    pub notification_type: String, // Type of notification (e.g., 'new_message')
-}
 
 // Position information for a notification
 #[derive(Clone, Copy)]
@@ -679,11 +666,9 @@ pub fn run() {
     setup_logging();
     
     info!("Starting application");
-    let notification_manager = Arc::new(Mutex::new(NotificationManager::new()));
-    
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .manage(notification_manager)
         .setup(|app| {
             let app_handle = app.handle().clone();
             
@@ -693,107 +678,10 @@ pub fn run() {
                 let payload = event.payload();
                 info!("my-log: {}", payload);
             });
-
-
-            // Listen for notification-data-received acknowledgments
-            let ack_handle = app_handle.clone();
-            ack_handle.listen("notification-data-received", move |event| {
-                if let Some(json) = event.parse_payload() {
-                    if let Some(id) = json.get("id").and_then(|id| id.as_str()) {
-                        let status = json.get("status").and_then(|s| s.as_str()).unwrap_or("unknown");
-                        info!("Notification data received acknowledgment: id={}, status={}", id, status);
-                        
-                        if status != "success" {
-                            if let Some(error) = json.get("error").and_then(|e| e.as_str()) {
-                                error!("Error in notification {}: {}", id, error);
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // Listen for notification-clicked and notification-timeout events
-            let _click_handle = app_handle.clone();
-            let _click_app_handle = app_handle.clone(); // Clone for use inside closure
-            
-            // Helper closure to handle notification close events
-            let _handle_notification_close = |event: Event, action: &str, app_handle: &AppHandle| {
-                info!("Received notification-{} event", action);
-                info!("Notification {} payload: {}", action, event.payload());
-                
-                // Try to get the window label from the event
-                if let Some(window_label) = event.window_label() {
-                    info!("Notification {} from window: {}", action, window_label);
-                    info!("Action: {}", action);
-                    
-                    // Get the window by label and close it
-                    if let Some(window) = app_handle.get_webview_window(&window_label) {
-                        if let Err(e) = window.close() {
-                            error!("Failed to close notification window: {}", e);
-                        } else {
-                            info!("Successfully closed notification window: {}", window_label);
-                            
-                            // Remove from notification manager
-                            let state = app_handle.state::<NotificationManagerState>();
-                            let mut manager = state.lock().unwrap();
-                            if manager.remove_notification(&window_label).is_some() {
-                                manager.reposition_notifications(app_handle);
-                            }
-                        }
-                    } else {
-                        error!("Could not find window with label: {}", window_label);
-                    }
-                } else {
-                    // Fallback to the old method
-                    let mut notification_id = None;
-                    
-                    if let Some(json) = event.parse_payload() {
-                        notification_id = json.get("id").and_then(|id| id.as_str()).map(String::from);
-                    }
-                    
-                    // Fallback to event.notification_id() if not found in payload
-                    if notification_id.is_none() {
-                        notification_id = event.notification_id();
-                    }
-                    
-                    if let Some(id) = &notification_id {
-                        info!("Notification ID from payload: {}", id);
-                        info!("Action: {}", action);
-                        
-                        // Close the notification window
-                        if let Some(window) = app_handle.get_webview_window(id) {
-                            if let Err(e) = window.close() {
-                                error!("Failed to close notification window: {}", e);
-                            } else {
-                                info!("Successfully closed notification window: {}", id);
-                                
-                                // Remove from notification manager
-                                let state = app_handle.state::<NotificationManagerState>();
-                                let mut manager = state.lock().unwrap();
-                                if manager.remove_notification(id).is_some() {
-                                    manager.reposition_notifications(app_handle);
-                                }
-                            }
-                        } else {
-                            error!("No notification window found for ID: {}", id);
-                        }
-                    } else {
-                        error!("Could not determine notification ID from event");
-                    }
-                }
-            };
-
-            Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            commands::create_notification,
-            commands::close_notification,
-            commands::notification_window_ready,
             commands::get_window_size,
             commands::get_scale_factor,
-            commands::assign_notification,
-            commands::get_notification_history,
-            commands::get_window_pool_status
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
