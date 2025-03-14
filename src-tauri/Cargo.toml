@@ -29,4 +29,5 @@ uuid = { version = "1.4", features = ["v4"] }
 log = "0.4"
 env_logger = "0.10"
 window-vibrancy = "0.6.0"
+tauri-plugin-store = "2"
 

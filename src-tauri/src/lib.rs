@@ -3,17 +3,17 @@
 mod commands;
 mod notifications;
 
+use log::{error, info, LevelFilter};
+use notifications::create_notifications_window;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::Mutex;
-use log::{LevelFilter, info, error};
-use serde_json::Value;
-use tauri::{AppHandle, Event, Listener, Emitter};
 use std::time::{SystemTime, UNIX_EPOCH};
+use tauri::{AppHandle, Emitter, Event, Listener};
 use tauri::{PhysicalPosition, WebviewWindow};
 use uuid::Uuid;
-use std::collections::HashMap;
-use notifications::create_notifications_window;
-use serde::{Serialize, Deserialize};
 
 // Configuration for notification system
 #[derive(Clone, Copy)]
@@ -24,9 +24,6 @@ pub struct NotificationConfig {
     pub notification_height: u32,
     pub margin: u32,
 }
-
-
-
 
 // Initialize logging
 fn setup_logging() {
@@ -42,26 +39,27 @@ fn setup_logging() {
 pub fn run() {
     // Set up logging
     setup_logging();
-    
+
     info!("Starting application");
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let app_handle = app.handle().clone();
-            
+
             // Set up event listener for notification logs
             let log_handle = app_handle.clone();
             log_handle.listen("my-log", move |event| {
                 let payload = event.payload();
                 info!("my-log: {}", payload);
             });
-            
+
             // Create the notifications window
             if let Err(e) = create_notifications_window(&app.handle()) {
                 error!("Failed to create notifications window: {}", e);
             }
-            
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -71,5 +69,3 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-
-
