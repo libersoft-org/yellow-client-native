@@ -11,6 +11,8 @@ use tauri::{AppHandle, Event, Listener, Manager, Emitter};
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::{PhysicalPosition, WebviewWindow};
 use uuid::Uuid;
+use std::collections::HashMap;
+use notifications::create_notifications_window;
 
 
 // Position information for a notification
@@ -678,6 +680,13 @@ pub fn run() {
                 let payload = event.payload();
                 info!("my-log: {}", payload);
             });
+            
+            // Create the notifications window
+            if let Err(e) = create_notifications_window(&app.handle()) {
+                error!("Failed to create notifications window: {}", e);
+            }
+            
+            Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             commands::get_window_size,

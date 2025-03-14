@@ -17,7 +17,8 @@
         "width": 600,
         "height": 800,
         "zoomHotkeysEnabled": true,
-        "center": true
+        "center": true,
+        "label": "main"
       }
     ],
     "security": {
