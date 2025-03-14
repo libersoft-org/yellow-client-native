@@ -5,14 +5,37 @@ mod notifications;
 
 use std::sync::Arc;
 use std::sync::Mutex;
-use log::{LevelFilter, debug, info, error};
+use log::{LevelFilter, info, error};
 use serde_json::Value;
-use tauri::{AppHandle, Event, Listener, Manager, Emitter};
+use tauri::{AppHandle, Event, Listener, Emitter};
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::{PhysicalPosition, WebviewWindow};
 use uuid::Uuid;
 use std::collections::HashMap;
 use notifications::create_notifications_window;
+use serde::{Serialize, Deserialize};
+
+// Maximum number of notification windows
+const MAX_WINDOWS: usize = 5;
+
+// Notification data structure
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Notification {
+    pub id: String,
+    pub title: String,
+    pub message: String,
+    pub icon: Option<String>,
+    pub timestamp: Option<u64>,
+    pub window_label: Option<String>,
+    pub actions: Option<Vec<NotificationAction>>,
+}
+
+// Notification action
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NotificationAction {
+    pub id: String,
+    pub label: String,
+}
 
 
 // Position information for a notification
@@ -415,17 +438,22 @@ fn process_notification_queue(
     
     // Take action based on what we determined
     match action {
-        Some(("pool", windowId)) => {
-            // Use a window from the pool
-            assign_next_notification_to_window(app, &windowId, state.clone())?;
-        },
-        Some(("create", _)) => {
-            // Create a new window
-            create_notification_window(app, state.clone())?;
-        },
-        Some(("assign", windowId)) => {
-            // Assign to existing window
-            assign_next_notification_to_window(app, &windowId, state.clone())?;
+        Some((action_type, window_id)) => {
+            match action_type {
+                "pool" => {
+                    // Use a window from the pool
+                    assign_next_notification_to_window(app, &window_id, state.clone())?;
+                },
+                "create" => {
+                    // Create a new window
+                    create_notification_window(app, state.clone())?;
+                },
+                "assign" => {
+                    // Assign to existing window
+                    assign_next_notification_to_window(app, &window_id, state.clone())?;
+                },
+                _ => {}
+            }
         },
         _ => {}
     }

@@ -19,6 +19,17 @@
         "zoomHotkeysEnabled": true,
         "center": true,
         "label": "main"
+      },
+      {
+        "title": "Notifications",
+        "width": 400,
+        "height": 600,
+        "decorations": false,
+        "skipTaskbar": true,
+        "alwaysOnTop": true,
+        "transparent": true,
+        "label": "notifications",
+        "url": "/notification"
       }
     ],
     "security": {

@@ -5,7 +5,7 @@ pub fn create_notifications_window(app: &AppHandle) -> Result<(), String> {
     info!("Creating notifications window");
     
     // Create a new window for notifications
-    let notifications_window = WebviewWindowBuilder::new(
+    let _notifications_window = WebviewWindowBuilder::new(
         app,
         "notifications",
         WebviewUrl::App("/notification".into())
