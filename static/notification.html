@@ -18,12 +18,6 @@
             width: 100vw;
             display: flex;
             flex-direction: column;
-            animation: fade-in 0.3s ease-out;
-        }
-
-        @keyframes fade-in {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .notification-container {
@@ -122,11 +116,11 @@
         aaaaaaa
     </div>
     <div class="notification-header">
-        <h3 class="notification-title" id="notification-title">Notification Title</h3>
+        <h3 class="notification-title" id="notification-title"></h3>
         <button class="close-button" id="close-button">×</button>
     </div>
     <div class="notification-message" id="notification-message">
-        Notification message goes here.
+---
     </div>
 </div>
 <div class="progress-bar">
@@ -188,7 +182,7 @@
             } catch (e) {
                 console.error('Failed to send initial log:', e);
             }
-        }, 100);
+        }, 0);
 
         // Log when the script starts
         debugLog('Notification window initialized, waiting for events...');
@@ -233,7 +227,7 @@
                         document.body.style.border = '2px solid green';
                         setTimeout(() => {
                             document.body.style.border = '1px solid rgba(0, 0, 0, 0.1)';
-                        }, 1000);
+                        }, 0);
 
                         debugLog('Notification data applied successfully:', JSON.stringify(notification));
                     } catch (error) {
@@ -259,17 +253,15 @@
             // Notify backend that notification window is ready
             window.__TAURI__.event.emit('notification-ready');
             debugLog('notification-ready event emitted');
-        }, 300);
+        }, 0);
 
         // Log that we've set up the listener
         debugLog('Event listener for notification-data has been registered');
 
         function closeWithAnimation() {
-            document.body.style.animation = 'fade-out 0.2s ease-out forwards';
-
             setTimeout(() => {
                 invoke('close_notification', {notification_id: notificationId});
-            }, 200);
+            }, 0);
         }
 
         // Handle click on notification
