@@ -2,12 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$/.." vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/../messages2" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/../yellow-admin" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/../yellow-client" vcs="Git" />
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/../yellow-server" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/../yellow-server-common" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/../yellow-server-module-messages" vcs="Git" />
   </component>
 </project>

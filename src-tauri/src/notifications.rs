@@ -19,8 +19,8 @@ pub fn create_notifications_window(app: &AppHandle) -> Result<(), String> {
     .build()
     .map_err(|e| format!("Failed to create notifications window: {}", e))?;
     
-    // Make it impossible to close the window through normal means
-    // We'll handle this in our JS code
+    // todo Make it impossible to close the window through normal means
+
     
     info!("Notifications window created successfully");
     
