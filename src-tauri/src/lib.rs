@@ -5,25 +5,7 @@ mod notifications;
 
 use log::{error, info, LevelFilter};
 use notifications::create_notifications_window;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use std::collections::HashMap;
-use std::sync::Arc;
-use std::sync::Mutex;
-use std::time::{SystemTime, UNIX_EPOCH};
-use tauri::{AppHandle, Emitter, Event, Listener};
-use tauri::{PhysicalPosition, WebviewWindow};
-use uuid::Uuid;
-
-// Configuration for notification system
-#[derive(Clone, Copy)]
-pub struct NotificationConfig {
-    pub max_history_size: usize,
-    pub cleanup_interval_ms: u64,
-    pub notification_width: u32,
-    pub notification_height: u32,
-    pub margin: u32,
-}
+use tauri::Listener;
 
 // Initialize logging
 fn setup_logging() {
@@ -65,6 +47,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::get_window_size,
             commands::get_scale_factor,
+            commands::log
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,6 +1,5 @@
 use log::info;
-use serde_json::json;
-use tauri::{AppHandle, State, Window};
+use tauri::Window;
 
 // Command to get window size
 #[tauri::command]
@@ -29,4 +28,9 @@ pub fn get_scale_factor(window: Window) -> Result<f64, String> {
         }
         Err(e) => Err(format!("Failed to get scale factor: {}", e)),
     }
+}
+
+#[tauri::command]
+pub fn log(message: String) {
+    info!("{}", message);
 }

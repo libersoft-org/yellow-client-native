@@ -1,5 +1,5 @@
 use log::info;
-use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::{AppHandle, WebviewUrl, WebviewWindowBuilder};
 
 pub fn create_notifications_window(app: &AppHandle) -> Result<(), String> {
     info!("Creating notifications window");
