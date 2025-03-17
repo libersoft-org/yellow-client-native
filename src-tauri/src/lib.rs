@@ -37,11 +37,6 @@ pub fn run() {
                 info!("my-log: {}", payload);
             });
 
-            // Create the notifications window
-            if let Err(e) = create_notifications_window(app.handle().clone()) {
-                error!("Failed to create notifications window: {}", e);
-            }
-
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

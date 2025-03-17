@@ -3,7 +3,6 @@ use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
 #[tauri::command]
 pub fn create_notifications_window(app: tauri::AppHandle) -> Result<(), String> {
-
     info!("create_notifications_window...");
 
     let app2 = app.clone();
@@ -18,7 +17,7 @@ pub fn create_notifications_window(app: tauri::AppHandle) -> Result<(), String> 
     let _notifications_window = WebviewWindowBuilder::new(
         &app,
         "notifications",
-        WebviewUrl::App("/notification".into()),
+        WebviewUrl::App("/notifications".into()),
     )
     .title("Notifications")
     .inner_size(400.0, 600.0)
