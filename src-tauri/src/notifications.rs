@@ -25,3 +25,18 @@ pub fn create_notifications_window(app: &AppHandle) -> Result<(), String> {
 
     Ok(())
 }
+
+#[tauri::command]
+pub fn close_notifications_window(app: tauri::AppHandle) -> Result<(), String> {
+    info!("Closing notifications window");
+
+    // Close the notifications window
+    app.get_webview_window("notifications")
+        .ok_or_else(|| "Notifications window not found".to_string())?
+        .close()
+        .map_err(|e| format!("Failed to close notifications window: {}", e))?;
+
+    info!("Notifications window closed successfully");
+
+    Ok(())
+}

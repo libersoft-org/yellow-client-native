@@ -47,7 +47,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::get_window_size,
             commands::get_scale_factor,
-            commands::log
+            commands::log,
+            notifications::close_notifications_window
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
