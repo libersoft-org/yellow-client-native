@@ -38,7 +38,7 @@ pub fn run() {
             });
 
             // Create the notifications window
-            if let Err(e) = create_notifications_window(app.handle()) {
+            if let Err(e) = create_notifications_window(app.handle().clone()) {
                 error!("Failed to create notifications window: {}", e);
             }
 

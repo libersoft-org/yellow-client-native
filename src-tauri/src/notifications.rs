@@ -2,7 +2,7 @@ use log::info;
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
 #[tauri::command]
-pub fn create_notifications_window(app: &tauri::AppHandle) -> Result<(), String> {
+pub fn create_notifications_window(app: tauri::AppHandle) -> Result<(), String> {
 
     info!("create_notifications_window...");
 
@@ -16,7 +16,7 @@ pub fn create_notifications_window(app: &tauri::AppHandle) -> Result<(), String>
     info!("Creating notifications window");
 
     let _notifications_window = WebviewWindowBuilder::new(
-        &app,
+        app,
         "notifications",
         WebviewUrl::App("/notification".into()),
     )
