@@ -48,7 +48,8 @@ pub fn run() {
             commands::get_window_size,
             commands::get_scale_factor,
             commands::log,
-            notifications::close_notifications_window
+            notifications::close_notifications_window,
+            notifications::create_notifications_window
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

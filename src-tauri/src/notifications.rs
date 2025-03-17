@@ -1,10 +1,20 @@
 use log::info;
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
-pub fn create_notifications_window(app: &AppHandle) -> Result<(), String> {
+#[tauri::command]
+pub fn create_notifications_window(app: tauri::AppHandle) -> Result<(), String> {
+
+    info!("create_notifications_window...");
+
+    let app2 = app.clone();
+    let w = app2.get_webview_window("notifications");
+    if w.is_some() {
+        info!("Notifications window already exists");
+        return Ok(());
+    }
+
     info!("Creating notifications window");
 
-    // Create a new window for notifications
     let _notifications_window = WebviewWindowBuilder::new(
         app,
         "notifications",
@@ -18,11 +28,7 @@ pub fn create_notifications_window(app: &AppHandle) -> Result<(), String> {
     .transparent(true)
     .build()
     .map_err(|e| format!("Failed to create notifications window: {}", e))?;
-
-    // todo Make it impossible to close the window through normal means
-
     info!("Notifications window created successfully");
-
     Ok(())
 }
 
