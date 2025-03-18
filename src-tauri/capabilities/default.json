@@ -23,6 +23,7 @@
     "core:event:allow-emit",
     "core:event:allow-listen",
     "core:event:allow-unlisten",
-    "store:default"
+    "store:default",
+    "os:default"
   ]
 }

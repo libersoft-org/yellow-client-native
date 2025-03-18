@@ -3,8 +3,7 @@
 mod commands;
 mod notifications;
 
-use log::{error, info, LevelFilter};
-use notifications::create_notifications_window;
+use log::{info, LevelFilter};
 use tauri::Listener;
 
 // Initialize logging
@@ -25,6 +24,7 @@ pub fn run() {
     info!("Starting application");
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
