@@ -5,7 +5,7 @@
   "identifier": "com.tauri-app.app",
   "build": {
     "beforeDevCommand": "bun run dev",
-    "devUrl": "http://localhost:1421",
+    "devUrl": "http://localhost:3000",
     "beforeBuildCommand": "bun run build",
     "frontendDist": "../build"
   },
@@ -14,14 +14,15 @@
     "windows": [
       {
         "title": "tauri-app",
-        "width": 600,
-        "height": 800,
+        "width": 1024,
+        "height": 1000,
         "zoomHotkeysEnabled": true,
         "center": true,
         "label": "main"
       },
       {
         "title": "Notifications",
+        "create": false,
         "width": 400,
         "height": 600,
         "decorations": false,
@@ -29,7 +30,7 @@
         "alwaysOnTop": true,
         "transparent": true,
         "label": "notifications",
-        "url": "/notification"
+        "url": "/notifications"
       }
     ],
     "security": {

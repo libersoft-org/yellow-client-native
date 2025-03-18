@@ -1,14 +1,23 @@
-use tauri::{AppHandle, Manager, WebviewWindowBuilder, WebviewUrl};
 use log::info;
+use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
-pub fn create_notifications_window(app: &AppHandle) -> Result<(), String> {
+#[tauri::command]
+pub fn create_notifications_window(app: tauri::AppHandle) -> Result<(), String> {
+    info!("create_notifications_window...");
+
+    let app2 = app.clone();
+    let w = app2.get_webview_window("notifications");
+    if w.is_some() {
+        info!("Notifications window already exists");
+        return Ok(());
+    }
+
     info!("Creating notifications window");
-    
-    // Create a new window for notifications
+
     let _notifications_window = WebviewWindowBuilder::new(
-        app,
+        &app,
         "notifications",
-        WebviewUrl::App("/notification".into())
+        WebviewUrl::App("/notifications".into()),
     )
     .title("Notifications")
     .inner_size(400.0, 600.0)
@@ -18,11 +27,21 @@ pub fn create_notifications_window(app: &AppHandle) -> Result<(), String> {
     .transparent(true)
     .build()
     .map_err(|e| format!("Failed to create notifications window: {}", e))?;
-    
-    // todo Make it impossible to close the window through normal means
-
-    
     info!("Notifications window created successfully");
-    
+    Ok(())
+}
+
+#[tauri::command]
+pub fn close_notifications_window(app: tauri::AppHandle) -> Result<(), String> {
+    info!("Closing notifications window");
+
+    // Close the notifications window
+    app.get_webview_window("notifications")
+        .ok_or_else(|| "Notifications window not found".to_string())?
+        .close()
+        .map_err(|e| format!("Failed to close notifications window: {}", e))?;
+
+    info!("Notifications window closed successfully");
+
     Ok(())
 }
