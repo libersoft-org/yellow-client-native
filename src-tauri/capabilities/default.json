@@ -23,6 +23,18 @@
     "core:event:allow-emit",
     "core:event:allow-listen",
     "core:event:allow-unlisten",
-    "store:default"
+    "store:allow-clear",
+    "store:deny-save",
+    "store:allow-delete",
+    "store:allow-get",
+    "store:allow-set",
+    "store:allow-values",
+    "store:allow-keys",
+    "store:allow-load",
+    "store:allow-length",
+    "store:allow-has",
+    "store:allow-entries",
+    "store:allow-clear"
+
   ]
 }
