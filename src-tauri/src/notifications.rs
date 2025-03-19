@@ -20,7 +20,7 @@ pub fn create_notifications_window(app: tauri::AppHandle) -> Result<(), String> 
         WebviewUrl::App("/notifications".into()),
     )
     .title("Notifications")
-    .inner_size(400.0, 600.0)
+    .inner_size(400.0, 60.0)
     .decorations(false)
     .skip_taskbar(true)
     .always_on_top(true)
