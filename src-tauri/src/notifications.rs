@@ -25,7 +25,10 @@ pub fn create_notifications_window(app: tauri::AppHandle) -> Result<(), String> 
     .skip_taskbar(true)
     .always_on_top(true)
     //.transparent(true)
+    //.resizable(false)
+        .shadow(false)
         .visible(false)
+        .focused(false)
     .build()
     .map_err(|e| format!("Failed to create notifications window: {}", e))?;
     info!("Notifications window created successfully");
