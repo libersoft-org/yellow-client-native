@@ -6,8 +6,8 @@
   "build": {
     "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:3000",
-    "beforeBuildCommand": "bun run build",
-    "frontendDist": "../build"
+    "beforeBuildCommand": "cd ../yellow-client; bun run build; cp -r build ../yellow-client-native/src-tauri/",
+    "frontendDist": "build"
   },
   "app": {
     "withGlobalTauri": true,
