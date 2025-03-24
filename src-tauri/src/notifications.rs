@@ -25,6 +25,7 @@ pub fn create_notifications_window(app: tauri::AppHandle) -> Result<(), String> 
     .skip_taskbar(true)
     .always_on_top(true)
     //.transparent(true)
+        .visible(false)
     .build()
     .map_err(|e| format!("Failed to create notifications window: {}", e))?;
     info!("Notifications window created successfully");
@@ -42,6 +43,15 @@ pub fn close_notifications_window(app: tauri::AppHandle) -> Result<(), String> {
         .map_err(|e| format!("Failed to close notifications window: {}", e))?;
 
     info!("Notifications window closed successfully");
+
+    Ok(())
+}
+
+#[tauri::command]
+pub fn show(window: tauri::Window) -> Result<(), String> {
+    info!("show...");
+
+    window.show().map_err(|e| format!("Failed to show window: {}", e))?;
 
     Ok(())
 }

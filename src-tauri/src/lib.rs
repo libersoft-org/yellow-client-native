@@ -44,7 +44,8 @@ pub fn run() {
             commands::get_scale_factor,
             commands::log,
             notifications::close_notifications_window,
-            notifications::create_notifications_window
+            notifications::create_notifications_window,
+            notifications::show
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
