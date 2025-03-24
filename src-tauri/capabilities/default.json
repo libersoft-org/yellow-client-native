@@ -24,6 +24,7 @@
     "core:event:allow-listen",
     "core:event:allow-unlisten",
     "store:default",
-    "os:default"
+    "os:default",
+    "notification:default"
   ]
 }
