@@ -47,11 +47,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "bundle": {
-      "linux": {
-        "appimage": {
-          "bundleMediaFramework": true
-        }
+    "linux": {
+      "appimage": {
+        "bundleMediaFramework": true
       }
     }
   }
