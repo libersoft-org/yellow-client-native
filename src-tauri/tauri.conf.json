@@ -6,7 +6,7 @@
   "build": {
     "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:3000",
-    "beforeBuildCommand": "cd ../yellow-client; TAURI=true bun run build; cp -r build ../yellow-client-native",
+    "beforeBuildCommand": "bun ./build.js",
     "frontendDist": "../build"
   },
   "app": {
