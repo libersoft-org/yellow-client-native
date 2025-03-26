@@ -4,7 +4,7 @@ mod commands;
 mod notifications;
 
 use log::{info, LevelFilter};
-use tauri::{Listener, Manager};
+use tauri::{AppHandle, Listener, Manager};
 
 // Initialize logging
 fn setup_logging() {
@@ -18,12 +18,12 @@ fn setup_logging() {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // Set up logging
     setup_logging();
 
     info!("Starting application");
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_store::Builder::new().build())

@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "tauri-app",
+  "productName": "Yellow",
   "version": "0.1.0",
-  "identifier": "com.tauri-app.app",
+  "identifier": "org.libersoft.app",
   "build": {
     "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:3000",
