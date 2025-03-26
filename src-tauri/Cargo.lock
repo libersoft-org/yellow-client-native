@@ -3862,7 +3862,6 @@ dependencies = [
  "tauri-plugin-os",
  "tauri-plugin-store",
  "uuid",
- "webkit2gtk",
  "window-vibrancy",
 ]
 
