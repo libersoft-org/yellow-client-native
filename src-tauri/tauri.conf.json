@@ -13,7 +13,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "tauri-app",
+        "title": "Yellow",
         "width": 1024,
         "height": 1000,
         "zoomHotkeysEnabled": true,
@@ -21,7 +21,7 @@
         "label": "main"
       },
       {
-        "title": "Notifications",
+        "title": "Yellow Notifications",
         "create": false,
         "width": 400,
         "height": 600,

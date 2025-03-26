@@ -4,7 +4,7 @@ mod commands;
 mod notifications;
 
 use log::{info, LevelFilter};
-use tauri::{AppHandle, Listener, Manager};
+use tauri::{ Listener, Manager};
 
 // Initialize logging
 fn setup_logging() {
@@ -22,8 +22,18 @@ pub fn run() {
 
     info!("Starting application");
 
-    tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init())
+    let mut builder = tauri::Builder::default();
+
+    #[cfg(desktop)]
+    {
+        builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            let _ = app.get_webview_window("main")
+                .expect("no main window")
+                .set_focus();
+        }));
+    }
+
+    builder
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_store::Builder::new().build())
@@ -47,7 +57,9 @@ pub fn run() {
                     if let Some(notifications_window) =
                         app_handle_clone.get_webview_window("notifications")
                     {
+                        info!("found, closing notifications window");
                         let _ = notifications_window.close();
+                        info!("notifications window closed");
                     }
                 }
             });
