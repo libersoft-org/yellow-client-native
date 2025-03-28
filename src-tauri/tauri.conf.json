@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "identifier": "org.libersoft.app",
   "build": {
-    "beforeDevCommand": "bun run dev",
+    "beforeDevCommand": "cd ../yellow-client && bun run dev",
     "devUrl": "http://localhost:3000",
     "beforeBuildCommand": "bun ./build.js",
     "frontendDist": "../../yellow-client/build-tauri"
