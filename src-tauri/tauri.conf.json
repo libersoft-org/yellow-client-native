@@ -4,7 +4,6 @@
   "version": "0.1.0",
   "identifier": "org.libersoft.app",
   "build": {
-    "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:3000",
     "beforeBuildCommand": "bun ./build.js",
     "frontendDist": "../../yellow-client/build-tauri"
@@ -19,18 +18,6 @@
         "zoomHotkeysEnabled": true,
         "center": true,
         "label": "main"
-      },
-      {
-        "title": "Yellow Notifications",
-        "create": false,
-        "width": 400,
-        "height": 600,
-        "decorations": false,
-        "skipTaskbar": true,
-        "alwaysOnTop": true,
-        "transparent": true,
-        "label": "notifications",
-        "url": "/notifications"
       }
     ],
     "security": {
