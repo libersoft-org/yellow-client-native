@@ -11,5 +11,10 @@
         "label": "main"
       }
     ]
+  },
+  "plugins": {
+    "tauri-plugin-yellow": {
+      "defaultColor": "yellow"
+    }
   }
 }
