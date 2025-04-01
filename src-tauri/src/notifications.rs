@@ -5,7 +5,6 @@ use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
 #[tauri::command]
 pub fn create_notifications_window(_app: tauri::AppHandle) -> Result<(), String> {
-    info!("create_notifications_window...");
 
     #[cfg(not(target_os = "android"))]
     {
@@ -25,16 +24,17 @@ pub fn create_notifications_window(_app: tauri::AppHandle) -> Result<(), String>
         )
         .title("Notifications")
         .inner_size(400.0, 60.0)
-        .decorations(false)
-        .skip_taskbar(true)
-        .always_on_top(true)
+        //.decorations(false)
+        //.skip_taskbar(true)
+        //.always_on_top(true)
         //.transparent(true)
         //.resizable(false)
-        .shadow(false)
-        .visible(false)
-        .focused(false)
+        //.shadow(false)
+        //.visible(false)
+        //.focused(false)
         .build()
         .map_err(|e| format!("Failed to create notifications window: {}", e))?;
+
         info!("Notifications window created successfully");
     }
 

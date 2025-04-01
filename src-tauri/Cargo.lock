@@ -3846,27 +3846,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tauri-app"
-version = "0.1.0"
-dependencies = [
- "env_logger",
- "log",
- "percent-encoding",
- "regex",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-notification",
- "tauri-plugin-opener",
- "tauri-plugin-os",
- "tauri-plugin-single-instance",
- "tauri-plugin-store",
- "uuid",
- "window-vibrancy",
-]
-
-[[package]]
 name = "tauri-build"
 version = "2.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5451,6 +5430,27 @@ checksum = "ec1cdab258fb55c0da61328dc52c8764709b249011b2cad0454c72f0bf10a1f6"
 dependencies = [
  "libc",
  "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "yellow"
+version = "0.1.0"
+dependencies = [
+ "env_logger",
+ "log",
+ "percent-encoding",
+ "regex",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-notification",
+ "tauri-plugin-opener",
+ "tauri-plugin-os",
+ "tauri-plugin-single-instance",
+ "tauri-plugin-store",
+ "uuid",
+ "window-vibrancy",
 ]
 
 [[package]]

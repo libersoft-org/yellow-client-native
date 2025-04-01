@@ -1,9 +1,9 @@
 [package]
-name = "tauri-app"
+name = "yellow"
 version = "0.1.0"
-description = "A Tauri App"
+description = "Experience the freedom of decentralized world"
 authors = ["you"]
-edition = "2021"
+edition = "2025"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
