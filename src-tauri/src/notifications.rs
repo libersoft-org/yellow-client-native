@@ -22,7 +22,7 @@ pub fn create_notifications_window(_app: tauri::AppHandle) -> Result<(), String>
             "notifications",
             WebviewUrl::App("/notifications".into()),
         )
-        .title("Notifications")
+        .title("Yellow Notifications")
         .inner_size(400.0, 60.0)
         //.decorations(false)
         //.skip_taskbar(true)

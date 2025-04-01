@@ -9,14 +9,11 @@ use tauri::Listener;
 #[cfg(desktop)]
 use tauri::Manager;
 
-use tauri::plugin::{Builder, TauriPlugin};
-use tauri::Runtime;
 use serde::Deserialize;
 
 // Define the plugin config
 #[derive(Deserialize)]
 struct Config {
-    timeout: usize,
 }
 
 // Initialize logging
