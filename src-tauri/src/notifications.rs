@@ -4,7 +4,7 @@ use log::info;
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
 #[tauri::command]
-pub fn create_notifications_window(_app: tauri::AppHandle) -> Result<(), String> {
+pub async fn create_notifications_window(_app: tauri::AppHandle) -> Result<(), String> {
 
     #[cfg(not(target_os = "android"))]
     {
@@ -24,14 +24,14 @@ pub fn create_notifications_window(_app: tauri::AppHandle) -> Result<(), String>
         )
         .title("Yellow Notifications")
         .inner_size(400.0, 60.0)
-        //.decorations(false)
-        //.skip_taskbar(true)
-        //.always_on_top(true)
-        //.transparent(true)
-        //.resizable(false)
-        //.shadow(false)
-        //.visible(false)
-        //.focused(false)
+        .decorations(false)
+        .skip_taskbar(true)
+        .always_on_top(true)
+        .transparent(true)
+        .resizable(false)
+        .shadow(false)
+        .visible(false)
+        .focused(false)
         .build()
         .map_err(|e| format!("Failed to create notifications window: {}", e))?;
 
@@ -40,7 +40,7 @@ pub fn create_notifications_window(_app: tauri::AppHandle) -> Result<(), String>
 
     #[cfg(target_os = "android")]
     {
-        info!("Notifications window not supported on Android");
+        info!("Custom notifications window not supported on Android");
     }
 
     Ok(())
