@@ -1,4 +1,4 @@
-# Yellow native client
+# Yellow Native Client
 
 Using Tauri 2, Svelte 5, SvelteKit, TypeScript, Vite and Bun.
 
@@ -6,11 +6,27 @@ Using Tauri 2, Svelte 5, SvelteKit, TypeScript, Vite and Bun.
 
 [VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).
 
-## development
+## Development
 
-### start frontend dev server
+### Start frontend dev server
 * `cd ../yellow-client/ && bun run dev`
 start android dev:
 * `ANDROID_HOME=/home/koom/Android/Sdk/ NDK_HOME=~/Android/Sdk/ndk/29.0.13113456/ bun run tauri android dev`
 start desktop dev:
 * `bun run tauri dev`
+
+### Build
+
+Debug:
+
+```sh
+cd src-tauri
+bun tauri build --debug
+```
+
+Release:
+
+```sh
+cd src-tauri
+bun tauri build
+```
