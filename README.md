@@ -9,24 +9,21 @@ Using Tauri 2, Svelte 5, SvelteKit, TypeScript, Vite and Bun.
 ## Development
 
 ### Start frontend dev server
-* `cd ../yellow-client/ && bun run dev`
 start android dev:
 * `ANDROID_HOME=/home/koom/Android/Sdk/ NDK_HOME=~/Android/Sdk/ndk/29.0.13113456/ bun run tauri android dev`
 start desktop dev:
-* `bun run tauri dev`
+* `bun tauri dev`
 
 ### Build
 
-Debug:
+**Debug:**
 
 ```sh
-cd src-tauri
 bun tauri build --debug
 ```
 
-Release:
+**Release:**
 
 ```sh
-cd src-tauri
 bun tauri build
 ```
