@@ -5,11 +5,13 @@
       <sourceFolder url="file://$MODULE_DIR$/src-tauri/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tauri-plugin-yellow/examples" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tauri-plugin-yellow/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tauri-plugin-yellow/examples/vanilla/src-tauri/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.aider.tags.cache.v3" />
       <excludeFolder url="file://$MODULE_DIR$/.svelte-kit" />
       <excludeFolder url="file://$MODULE_DIR$/aider" />
       <excludeFolder url="file://$MODULE_DIR$/src-tauri/target" />
       <excludeFolder url="file://$MODULE_DIR$/tauri-plugin-yellow/target" />
+      <excludeFolder url="file://$MODULE_DIR$/tauri-plugin-yellow/examples/vanilla/src-tauri/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

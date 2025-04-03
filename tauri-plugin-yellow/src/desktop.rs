@@ -1,6 +1,6 @@
 use serde::de::DeserializeOwned;
 use tauri::{plugin::PluginApi, AppHandle, Runtime};
-use log::info;
+//use log::info;
 
 use crate::models::*;
 
@@ -16,7 +16,7 @@ pub struct Yellow<R: Runtime>(AppHandle<R>);
 
 impl<R: Runtime> Yellow<R> {
   pub fn ping(&self, payload: PingRequest) -> crate::Result<PingResponse> {
-    info!("ping: {:?}", payload);
+//    info!("ping: {:?}", payload);
     Ok(PingResponse {
       value: payload.value,
     })
