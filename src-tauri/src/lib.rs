@@ -65,6 +65,7 @@ pub fn run() {
     }
 
     builder
+        .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_store::Builder::new().build())
