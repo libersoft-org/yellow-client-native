@@ -13,8 +13,7 @@ use serde::Deserialize;
 
 // Define the plugin config
 #[derive(Deserialize)]
-struct Config {
-}
+struct Config {}
 
 // Initialize logging
 fn setup_logging() {
@@ -33,8 +32,7 @@ fn setup_desktop_notifications(app: &mut tauri::App) {
     main_window.on_window_event(move |event| {
         if let tauri::WindowEvent::CloseRequested { .. } = event {
             info!("Main window is closing, closing notifications window too");
-            if let Some(notifications_window) =
-                app_handle_clone.get_webview_window("notifications")
+            if let Some(notifications_window) = app_handle_clone.get_webview_window("notifications")
             {
                 info!("found, closing notifications window");
                 let _ = notifications_window.close();
@@ -51,15 +49,16 @@ pub fn run() {
     info!("Starting application");
 
     #[cfg(desktop)]
-    let mut builder = tauri::Builder::default();
-    
+    let mut builder = tauri::Builder::default().plugin(tauri_plugin_positioner::init());
+
     #[cfg(not(desktop))]
     let builder = tauri::Builder::default();
 
     #[cfg(desktop)]
     {
         builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            let _ = app.get_webview_window("main")
+            let _ = app
+                .get_webview_window("main")
                 .expect("no main window")
                 .set_focus();
         }));
