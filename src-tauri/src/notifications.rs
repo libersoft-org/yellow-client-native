@@ -10,11 +10,11 @@ pub async fn create_notifications_window(_app: tauri::AppHandle) -> Result<(), S
         let app2 = _app.clone();
         let w = app2.get_webview_window("notifications");
         if w.is_some() {
-            info!("Notifications window already exists");
+            //info!("Notifications window already exists");
             return Ok(());
         }
 
-        info!("Creating notifications window");
+        //info!("Creating notifications window");
 
         let _notifications_window = WebviewWindowBuilder::new(
             &_app,
