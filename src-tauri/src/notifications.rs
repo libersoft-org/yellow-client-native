@@ -74,14 +74,14 @@ pub fn close_notifications_window(_app: tauri::AppHandle) -> Result<(), String> 
 #[tauri::command]
 pub fn show(_window: tauri::Window) -> Result<(), String> {
     info!("show...");
-    
+
     #[cfg(not(target_os = "android"))]
     {
         _window
             .show()
             .map_err(|e| format!("Failed to show window: {}", e))?;
     }
-    
+
     #[cfg(target_os = "android")]
     {
         info!("Window show method not used on Android");
