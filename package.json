@@ -19,7 +19,8 @@
     "@tauri-apps/plugin-os": "^2.2.1",
     "@tauri-apps/plugin-positioner": "^2.2.0",
     "@tauri-apps/plugin-store": "^2.2.0",
-    "tauri": "^0.15.0"
+    "tauri": "^0.15.0",
+    "tauri-plugin-sentry-api": "^0.4.1"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.6",

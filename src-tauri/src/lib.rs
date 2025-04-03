@@ -44,12 +44,27 @@ fn setup_desktop_notifications(app: &mut tauri::App) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let client = sentry::init(("https://ba775427faea759b72f912167c326660@o4504414737399808.ingest.us.sentry.io/4506954859610112",
+        sentry::ClientOptions {
+            release: sentry::release_name!(),
+            auto_session_tracking: true,
+            ..Default::default()
+        },
+    ));
+
+    // Caution! Everything before here runs in both app and crash reporter processes
+    #[cfg(not(target_os = "ios"))]
+    let _guard = minidump::init(&client);
+    // Everything after here runs in only the app process
+
     setup_logging();
 
     info!("Starting application");
 
     #[cfg(desktop)]
-    let mut builder = tauri::Builder::default().plugin(tauri_plugin_positioner::init());
+    let mut builder = tauri::Builder::default()
+        .plugin(tauri_plugin_sentry::init())
+        .plugin(tauri_plugin_positioner::init());
 
     #[cfg(not(desktop))]
     let builder = tauri::Builder::default();

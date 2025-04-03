@@ -11,6 +11,7 @@
         "@tauri-apps/plugin-positioner": "^2.2.0",
         "@tauri-apps/plugin-store": "^2.2.0",
         "tauri": "^0.15.0",
+        "tauri-plugin-sentry-api": "^0.4.1",
       },
       "devDependencies": {
         "@sveltejs/adapter-static": "^3.0.6",
@@ -1282,6 +1283,8 @@
 
     "tauri": ["tauri@0.15.0", "", { "dependencies": { "@tauri-apps/tauri-inliner": "1.14.1", "@tauri-apps/toml": "2.2.4", "chalk": "4.1.0", "chokidar": "3.5.0", "cross-spawn": "7.0.3", "fast-glob": "3.2.4", "fs-extra": "9.0.1", "http-proxy": "1.18.1", "imagemin": "7.0.1", "imagemin-optipng": "8.0.0", "imagemin-pngquant": "9.0.1", "imagemin-zopfli": "7.0.0", "inquirer": "7.3.3", "is-png": "2.0.0", "is-reachable": "5.0.0", "isbinaryfile": "4.0.6", "jsdom": "16.4.0", "lodash": "4.17.20", "minimist": "1.2.5", "ms": "2.1.3", "png2icons": "2.0.1", "read-chunk": "3.2.0", "semver": "7.3.4", "sharp": "0.27.0", "webpack-merge": "5.7.3", "webpack-shell-plugin": "0.5.0" } }, "sha512-5zPhs7s4NyoUZEUWF9tOM3LCIgMGAc6c6tFONpXc2S41dK/Yk90JFC0z51HQMs/lrkA4AbU8f3EzMCM4WWY20Q=="],
 
+    "tauri-plugin-sentry-api": ["tauri-plugin-sentry-api@0.4.1", "", { "dependencies": { "@tauri-apps/api": "2.0.0-beta.8", "tslib": "^2.6.0" } }, "sha512-KgfL7JhN51TOA3e0UYDu6UkdwgH+wC1/RC3qIHJOZIAsvyTfde4uifUFB11GfgXfHgY33xUkIGgqWKkaK5lg6Q=="],
+
     "temp-dir": ["temp-dir@1.0.0", "", {}, "sha512-xZFXEGbG7SNC3itwBzI3RYjq/cEhBkx2hJuKGIUOcEULmkQExXiHat2z/qkISYsuR+IKumhEfKKbV5qXmhICFQ=="],
 
     "tempfile": ["tempfile@2.0.0", "", { "dependencies": { "temp-dir": "^1.0.0", "uuid": "^3.0.1" } }, "sha512-ZOn6nJUgvgC09+doCEF3oB+r3ag7kUvlsXEGX069QRD60p+P3uP7XG9N2/at+EyIRGSN//ZY3LyEotA1YpmjuA=="],
@@ -1312,7 +1315,7 @@
 
     "trim-repeated": ["trim-repeated@1.0.0", "", { "dependencies": { "escape-string-regexp": "^1.0.2" } }, "sha512-pkonvlKk8/ZuR0D5tLW8ljt5I8kmxp2XKymhepUeOdCEfKpZaktSArkLHZt76OB1ZvO9bssUsDty4SWhLvZpLg=="],
 
-    "tslib": ["tslib@1.14.1", "", {}, "sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg=="],
+    "tslib": ["tslib@2.8.1", "", {}, "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="],
 
     "tunnel-agent": ["tunnel-agent@0.6.0", "", { "dependencies": { "safe-buffer": "^5.0.1" } }, "sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w=="],
 
@@ -1568,6 +1571,8 @@
 
     "request-promise-native/tough-cookie": ["tough-cookie@2.5.0", "", { "dependencies": { "psl": "^1.1.28", "punycode": "^2.1.1" } }, "sha512-nlLsUzgm1kfLXSXfRZMc1KLAugd4hqJHDTvc2hDIwS3mZAfMEuMbc03SujMF+GEcpaX/qboeycw6iO8JwVv2+g=="],
 
+    "rxjs/tslib": ["tslib@1.14.1", "", {}, "sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg=="],
+
     "safe-array-concat/isarray": ["isarray@2.0.5", "", {}, "sha512-xHjhDr3cNBK0BzdUJSPXZntQUx/mwMS5Rw4A7lPJ90XGAO6ISP/ePDNuo0vhqOZU+UD5JoodwCAAoZQd3FeAKw=="],
 
     "safe-push-apply/isarray": ["isarray@2.0.5", "", {}, "sha512-xHjhDr3cNBK0BzdUJSPXZntQUx/mwMS5Rw4A7lPJ90XGAO6ISP/ePDNuo0vhqOZU+UD5JoodwCAAoZQd3FeAKw=="],
@@ -1583,6 +1588,8 @@
     "svgo/css-select": ["css-select@2.1.0", "", { "dependencies": { "boolbase": "^1.0.0", "css-what": "^3.2.1", "domutils": "^1.7.0", "nth-check": "^1.0.2" } }, "sha512-Dqk7LQKpwLoH3VovzZnkzegqNSuAziQyNZUcrdDM401iY+R5NkGBXGmtO05/yaXQziALuPogeG0b7UAgjnTJTQ=="],
 
     "tauri/chokidar": ["chokidar@3.5.0", "", { "dependencies": { "anymatch": "~3.1.1", "braces": "~3.0.2", "glob-parent": "~5.1.0", "is-binary-path": "~2.1.0", "is-glob": "~4.0.1", "normalize-path": "~3.0.0", "readdirp": "~3.5.0" }, "optionalDependencies": { "fsevents": "~2.3.1" } }, "sha512-JgQM9JS92ZbFR4P90EvmzNpSGhpPBGBSj10PILeDyYFwp4h2/D9OM03wsJ4zW1fEp4ka2DGrnUeD7FuvQ2aZ2Q=="],
+
+    "tauri-plugin-sentry-api/@tauri-apps/api": ["@tauri-apps/api@2.0.0-beta.8", "", {}, "sha512-fN5u+9HsSfhRaXGOdD2kPGbqDgyX+nkm1XF/4d/LNuM4WiNfvHjjRAqWQYBhQsg1aF9nsTPmSW+tmy+Yn5T5+A=="],
 
     "update-notifier/chalk": ["chalk@3.0.0", "", { "dependencies": { "ansi-styles": "^4.1.0", "supports-color": "^7.1.0" } }, "sha512-4D3B6Wf41KOYRFdszmDqMCGq5VV/uMAB273JILmO+3jAlh8X4qDtdtgCR3fxtbLEMzSx22QdhnDcJvu2u1fVwg=="],
 
