@@ -10,6 +10,7 @@ use tauri::Listener;
 use tauri::Manager;
 
 use serde::Deserialize;
+use tauri_plugin_sentry::{minidump, sentry};
 
 // Define the plugin config
 #[derive(Deserialize)]
@@ -63,7 +64,9 @@ pub fn run() {
 
     #[cfg(desktop)]
     let mut builder = tauri::Builder::default()
-        .plugin(tauri_plugin_sentry::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_log::Builder::new().build())
+        .plugin(tauri_plugin_sentry::init(&client))
         .plugin(tauri_plugin_positioner::init());
 
     #[cfg(not(desktop))]
