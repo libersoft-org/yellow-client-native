@@ -43,10 +43,11 @@ jobs:
         with:
           node-version: "20"
 
-      - uses: oven-sh/setup-bun@v2
+      - id: bun
+        uses: oven-sh/setup-bun@v2
 
       - run:
-          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+          echo ${steps.bun.outputs.bun-path} # >> "$GITHUB_PATH"
 
       - run:
           echo "$PATH"
