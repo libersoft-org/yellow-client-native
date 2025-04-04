@@ -1,7 +1,8 @@
 import { execSync } from 'child_process';
 import path from 'path';
 
-const clientPath = path.resolve(__dirname, '../yellow-client');
+//const clientPath = path.resolve(__dirname, '../yellow-client');
+const clientPath = path.resolve('yellow-client');
 
 execSync('bun i; bun run build', {
     cwd: clientPath,
