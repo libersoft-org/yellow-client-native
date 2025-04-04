@@ -12,6 +12,7 @@
     "positioner:default",
     "updater:default",
     "updater:default",
-    "updater:default"
+    "updater:default",
+    "autostart:default"
   ]
 }
