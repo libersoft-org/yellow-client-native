@@ -1,5 +1,6 @@
 # Yellow Native Client
 [![Tauri v2 Release Process](https://github.com/libersoft-org/yellow-client-native/actions/workflows/cloud-publish.yaml/badge.svg)](https://github.com/libersoft-org/yellow-client-native/actions/workflows/cloud-publish.yaml)
+
 Using Tauri 2, Svelte 5, SvelteKit, TypeScript, Vite and Bun.
 
 ## Recommended IDE Setup
