@@ -38,8 +38,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
 
-#      - uses: actions/checkout@v4
+        #      - uses: actions/checkout@v4
 #        with:
 #          repository: 'libersoft-org/yellow-client'
 #          path: '../yellow-client'
