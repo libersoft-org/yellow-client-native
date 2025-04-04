@@ -51,8 +51,8 @@ jobs:
       - id: bun
         uses: oven-sh/setup-bun@v2
 
-      - run:
-          echo "${steps.bun.outputs.bun-path}" # >> "$GITHUB_PATH"
+#      - run:
+#          echo "${steps.bun.outputs.bun-path}" # >> "$GITHUB_PATH"
 
       - run:
           echo "$PATH"
