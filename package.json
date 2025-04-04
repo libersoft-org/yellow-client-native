@@ -22,6 +22,7 @@
     "@tauri-apps/plugin-positioner": "^2.2.0",
     "@tauri-apps/plugin-store": "^2.2.0",
     "@tauri-apps/plugin-updater": "^2.7.0",
+    "@tauri-apps/plugin-window-state": "^2.2.2",
     "tauri": "^0.15.0",
     "tauri-plugin-sentry-api": "^0.4.1"
   },

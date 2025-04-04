@@ -64,6 +64,7 @@ pub fn run() {
 
     #[cfg(desktop)]
     let mut builder = tauri::Builder::default()
+        .plugin(tauri_plugin_window_state::Builder::new().build())
         //.plugin(tauri_plugin_log::Builder::new().build())
         .plugin(tauri_plugin_sentry::init(&client))
         .plugin(tauri_plugin_positioner::init());
@@ -73,19 +74,20 @@ pub fn run() {
 
     #[cfg(desktop)]
     {
-
         use tauri_plugin_autostart::MacosLauncher;
 
-        builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            let _ = app
-                .get_webview_window("main")
-                .expect("no main window")
-                .set_focus();
-        }))
+        builder = builder
+            .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+                let _ = app
+                    .get_webview_window("main")
+                    .expect("no main window")
+                    .set_focus();
+            }))
             .plugin(tauri_plugin_autostart::init(
                 MacosLauncher::LaunchAgent,
-                Some(vec!["--flag1", "--flag2"]))
-            ).plugin(tauri_plugin_updater::Builder::new().build())
+                Some(vec!["--flag1", "--flag2"]),
+            ))
+            .plugin(tauri_plugin_updater::Builder::new().build())
             .plugin(tauri_plugin_positioner::init())
     }
 

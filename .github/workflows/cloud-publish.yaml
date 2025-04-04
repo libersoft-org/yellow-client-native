@@ -2,7 +2,7 @@ name: Tauri v2 Release Process
 on:
   push:
     branches:
-      - main
+      - release
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
