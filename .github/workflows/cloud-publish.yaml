@@ -39,6 +39,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/checkout@v4
+        with:
+          repository: 'libersoft-org/yellow-client'
+          path: '..'
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -46,8 +51,8 @@ jobs:
       - id: bun
         uses: oven-sh/setup-bun@v2
 
-#      - run:
-#          echo "${steps.bun.outputs.bun-path}" # >> "$GITHUB_PATH"
+      - run:
+          echo "${steps.bun.outputs.bun-path}" # >> "$GITHUB_PATH"
 
       - run:
           echo "$PATH"

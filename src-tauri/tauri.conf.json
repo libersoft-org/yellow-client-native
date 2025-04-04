@@ -5,7 +5,7 @@
   "identifier": "org.libersoft.yellow",
   "build": {
     "devUrl": "http://localhost:3000",
-    "beforeBuildCommand": "cat",
+    "beforeBuildCommand": "bun ./build.js",
     "frontendDist": "../../yellow-client/build-tauri"
   },
   "app": {
