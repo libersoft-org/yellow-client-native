@@ -6,7 +6,7 @@
   "build": {
     "devUrl": "http://localhost:3000",
     "beforeBuildCommand": "bun ./build.js",
-    "frontendDist": "../yellow-client/build-tauri"
+    "frontendDist": "../yellow-client/build"
   },
   "app": {
     "withGlobalTauri": true,
