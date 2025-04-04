@@ -42,7 +42,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: 'libersoft-org/yellow-client'
-          path: 'yellow-client'
+          path: '../yellow-client'
 
       - uses: actions/setup-node@v4
         with:
