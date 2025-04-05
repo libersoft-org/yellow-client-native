@@ -65,7 +65,6 @@ jobs:
           toolchain: nightly
           cache: true
 
-
       - name: install windows dependencies
         if: matrix.os == 'windows-latest'
         run: |
@@ -100,6 +99,7 @@ jobs:
           brew install vips
           rustup target add x86_64-apple-darwin
           npm ci
+          npm i @tauri-apps/cli-darwin-arm64
           npm run tauri build -- --target x86_64-apple-darwin
           npm run tauri build -- --target aarch64-apple-darwin
         env:
