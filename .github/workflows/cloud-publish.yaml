@@ -91,6 +91,7 @@ jobs:
       - name: Install x86_64-apple-darwin for mac and build Tauri binaries
         if: matrix.os == 'macos-latest'
         run: |
+          brew install vips
           rustup target add x86_64-apple-darwin
           npm ci
           npm run tauri build -- --target x86_64-apple-darwin
