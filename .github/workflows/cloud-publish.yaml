@@ -65,6 +65,12 @@ jobs:
           toolchain: nightly
           cache: true
 
+
+      - name: install windows dependencies
+        if: matrix.os == 'windows-latest'
+        run: |
+          npm install @tauri-apps/cli-win32-x64-msvc@2.4.1
+
       - name: install Linux dependencies
         if: matrix.os == 'ubuntu-22.04'
         run: |
