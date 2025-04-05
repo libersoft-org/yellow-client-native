@@ -20,13 +20,19 @@ pub async fn create_notifications_window(_app: tauri::AppHandle) -> Result<(), S
             &_app,
             "notifications",
             WebviewUrl::App("/notifications".into()),
-        )
+        );
+
+        #[cfg(not(target_os = "macos"))]
+        let _notifications_window2 = _notifications_window.transparent(true);
+        #[cfg(target_os = "macos")]
+        let _notifications_window2 = _notifications_window;
+
+        _notifications_window2
         .title("Yellow Notifications")
         .inner_size(400.0, 60.0)
         .decorations(false)
         .skip_taskbar(true)
         .always_on_top(true)
-        .transparent(true)
         .resizable(false)
         .shadow(false)
         //.visible(false)

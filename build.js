@@ -4,7 +4,7 @@ import path from 'path';
 //const clientPath = path.resolve(__dirname, '../yellow-client');
 const clientPath = path.resolve('yellow-client');
 
-execSync('bun i; bun run build', {
+execSync('bun install; bun run build', {
     cwd: clientPath,
     env: { ...process.env, TAURI: 'true' },
     stdio: 'inherit'
