@@ -1,15 +1,14 @@
 import { execSync } from 'child_process';
-import { copySync } from 'fs-extra';
 import path from 'path';
 
-const clientPath = path.resolve(__dirname, '../yellow-client');
-const buildPath = path.join(clientPath, 'build-tauri');
-const nativePath = path.resolve(__dirname, '../yellow-client-native');
+//const clientPath = path.resolve(__dirname, '../yellow-client');
+const clientPath = path.resolve('yellow-client');
 
-execSync('bun run build', {
+execSync('bun install && bun run build', {
     cwd: clientPath,
     env: { ...process.env, TAURI: 'true' },
-    stdio: 'inherit'
+    stdio: 'inherit',
+    shell: true,
 });
 
 // const targetPath = path.join(nativePath, 'build-tauri');

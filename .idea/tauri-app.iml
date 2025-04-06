@@ -12,6 +12,7 @@
       <excludeFolder url="file://$MODULE_DIR$/src-tauri/target" />
       <excludeFolder url="file://$MODULE_DIR$/tauri-plugin-yellow/examples/vanilla/src-tauri/target" />
       <excludeFolder url="file://$MODULE_DIR$/tauri-plugin-yellow/target" />
+      <excludeFolder url="file://$MODULE_DIR$/yellow-client" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

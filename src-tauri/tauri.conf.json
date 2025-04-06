@@ -1,20 +1,20 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Yellow",
-  "version": "0.1.0",
-  "identifier": "org.libersoft.app",
+  "version": "0.1.1",
+  "identifier": "org.libersoft.yellow",
   "build": {
     "devUrl": "http://localhost:3000",
     "beforeBuildCommand": "bun ./build.js",
-    "frontendDist": "../../yellow-client/build-tauri"
+    "frontendDist": "../yellow-client/build-tauri"
   },
   "app": {
     "withGlobalTauri": true,
     "windows": [
       {
         "title": "Yellow",
-        "width": 1024,
-        "height": 1000,
+        "width": 1000,
+        "height": 800,
         "zoomHotkeysEnabled": true,
         "center": true,
         "label": "main"
@@ -26,7 +26,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDkyN0U0Qzk4QTVDOUMwNzAKUldSd3dNbWxtRXgra211SnRoOStFc3lkUWtYMWtPWVE5R0ViWHhoZnBRR0svb1g0T2orQUtoSU4K",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IENFNDFFN0FBODc2NEFGOTYKUldTV3IyU0hxdWRCemxUaEl6N0hFMzN5YjdWUjlRSGM1TWY2N3JpTTJKaWVQa3piVUxha0x0U3oK",
       "endpoints": [
         "https://cdn.crabnebula.app/update/koo5/yellow/{{target}}-{{arch}}/{{current_version}}"
       ]
