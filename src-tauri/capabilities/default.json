@@ -25,6 +25,7 @@
     "core:event:allow-unlisten",
     "store:default",
     "os:default",
-    "notification:default"
+    "notification:default",
+    "core:app:allow-default-window-icon"
   ]
 }
