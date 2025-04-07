@@ -4,8 +4,8 @@
     "windows": [
       {
         "title": "Yellow",
-        "width": 1024,
-        "height": 1000,
+        "width": 500,
+        "height": 500,
         "zoomHotkeysEnabled": true,
         "center": true,
         "label": "main"
