@@ -39,15 +39,3 @@ pub fn log(message: String) {
 
 
 
-// #[derive(Debug, Deserialize, Serialize, PartialEq)]
-// struct Rect {
-//     width: u32,
-//     height: u32,
-//     x: i32,
-//     y: i32
-// }
-
-
-
-
-
