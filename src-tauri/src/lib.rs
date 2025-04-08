@@ -2,6 +2,7 @@
 
 mod commands;
 mod notifications;
+mod monitors;
 
 use log::{info, LevelFilter};
 use tauri::Listener;
@@ -116,6 +117,7 @@ pub fn run() {
             commands::get_window_size,
             commands::get_scale_factor,
             commands::log,
+            monitors::get_work_area,
             notifications::close_notifications_window,
             notifications::create_notifications_window,
             notifications::show

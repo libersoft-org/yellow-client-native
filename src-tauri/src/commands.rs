@@ -1,5 +1,6 @@
 use log::info;
-use tauri::Window;
+use serde::{Deserialize, Serialize};
+use tauri::{Window};
 
 // Command to get window size
 #[tauri::command]
@@ -34,3 +35,19 @@ pub fn get_scale_factor(window: Window) -> Result<f64, String> {
 pub fn log(message: String) {
     info!("{}", message);
 }
+
+
+
+
+// #[derive(Debug, Deserialize, Serialize, PartialEq)]
+// struct Rect {
+//     width: u32,
+//     height: u32,
+//     x: i32,
+//     y: i32
+// }
+
+
+
+
+
