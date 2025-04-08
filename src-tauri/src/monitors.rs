@@ -4,7 +4,7 @@ use tauri::{Monitor};
 
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
-struct Area {
+pub struct Area {
     left: u32,
     top: u32,
     right: u32,
@@ -20,7 +20,8 @@ struct MonitorInfo {
 
 
 #[tauri::command]
-pub fn get_work_area(monitor: Monitor) -> Area {
+pub async fn get_work_area(window: tauri::window::Window) -> Area {
+    let monitor = window.current_monitor().unwrap().unwrap();
     let monitors: Vec<MonitorInfo> = os_monitors_info();
     for m in monitors {
         if let Some(monitor_name) = monitor.name() {
@@ -31,7 +32,6 @@ pub fn get_work_area(monitor: Monitor) -> Area {
         }
     }
     
-    info!("Monitor not found: {}", monitor.name().unwrap_or(String("Unknown")));
     return Area {
         left: monitor.position().x as u32,
         top: monitor.position().y as u32 + 60,
