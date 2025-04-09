@@ -39,6 +39,15 @@ tauri-plugin-window-state = { git = "https://github.com/koo5/plugins-workspace",
 [target.'cfg(windows)'.dependencies]
 windows = "0.61.1"
 
+[dependencies.windows]
+features = [
+    "Win32_Foundation",
+    "Win32_System_Threading",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_Graphics_GDI",
+]
+
+
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-autostart = "2"
 tauri-plugin-positioner = "2"
