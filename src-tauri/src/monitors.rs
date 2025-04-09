@@ -29,7 +29,7 @@ pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Resul
         }
     }
 
-    info!("Monitor not found: {}", &monitor_name);
+    info!("Monitor not found in os_monitors_info: {}", &monitor_name);
 
     let _monitors2 = window.available_monitors();
     let monitors2 = match _monitors2 {
@@ -41,7 +41,7 @@ pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Resul
     };
     for monitor in monitors2 {
         if monitor.name().eq(&Some(&monitor_name)) {
-            info!("Monitor found in available_monitors: {}", &monitor_name);
+            info!("Monitor found in window.available_monitors: {}", &monitor_name);
             return Result::Ok(Area {
                 left: monitor.position().x as u32,
                 top: monitor.position().y as u32 + 60,
@@ -52,10 +52,10 @@ pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Resul
     }
     info!("Monitor not found in available_monitors: {}", &monitor_name);
     return Result::Ok(Area {
-        left: 100,
-        top: 100,
-        right: 400,
-        bottom: 400,
+        left: 50,
+        top: 50,
+        right: 150,
+        bottom: 150,
     });
 }
 
