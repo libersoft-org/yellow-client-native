@@ -1,6 +1,5 @@
 use log::info;
 use serde::{Deserialize, Serialize};
-use tauri::Monitor;
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct Area {

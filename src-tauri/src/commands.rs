@@ -1,5 +1,4 @@
 use log::info;
-use serde::{Deserialize, Serialize};
 use tauri::{Window};
 
 // Command to get window size
