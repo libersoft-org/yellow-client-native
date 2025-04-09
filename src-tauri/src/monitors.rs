@@ -61,9 +61,11 @@ pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Resul
 #[cfg(target_os = "windows")]
 use windows::Win32::Foundation::{BOOL, LPARAM};
 #[cfg(target_os = "windows")]
-use windows::Win32::Graphics::Gdi::{EnumDisplayMonitors, HDC, HMONITOR, RECT};
+use windows::Win32::Graphics::Gdi::{EnumDisplayMonitors, HDC, HMONITOR};
 #[cfg(target_os = "windows")]
-use windows::Win32::UI::WindowsAndMessaging::{GetMonitorInfoW, MONITORINFOEXA};
+use windows::Win32::Foundation::RECT;
+#[cfg(target_os = "windows")]
+use windows::Win32::UI::WindowsAndMessaging::{GetMonitorInfoA, MONITORINFOEXA};
 
 #[cfg(target_os = "windows")]
 #[tauri::command]
@@ -71,8 +73,8 @@ fn os_monitors_info() -> Vec<MonitorInfo> {
     let mut results: Vec<MonitorInfo> = Vec::new();
     unsafe {
         EnumDisplayMonitors(
-            HDC::default(),   // kontext (null = všechny monitory)
-            std::ptr::null(), // klipovací obdélník (null = neomezovat)
+            Some(HDC::default()),   // kontext (null = všechny monitory)
+            None, // klipovací obdélník (null = neomezovat)
             // Callback
             Some(enum_monitor_proc),
             // Předáme ukazatel na náš vektor jako lParam:
@@ -96,24 +98,27 @@ unsafe extern "system" fn enum_monitor_proc(
             cbSize: std::mem::size_of::<MONITORINFOEXA>() as u32,
             ..Default::default()
         };
-        GetMonitorInfoW(hmon, &mut info);
-        monitors.push(MonitorInfo {
-            name: info.szDevice.to_string_lossy().into_owned(),
-            area: Area {
-                left: info.rcMonitor.left as u32,
-                top: info.rcMonitor.top as u32,
-                right: info.rcMonitor.right as u32,
-                bottom: info.rcMonitor.bottom as u32,
-            },
-            work_area: Area {
-                left: info.rcWork.left as u32,
-                top: info.rcWork.top as u32,
-                right: info.rcWork.right as u32,
-                bottom: info.rcWork.bottom as u32,
-            },
-        });
+        let info_ptr = &mut info as *mut MONITORINFOEXA as *mut _;
+        let result = GetMonitorInfoA(hmon, info_ptr);
+        if result.as_bool() {
+            monitors.push(MonitorInfo {
+                name: String::from_utf8_lossy(&info.szDevice).into_owned(),
+                area: Area {
+                    left: info.rcMonitor.left as u32,
+                    top: info.rcMonitor.top as u32,
+                    right: info.rcMonitor.right as u32,
+                    bottom: info.rcMonitor.bottom as u32,
+                },
+                work_area: Area {
+                    left: info.rcWork.left as u32,
+                    top: info.rcWork.top as u32,
+                    right: info.rcWork.right as u32,
+                    bottom: info.rcWork.bottom as u32,
+                },
+            });
+        }
     }
-    true.into()
+    BOOL(1)
 }
 
 //
