@@ -59,21 +59,19 @@ pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Resul
 }
 
 #[cfg(target_os = "windows")]
-use windows::Win32::Foundation::{BOOL, LPARAM};
-#[cfg(target_os = "windows")]
-use windows::Win32::Graphics::Gdi::{EnumDisplayMonitors, HDC, HMONITOR};
-#[cfg(target_os = "windows")]
-use windows::Win32::Foundation::RECT;
-#[cfg(target_os = "windows")]
-use windows::Win32::UI::WindowsAndMessaging::{GetMonitorInfoA, MONITORINFOEXA};
+use windows::{
+    Win32::Foundation::{LPARAM, RECT, BOOL}, 
+    Win32::Graphics::Gdi::{EnumDisplayMonitors, HDC, HMONITOR},
+    Win32::UI::WindowsAndMessaging::{GetMonitorInfoW, MONITORINFO},
+};
 
 #[cfg(target_os = "windows")]
 #[tauri::command]
 fn os_monitors_info() -> Vec<MonitorInfo> {
     let mut results: Vec<MonitorInfo> = Vec::new();
     unsafe {
-        EnumDisplayMonitors(
-            Some(HDC::default()),   // kontext (null = všechny monitory)
+        let _ = EnumDisplayMonitors(
+            None,   // kontext (null = všechny monitory)
             None, // klipovací obdélník (null = neomezovat)
             // Callback
             Some(enum_monitor_proc),
@@ -94,15 +92,17 @@ unsafe extern "system" fn enum_monitor_proc(
 ) -> BOOL {
     let vec_ptr = lparam.0 as *mut Vec<MonitorInfo>;
     if let Some(monitors) = vec_ptr.as_mut() {
-        let mut info = MONITORINFOEXA {
-            cbSize: std::mem::size_of::<MONITORINFOEXA>() as u32,
+        let mut info = MONITORINFO {
+            cbSize: std::mem::size_of::<MONITORINFO>() as u32,
             ..Default::default()
         };
-        let info_ptr = &mut info as *mut MONITORINFOEXA as *mut _;
-        let result = GetMonitorInfoA(hmon, info_ptr);
+        let result = GetMonitorInfoW(hmon, &mut info);
         if result.as_bool() {
+            // Generate a monitor name from its handle ID
+            let monitor_name = format!("Monitor_{:p}", hmon);
+            
             monitors.push(MonitorInfo {
-                name: String::from_utf8_lossy(&info.szDevice).into_owned(),
+                name: monitor_name,
                 area: Area {
                     left: info.rcMonitor.left as u32,
                     top: info.rcMonitor.top as u32,
