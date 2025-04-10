@@ -102,7 +102,7 @@ unsafe extern "system" fn enum_monitor_proc(
         let result = GetMonitorInfoW(hmon, &mut info);
         if result.as_bool() {
             // Generate a monitor name from its handle ID
-            let monitor_name = format!("Monitor_{:p}", hmon);
+            let monitor_name = format!("Monitor_{}", hmon.0);
             
             monitors.push(MonitorInfo {
                 name: monitor_name,
