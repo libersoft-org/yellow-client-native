@@ -139,8 +139,7 @@ use windows_core::{ BOOL, PCSTR };
 use windows::{
     Win32::Foundation::{ RECT },
     Win32::Graphics::Gdi::{
-        EnumDisplayDevicesA, DISPLAY_DEVICEA, 
-        DISPLAY_DEVICE_FLAG_NONE
+        EnumDisplayDevicesA, DISPLAY_DEVICEA
     },
 };
 
@@ -161,7 +160,7 @@ fn os_monitors_info() -> Vec<MonitorInfo> {
                 PCSTR::null(),
                 device_index,
                 &mut display_device,
-                DISPLAY_DEVICE_FLAG_NONE,
+                0, // No flags
             ).as_bool() {
                 // No more devices
                 break;
