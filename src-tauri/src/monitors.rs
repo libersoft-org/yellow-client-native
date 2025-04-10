@@ -59,72 +59,72 @@ pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Resul
     });
 }
 
-#[cfg(target_os = "windows")]
-use windows_core::{ BOOL };
-
-
-#[cfg(target_os = "windows")]
-use windows::{
-    Win32::Foundation::{LPARAM, RECT },
-    Win32::Graphics::Gdi::{EnumDisplayMonitors, HDC, HMONITOR, MONITORINFO, GetMonitorInfoW},
-};
-
-#[cfg(target_os = "windows")]
-#[tauri::command]
-fn os_monitors_info() -> Vec<MonitorInfo> {
-    let mut results: Vec<MonitorInfo> = Vec::new();
-    unsafe {
-        let _ = EnumDisplayMonitors(
-            None,   // kontext (null = všechny monitory)
-            None, // klipovací obdélník (null = neomezovat)
-            // Callback
-            Some(enum_monitor_proc),
-            // Předáme ukazatel na náš vektor jako lParam:
-            LPARAM(&mut results as *mut _ as isize),
-        );
-    }
-    results
-}
-
-// Callback funkce pro každý monitor (Win32 API volá tuto funkci):
-#[cfg(target_os = "windows")]
-unsafe extern "system" fn enum_monitor_proc(
-    hmon: HMONITOR,
-    _hdc: HDC,
-    _rc: *mut RECT,
-    lparam: LPARAM,
-) -> BOOL {
-    let vec_ptr = lparam.0 as *mut Vec<MonitorInfo>;
-    if let Some(monitors) = vec_ptr.as_mut() {
-        let mut info = MONITORINFO {
-            cbSize: std::mem::size_of::<MONITORINFO>() as u32,
-            ..Default::default()
-        };
-        let result = GetMonitorInfoW(hmon, &mut info);
-        if result.as_bool() {
-            // Generate a monitor name from its handle ID
-            let monitor_name = format!("Monitor_{:p}", hmon.0);
-            
-            monitors.push(MonitorInfo {
-                name: monitor_name,
-                area: Area {
-                    left: info.rcMonitor.left as u32,
-                    top: info.rcMonitor.top as u32,
-                    right: info.rcMonitor.right as u32,
-                    bottom: info.rcMonitor.bottom as u32,
-                },
-                work_area: Area {
-                    left: info.rcWork.left as u32,
-                    top: info.rcWork.top as u32,
-                    right: info.rcWork.right as u32,
-                    bottom: info.rcWork.bottom as u32,
-                },
-            });
-        }
-    }
-    BOOL(1)
-}
-
+// #[cfg(target_os = "windows")]
+// use windows_core::{ BOOL };
+//
+//
+// #[cfg(target_os = "windows")]
+// use windows::{
+//     Win32::Foundation::{LPARAM, RECT },
+//     Win32::Graphics::Gdi::{EnumDisplayMonitors, HDC, HMONITOR, MONITORINFO, GetMonitorInfoW},
+// };
+//
+// #[cfg(target_os = "windows")]
+// #[tauri::command]
+// fn os_monitors_info() -> Vec<MonitorInfo> {
+//     let mut results: Vec<MonitorInfo> = Vec::new();
+//     unsafe {
+//         let _ = EnumDisplayMonitors(
+//             None,   // kontext (null = všechny monitory)
+//             None, // klipovací obdélník (null = neomezovat)
+//             // Callback
+//             Some(enum_monitor_proc),
+//             // Předáme ukazatel na náš vektor jako lParam:
+//             LPARAM(&mut results as *mut _ as isize),
+//         );
+//     }
+//     results
+// }
+//
+// // Callback funkce pro každý monitor (Win32 API volá tuto funkci):
+// #[cfg(target_os = "windows")]
+// unsafe extern "system" fn enum_monitor_proc(
+//     hmon: HMONITOR,
+//     _hdc: HDC,
+//     _rc: *mut RECT,
+//     lparam: LPARAM,
+// ) -> BOOL {
+//     let vec_ptr = lparam.0 as *mut Vec<MonitorInfo>;
+//     if let Some(monitors) = vec_ptr.as_mut() {
+//         let mut info = MONITORINFO {
+//             cbSize: std::mem::size_of::<MONITORINFO>() as u32,
+//             ..Default::default()
+//         };
+//         let result = GetMonitorInfoW(hmon, &mut info);
+//         if result.as_bool() {
+//             // Generate a monitor name from its handle ID
+//             let monitor_name = format!("Monitor_{:p}", hmon.0);
+//
+//             monitors.push(MonitorInfo {
+//                 name: monitor_name,
+//                 area: Area {
+//                     left: info.rcMonitor.left as u32,
+//                     top: info.rcMonitor.top as u32,
+//                     right: info.rcMonitor.right as u32,
+//                     bottom: info.rcMonitor.bottom as u32,
+//                 },
+//                 work_area: Area {
+//                     left: info.rcWork.left as u32,
+//                     top: info.rcWork.top as u32,
+//                     right: info.rcWork.right as u32,
+//                     bottom: info.rcWork.bottom as u32,
+//                 },
+//             });
+//         }
+//     }
+//     BOOL(1)
+// }
+//
 //
 // #[cfg(target_os = "macos")]
 //
