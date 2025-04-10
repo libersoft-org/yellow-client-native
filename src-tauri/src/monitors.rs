@@ -22,6 +22,7 @@ pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Resul
 
     let monitors: Vec<MonitorInfo> = os_monitors_info();
     for m in monitors {
+        info!("Monitor: {:?}", m);
         if m.name.eq(&monitor_name) {
             info!("Monitor found: {}", &monitor_name);
             return Result::Ok(m.work_area);
@@ -51,10 +52,10 @@ pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Resul
     }
     info!("Monitor not found in available_monitors: {}", &monitor_name);
     return Result::Ok(Area {
-        left: 50,
-        top: 50,
-        right: 150,
-        bottom: 150,
+        left: 55,
+        top: 55,
+        right: 555,
+        bottom: 555,
     });
 }
 
