@@ -5106,7 +5106,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-window-state"
 version = "2.2.2"
-source = "git+https://github.com/koo5/plugins-workspace#dcd3cd2cc3996f7216e4ba33a658c6e8a5934b89"
+source = "git+https://github.com/koo5/plugins-workspace#67325f75853eebcd06c3152aed1c44fa49573596"
 dependencies = [
  "bitflags 2.9.0",
  "log",
@@ -5115,6 +5115,7 @@ dependencies = [
  "tauri",
  "tauri-plugin",
  "thiserror 2.0.12",
+ "windows 0.61.1",
 ]
 
 [[package]]
@@ -6750,8 +6751,8 @@ dependencies = [
  "tauri-plugin-window-state",
  "uuid",
  "window-vibrancy",
- "windows 0.61.1",
- "windows-core 0.61.0",
+ "windows 0.60.0",
+ "windows-core 0.60.1",
 ]
 
 [[package]]
