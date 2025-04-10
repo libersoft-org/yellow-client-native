@@ -132,6 +132,71 @@ pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Resul
 //
 //
 
+#[cfg(target_os = "windows")]
+use windows_core::{ BOOL, PCSTR };
+
+#[cfg(target_os = "windows")]
+use windows::{
+    Win32::Foundation::{ RECT },
+    Win32::Graphics::Gdi::{
+        EnumDisplayDevicesA, DISPLAY_DEVICEA, 
+        DISPLAY_DEVICE_FLAG_NONE
+    },
+};
+
+#[cfg(target_os = "windows")]
+#[tauri::command]
+fn os_monitors_info() -> Vec<MonitorInfo> {
+    let mut results: Vec<MonitorInfo> = Vec::new();
+    unsafe {
+        let mut device_index = 0;
+        loop {
+            let mut display_device = DISPLAY_DEVICEA {
+                cb: std::mem::size_of::<DISPLAY_DEVICEA>() as u32,
+                ..Default::default()
+            };
+            
+            // Get display device info
+            if !EnumDisplayDevicesA(
+                PCSTR::null(),
+                device_index,
+                &mut display_device,
+                DISPLAY_DEVICE_FLAG_NONE,
+            ).as_bool() {
+                // No more devices
+                break;
+            }
+            
+            // Convert device name to string
+            let device_name = std::ffi::CStr::from_ptr(display_device.DeviceName.as_ptr() as *const i8)
+                .to_string_lossy()
+                .to_string();
+            
+            // Add a dummy monitor info (actual area would need to be obtained separately)
+            results.push(MonitorInfo {
+                name: device_name,
+                area: Area {
+                    left: 0,
+                    top: 0,
+                    right: 1920, // Default values, would need to be fetched correctly
+                    bottom: 1080,
+                },
+                work_area: Area {
+                    left: 0,
+                    top: 0,
+                    right: 1920,
+                    bottom: 1080,
+                },
+            });
+            
+            device_index += 1;
+        }
+    }
+    
+    info!("Found {} displays", results.len());
+    results
+}
+
 #[cfg(target_os = "linux")]
 #[tauri::command]
 fn os_monitors_info() -> Vec<MonitorInfo> {
