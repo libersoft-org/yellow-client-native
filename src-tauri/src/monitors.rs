@@ -61,8 +61,7 @@ pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Resul
 #[cfg(target_os = "windows")]
 use windows::{
     Win32::Foundation::{LPARAM, RECT, BOOL}, 
-    Win32::Graphics::Gdi::{EnumDisplayMonitors, HDC, HMONITOR},
-    Win32::UI::WindowsAndMessaging::{GetMonitorInfoW, MONITORINFO},
+    Win32::Graphics::Gdi::{EnumDisplayMonitors, HDC, HMONITOR, MONITORINFO, GetMonitorInfoW},
 };
 
 #[cfg(target_os = "windows")]
