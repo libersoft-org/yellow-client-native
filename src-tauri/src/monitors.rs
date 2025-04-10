@@ -60,9 +60,10 @@ pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Resul
 
 #[cfg(target_os = "windows")]
 use windows::{
-    Win32::Foundation::{LPARAM, RECT, BOOL}, 
+    Win32::Foundation::{LPARAM, RECT},
+    core::BOOL,
     Win32::Graphics::Gdi::{EnumDisplayMonitors, HDC, HMONITOR},
-    Win32::UI::WindowsAndMessaging::{GetMonitorInfoW, MONITORINFO},
+    Win32::UI::WindowsAndMessaging::{GetMonitorInfoA, MONITORINFOEXA},
 };
 
 #[cfg(target_os = "windows")]
@@ -92,28 +93,34 @@ unsafe extern "system" fn enum_monitor_proc(
 ) -> BOOL {
     let vec_ptr = lparam.0 as *mut Vec<MonitorInfo>;
     if let Some(monitors) = vec_ptr.as_mut() {
-        let mut info = MONITORINFO {
-            cbSize: std::mem::size_of::<MONITORINFO>() as u32,
-            ..Default::default()
+        let mut info = MONITORINFOEXA {
+            monitorInfo: windows::Win32::UI::WindowsAndMessaging::MONITORINFO {
+                cbSize: std::mem::size_of::<windows::Win32::UI::WindowsAndMessaging::MONITORINFO>() as u32,
+                rcMonitor: Default::default(),
+                rcWork: Default::default(),
+                dwFlags: 0,
+            },
+            szDevice: [0; 32],
         };
-        let result = GetMonitorInfoW(hmon, &mut info);
+        
+        let result = GetMonitorInfoA(hmon, &mut info.monitorInfo as *mut _);
         if result.as_bool() {
             // Generate a monitor name from its handle ID
-            let monitor_name = format!("Monitor_{:p}", hmon);
+            let monitor_name = format!("Monitor_{}", hmon.0);
             
             monitors.push(MonitorInfo {
                 name: monitor_name,
                 area: Area {
-                    left: info.rcMonitor.left as u32,
-                    top: info.rcMonitor.top as u32,
-                    right: info.rcMonitor.right as u32,
-                    bottom: info.rcMonitor.bottom as u32,
+                    left: info.monitorInfo.rcMonitor.left as u32,
+                    top: info.monitorInfo.rcMonitor.top as u32,
+                    right: info.monitorInfo.rcMonitor.right as u32,
+                    bottom: info.monitorInfo.rcMonitor.bottom as u32,
                 },
                 work_area: Area {
-                    left: info.rcWork.left as u32,
-                    top: info.rcWork.top as u32,
-                    right: info.rcWork.right as u32,
-                    bottom: info.rcWork.bottom as u32,
+                    left: info.monitorInfo.rcWork.left as u32,
+                    top: info.monitorInfo.rcWork.top as u32,
+                    right: info.monitorInfo.rcWork.right as u32,
+                    bottom: info.monitorInfo.rcWork.bottom as u32,
                 },
             });
         }
