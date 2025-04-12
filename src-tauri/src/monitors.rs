@@ -1,3 +1,4 @@
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 use log::info;
 use serde::{Deserialize, Serialize};
 
@@ -16,6 +17,8 @@ struct MonitorInfo {
     pub work_area: Area,
 }
 
+
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 #[tauri::command]
 pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Result<Area, String> {
     info!("Getting work area for monitor: {}", &monitor_name);
