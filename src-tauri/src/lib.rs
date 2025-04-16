@@ -95,6 +95,10 @@ pub fn run() {
             .plugin(tauri_plugin_positioner::init())
     }
 
+    info!("Tauri application starting");
+    info!("thread id: {:?}", std::thread::current().id());
+    info!("thread name: {:?}", std::thread::current().name());
+
     builder
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_os::init())
@@ -129,5 +133,4 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
-    info!("Tauri application started");
 }

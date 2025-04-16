@@ -1,4 +1,9 @@
-//use std::collections::VecDeque;
+#[cfg(target_os = "linux")]
+use gtk::gdk;
+#[cfg(target_os = "linux")]
+use gtk::prelude::*;
+#[cfg(target_os = "linux")]
+use std::sync::mpsc;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 use log::info;
 use serde::{Deserialize, Serialize};
@@ -139,75 +144,77 @@ unsafe extern "system" fn enum_monitor_proc(
     BOOL(1)
 }
 
-// #[cfg(target_os = "windows")]
-// use windows_core::{ BOOL, PCSTR };
-//
-// #[cfg(target_os = "windows")]
-// use windows::{
-//     Win32::Foundation::{ RECT },
-//     Win32::Graphics::Gdi::{
-//         EnumDisplayDevicesA, DISPLAY_DEVICEA
-//     },
-// };
-//
-// #[cfg(target_os = "windows")]
-// #[tauri::command]
-// fn os_monitors_info() -> Vec<MonitorInfo> {
-//     let mut results: Vec<MonitorInfo> = Vec::new();
-//     unsafe {
-//         let mut device_index = 0;
-//         loop {
-//             let mut display_device = DISPLAY_DEVICEA {
-//                 cb: std::mem::size_of::<DISPLAY_DEVICEA>() as u32,
-//                 ..Default::default()
-//             };
-//
-//             // Get display device info
-//             if !EnumDisplayDevicesA(
-//                 PCSTR::null(),
-//                 device_index,
-//                 &mut display_device,
-//                 0, // No flags
-//             ).as_bool() {
-//                 // No more devices
-//                 break;
-//             }
-//
-//             // Convert device name to string
-//             let device_name = std::ffi::CStr::from_ptr(display_device.DeviceName.as_ptr() as *const i8)
-//                 .to_string_lossy()
-//                 .to_string();
-//
-//             // Add a dummy monitor info (actual area would need to be obtained separately)
-//             results.push(MonitorInfo {
-//                 name: device_name,
-//                 area: Area {
-//                     left: 0,
-//                     top: 0,
-//                     right: 1920, // Default values, would need to be fetched correctly
-//                     bottom: 1080,
-//                 },
-//                 work_area: Area {
-//                     left: 0,
-//                     top: 0,
-//                     right: 1920,
-//                     bottom: 1080,
-//                 },
-//             });
-//
-//             device_index += 1;
-//         }
-//     }
-//
-//     info!("Found {} displays", results.len());
-//     results
-// }
 
 #[cfg(target_os = "linux")]
-#[tauri::command]
 fn os_monitors_info() -> Vec<MonitorInfo> {
-    Vec::new()
+    let (tx, rx) = mpsc::channel();
+   glib::MainContext::default().invoke(move || {
+        let monitors = os_monitors_info2();
+        // Send the result back through the channel. If the receiver is waiting, this will unblock it.
+        let _ = tx.send(monitors);
+    });
+    rx.recv().unwrap_or_else(|_| {
+        eprintln!("Failed to get monitor information");
+        vec![]
+    })
 }
+
+#[cfg(target_os = "linux")]
+fn os_monitors_info2() -> Vec<MonitorInfo> {
+
+    info!("command thread id: {:?}", std::thread::current().id());
+
+    // Get the default GDK display.
+    let display = match gtk::gdk::Display::default() {
+        Some(d) => d,
+        None => {
+            eprintln!("No default GDK display available.");
+            return vec![];
+        }
+    };
+
+    let mut monitors_info = Vec::new();
+
+    // The number of monitors attached to the display.
+    let n_monitors = display.n_monitors();
+
+    for i in 0..n_monitors {
+        if let Some(monitor) = display.monitor(i) {
+            // Retrieve the geometry and workarea.
+            // Both methods are available via the MonitorExt trait.
+            let geometry = monitor.geometry();
+            let workarea = monitor.workarea();
+
+            // Try to obtain a name for the monitor.
+            // Depending on your GDK version, you might have methods like model() or manufacturer().
+            // If those are not available, we fall back to a generated name.
+            let name: String = match monitor.model() {
+                Some(model) => model.to_string(),
+                None => format!("Monitor {}", i),
+            };
+
+            monitors_info.push(MonitorInfo {
+                name,
+                area: Area {
+                    left: geometry.x() as u32,
+                    top: geometry.y() as u32,
+                    right: geometry.x() as u32 + geometry.width() as u32,
+                    bottom: geometry.y() as u32 + geometry.height() as u32,
+                },
+                work_area: Area {
+                    left: workarea.x() as u32,
+                    top: workarea.y() as u32,
+                    right: workarea.x() as u32 + workarea.width() as u32,
+                    bottom: workarea.y() as u32 + workarea.height() as u32,
+                },
+            });
+        }
+    }
+
+    monitors_info
+}
+
+
 
 //
 // #[cfg(target_os = "macos")]
@@ -217,29 +224,3 @@ fn os_monitors_info() -> Vec<MonitorInfo> {
 //
 
 
-// pub struct MonitorHandle(isize);
-//
-// unsafe extern "system" fn monitor_enum_proc(
-//     hmonitor: HMONITOR,
-//     _hdc: HDC,
-//     _place: *mut RECT,
-//     data: LPARAM,
-// ) -> BOOL {
-//     let monitors = data.0 as *mut VecDeque<MonitorHandle>;
-//     (*monitors).push_back(MonitorHandle::new(hmonitor));
-//     true.into() // continue enumeration
-// }
-//
-// #[tauri::command]
-// pub fn available_monitors() -> VecDeque<MonitorHandle> {
-//     let mut monitors: VecDeque<MonitorHandle> = VecDeque::new();
-//     unsafe {
-//         let _ = EnumDisplayMonitors(
-//             None,
-//             None,
-//             Some(monitor_enum_proc),
-//             LPARAM(&mut monitors as *mut _ as _),
-//         );
-//     }
-//     monitors
-// }
