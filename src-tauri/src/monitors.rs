@@ -4,9 +4,24 @@ use gtk::gdk;
 use gtk::prelude::*;
 #[cfg(target_os = "linux")]
 use std::sync::mpsc;
-#[cfg(not(any(target_os = "android", target_os = "ios")))]
+
+
+#[cfg(target_os = "macos")]
+use cocoa::appkit::NSScreen;
+#[cfg(target_os = "macos")]
+use cocoa::base::nil;
+#[cfg(target_os = "macos")]
+use cocoa::foundation::NSRect;
+#[cfg(target_os = "macos")]
+use objc::runtime::Object;
+
+//#[cfg(not(any(target_os = "android", target_os = "ios")))]
 use log::info;
 use serde::{Deserialize, Serialize};
+
+
+
+
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct Area {
@@ -229,11 +244,40 @@ fn os_monitors_info2() -> Vec<MonitorInfo> {
 
 
 
-//
-// #[cfg(target_os = "macos")]
-//
-//
-//
-//
 
+#[cfg(target_os = "macos")]
+fn os_monitors_info() -> Vec<MonitorInfo> {
+    use cocoa::appkit::NSScreen;
+    use cocoa::base::nil;
+    use objc::runtime::Object;
+    let screens = unsafe { NSScreen::screens(nil) };
+    let count = unsafe { screens.count() };
+    let mut monitors_info = Vec::new();
+    for i in 0..count {
+        // Get the NSScreen pointer
+        let screen = unsafe { screens.objectAtIndex(i) };
+        // Retrieve the full frame (in points)
+        let frame = unsafe { NSScreen::frame(screen) };
+        // Retrieve the visible (work) frame (in points)
+        let visible_frame = unsafe { NSScreen::visibleFrame(screen) };
+        // Retrieve the scale factor (backingScaleFactor) to convert points to physical pixels
+        let scale_factor = unsafe { NSScreen::backingScaleFactor(screen) } as f64;
+        let area = Area {
+            left: (frame.origin.x * scale_factor) as u32,
+            top: (frame.origin.y * scale_factor) as u32,
+            right: ((frame.origin.x + frame.size.width) * scale_factor) as u32,
+            bottom: ((frame.origin.y + frame.size.height) * scale_factor) as u32,
+        };
+        let work_area = Area {
+            left: (visible_frame.origin.x * scale_factor) as u32,
+            top: (visible_frame.origin.y * scale_factor) as u32,
+            right: ((visible_frame.origin.x + visible_frame.size.width) * scale_factor) as u32,
+            bottom: ((visible_frame.origin.y + visible_frame.size.height) * scale_factor) as u32,
+        };
+        // macOS does not always provide a human‐friendly display name, so we use an index.
+        let name = format!("Screen {}", i);
+        monitors_info.push(MonitorInfo { name, area, work_area });
+    }
+    monitors_info
+}
 

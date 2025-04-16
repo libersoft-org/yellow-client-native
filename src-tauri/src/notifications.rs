@@ -33,7 +33,7 @@ pub async fn create_notifications_window(_app: tauri::AppHandle) -> Result<(), S
         .decorations(false)
         .skip_taskbar(true)
         .always_on_top(true)
-        .resizable(false)
+        .resizable(true)
         .shadow(false)
         //.visible(false)
         .focused(false)
