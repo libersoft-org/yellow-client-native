@@ -184,6 +184,7 @@ fn os_monitors_info2() -> Vec<MonitorInfo> {
             // Both methods are available via the MonitorExt trait.
             let geometry = monitor.geometry();
             let workarea = monitor.workarea();
+            let scale_factor = monitor.scale_factor() as f64; // Get scale factor as f64
 
             // Try to obtain a name for the monitor.
             // Depending on your GDK version, you might have methods like model() or manufacturer().
@@ -193,19 +194,31 @@ fn os_monitors_info2() -> Vec<MonitorInfo> {
                 None => format!("Monitor {}", i),
             };
 
+            // Calculate scaled dimensions
+            let geo_x = geometry.x() as f64;
+            let geo_y = geometry.y() as f64;
+            let geo_width = geometry.width() as f64;
+            let geo_height = geometry.height() as f64;
+
+            let work_x = workarea.x() as f64;
+            let work_y = workarea.y() as f64;
+            let work_width = workarea.width() as f64;
+            let work_height = workarea.height() as f64;
+
+
             monitors_info.push(MonitorInfo {
                 name,
                 area: Area {
-                    left: geometry.x() as u32,
-                    top: geometry.y() as u32,
-                    right: geometry.x() as u32 + geometry.width() as u32,
-                    bottom: geometry.y() as u32 + geometry.height() as u32,
+                    left: (geo_x * scale_factor) as u32,
+                    top: (geo_y * scale_factor) as u32,
+                    right: ((geo_x + geo_width) * scale_factor) as u32,
+                    bottom: ((geo_y + geo_height) * scale_factor) as u32,
                 },
                 work_area: Area {
-                    left: workarea.x() as u32,
-                    top: workarea.y() as u32,
-                    right: workarea.x() as u32 + workarea.width() as u32,
-                    bottom: workarea.y() as u32 + workarea.height() as u32,
+                    left: (work_x * scale_factor) as u32,
+                    top: (work_y * scale_factor) as u32,
+                    right: ((work_x + work_width) * scale_factor) as u32,
+                    bottom: ((work_y + work_height) * scale_factor) as u32,
                 },
             });
         }
