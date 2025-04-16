@@ -1,3 +1,4 @@
+//use std::collections::VecDeque;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 use log::info;
 use serde::{Deserialize, Serialize};
@@ -64,13 +65,12 @@ pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Resul
 }
 
 #[cfg(target_os = "windows")]
-use windows_core::{ BOOL };
-
+use windows_core::BOOL;
 
 #[cfg(target_os = "windows")]
 use windows::{
-    Win32::Foundation::{LPARAM, RECT },
-    Win32::Graphics::Gdi::{EnumDisplayMonitors, HDC, HMONITOR, MONITORINFO, GetMonitorInfoW},
+    Win32::Foundation::{LPARAM, RECT},
+    Win32::Graphics::Gdi::{EnumDisplayMonitors, GetMonitorInfoW, HDC, HMONITOR, MONITORINFOEXW},
 };
 
 #[cfg(target_os = "windows")]
@@ -78,19 +78,16 @@ use windows::{
 fn os_monitors_info() -> Vec<MonitorInfo> {
     let mut results: Vec<MonitorInfo> = Vec::new();
     unsafe {
-        let _ = EnumDisplayMonitors(
-            None,   // kontext (null = všechny monitory)
-            None, // klipovací obdélník (null = neomezovat)
-            // Callback
+        EnumDisplayMonitors(
+            None,
+            None,
             Some(enum_monitor_proc),
-            // Předáme ukazatel na náš vektor jako lParam:
             LPARAM(&mut results as *mut _ as isize),
         );
     }
     results
 }
 
-// Callback funkce pro každý monitor (Win32 API volá tuto funkci):
 #[cfg(target_os = "windows")]
 unsafe extern "system" fn enum_monitor_proc(
     hmon: HMONITOR,
@@ -100,35 +97,37 @@ unsafe extern "system" fn enum_monitor_proc(
 ) -> BOOL {
     let vec_ptr = lparam.0 as *mut Vec<MonitorInfo>;
     if let Some(monitors) = vec_ptr.as_mut() {
-        let mut info = MONITORINFO {
-            cbSize: std::mem::size_of::<MONITORINFO>() as u32,
-            ..Default::default()
+        let mut info = MONITORINFOEXW {
+            monitorInfo: MONITORINFOEXW::default().monitorInfo,
+            szDevice: [0; 32],
         };
-        let result = GetMonitorInfoW(hmon, &mut info);
+        info.monitorInfo.cbSize = std::mem::size_of::<MONITORINFOEXW>() as u32;
+
+        let result = GetMonitorInfoW(hmon, &mut info as *mut _ as *mut _);
         if result.as_bool() {
-            // Generate a monitor name from its handle ID
-            let monitor_name = format!("Monitor_{:p}", hmon.0);
+            let device_name = String::from_utf16_lossy(
+                &info.szDevice.iter().take_while(|&&c| c != 0).copied().collect::<Vec<u16>>(),
+            );
 
             monitors.push(MonitorInfo {
-                name: monitor_name,
+                name: device_name,
                 area: Area {
-                    left: info.rcMonitor.left as u32,
-                    top: info.rcMonitor.top as u32,
-                    right: info.rcMonitor.right as u32,
-                    bottom: info.rcMonitor.bottom as u32,
+                    left: info.monitorInfo.rcMonitor.left as u32,
+                    top: info.monitorInfo.rcMonitor.top as u32,
+                    right: info.monitorInfo.rcMonitor.right as u32,
+                    bottom: info.monitorInfo.rcMonitor.bottom as u32,
                 },
                 work_area: Area {
-                    left: info.rcWork.left as u32,
-                    top: info.rcWork.top as u32,
-                    right: info.rcWork.right as u32,
-                    bottom: info.rcWork.bottom as u32,
+                    left: info.monitorInfo.rcWork.left as u32,
+                    top: info.monitorInfo.rcWork.top as u32,
+                    right: info.monitorInfo.rcWork.right as u32,
+                    bottom: info.monitorInfo.rcWork.bottom as u32,
                 },
             });
         }
     }
     BOOL(1)
 }
-
 
 // #[cfg(target_os = "windows")]
 // use windows_core::{ BOOL, PCSTR };
@@ -206,3 +205,31 @@ fn os_monitors_info() -> Vec<MonitorInfo> {
 //
 //
 //
+
+
+// pub struct MonitorHandle(isize);
+//
+// unsafe extern "system" fn monitor_enum_proc(
+//     hmonitor: HMONITOR,
+//     _hdc: HDC,
+//     _place: *mut RECT,
+//     data: LPARAM,
+// ) -> BOOL {
+//     let monitors = data.0 as *mut VecDeque<MonitorHandle>;
+//     (*monitors).push_back(MonitorHandle::new(hmonitor));
+//     true.into() // continue enumeration
+// }
+//
+// #[tauri::command]
+// pub fn available_monitors() -> VecDeque<MonitorHandle> {
+//     let mut monitors: VecDeque<MonitorHandle> = VecDeque::new();
+//     unsafe {
+//         let _ = EnumDisplayMonitors(
+//             None,
+//             None,
+//             Some(monitor_enum_proc),
+//             LPARAM(&mut monitors as *mut _ as _),
+//         );
+//     }
+//     monitors
+// }

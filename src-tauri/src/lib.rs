@@ -3,6 +3,7 @@
 mod commands;
 mod notifications;
 mod monitors;
+mod monitors2;
 
 use log::{info, LevelFilter};
 use tauri::Listener;
@@ -11,7 +12,8 @@ use tauri::Listener;
 use tauri::Manager;
 
 use serde::Deserialize;
-// use tauri_plugin_sentry::{minidump, sentry};
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+use tauri_plugin_sentry::{minidump, sentry};
 
 // Define the plugin config
 #[derive(Deserialize)]
@@ -46,21 +48,22 @@ fn setup_desktop_notifications(app: &mut tauri::App) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // let client = sentry::init(("https://ba775427faea759b72f912167c326660@o4504414737399808.ingest.us.sentry.io/4506954859610112",
-    //     sentry::ClientOptions {
-    //         release: sentry::release_name!(),
-    //         auto_session_tracking: true,
-    //         ..Default::default()
-    //     },
-    // ));
-    //
-    // // Caution! Everything before here runs in both app and crash reporter processes
-    // #[cfg(not(target_os = "ios"))]
-    // let _guard = minidump::init(&client);
-    // // Everything after here runs in only the app process
+
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    let client = sentry::init(("https://ba775427faea759b72f912167c326660@o4504414737399808.ingest.us.sentry.io/4506954859610112",
+        sentry::ClientOptions {
+            release: sentry::release_name!(),
+            auto_session_tracking: true,
+            ..Default::default()
+        },
+    ));
+    // Caution! Everything before here runs in both app and crash reporter processes
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    let _guard = minidump::init(&client);
+    // Everything after here runs in only the app process
+
 
     setup_logging();
-
     info!("Starting application");
 
     #[cfg(desktop)]
@@ -119,6 +122,7 @@ pub fn run() {
             commands::log,
             #[cfg(not(any(target_os = "android", target_os = "ios")))]
             monitors::get_work_area,
+            //monitors2::get_work_area2,
             notifications::close_notifications_window,
             notifications::create_notifications_window,
             notifications::show
