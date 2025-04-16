@@ -28,6 +28,8 @@ pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Resul
     for m in monitors {
         info!("Monitor: {:?}", m);
         info!("Monitor name: {:?}", m.name);
+        info!("input name string length: {}", monitor_name.len());
+        info!("monitor name string length: {}", m.name.len());
         if m.name.eq(&monitor_name)
         {
             info!("Monitor found: {}", &monitor_name);
