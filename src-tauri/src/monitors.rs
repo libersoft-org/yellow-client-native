@@ -78,7 +78,8 @@ use windows::{
 #[tauri::command]
 fn os_monitors_info() -> Vec<MonitorInfo> {
     let mut results: Vec<MonitorInfo> = Vec::new();
-    let res = unsafe {
+    unsafe {
+    let res =
         EnumDisplayMonitors(
             None,
             None,
