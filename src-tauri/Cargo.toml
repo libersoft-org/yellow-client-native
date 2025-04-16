@@ -28,11 +28,13 @@ tauri-plugin-store = "2"
 tauri-plugin-os = "2"
 tauri-plugin-notification = "2"
 tauri-plugin-log = "2"
-#[target.'cfg(linux)'.dependencies]
+
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios", target_os = "macos", target_os = "windows")))'.dependencies]
 gdk = "0.18.2"
 gtk = "0.18.2"
 glib = "0.20.9"
-xcb = "0.9"        # or your preferred version
+xcb = "0.9"
 libc = "0.2"
 
 

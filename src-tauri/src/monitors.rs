@@ -247,8 +247,11 @@ fn os_monitors_info2() -> Vec<MonitorInfo> {
 
 
 
+#[cfg(target_os = "linux")]
 use std::ffi::CString;
+#[cfg(target_os = "linux")]
 use std::ptr;
+#[cfg(target_os = "linux")]
 use libc;
 
 #[cfg(target_os = "linux")]
