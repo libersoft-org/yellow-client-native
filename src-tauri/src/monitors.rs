@@ -1,5 +1,5 @@
 #[cfg(target_os = "linux")]
-use gtk::gdk;
+use gtk;
 #[cfg(target_os = "linux")]
 use gtk::prelude::*;
 #[cfg(target_os = "linux")]
@@ -162,6 +162,9 @@ unsafe extern "system" fn enum_monitor_proc(
 
 #[cfg(target_os = "linux")]
 fn os_monitors_info() -> Vec<MonitorInfo> {
+
+    print_xcb_net_workarea();
+
     let (tx, rx) = mpsc::channel();
    glib::MainContext::default().invoke(move || {
         let monitors = os_monitors_info2();
@@ -242,6 +245,82 @@ fn os_monitors_info2() -> Vec<MonitorInfo> {
     monitors_info
 }
 
+
+
+use std::ffi::CString;
+use std::ptr;
+use libc;
+
+#[cfg(target_os = "linux")]
+fn print_xcb_net_workarea() {
+
+        unsafe {
+            // Connect to the X server.
+            let (conn, screen_num) = xcb::Connection::connect(None)
+                .expect("Could not connect to the X server");
+
+            // Get the screen information from the connection.
+            let setup = conn.get_setup(); // Use the method on the connection!
+            let screen = setup.roots().nth(screen_num as usize)
+                .expect("Could not retrieve screen");
+            let root = screen.root();
+
+            // Prepare the atom name for "_NET_WORKAREA".
+            let atom_name = CString::new("_NET_WORKAREA").unwrap();
+            let name_len = atom_name.as_bytes().len() as u16;
+
+            // Request (intern) the _NET_WORKAREA atom.
+            let atom_cookie = xcb::ffi::xcb_intern_atom(
+                conn.get_raw_conn(),
+                0, // only_if_exists = false
+                name_len,
+                atom_name.as_ptr(),
+            );
+            let atom_reply = xcb::ffi::xcb_intern_atom_reply(conn.get_raw_conn(), atom_cookie, ptr::null_mut());
+            if atom_reply.is_null() {
+                eprintln!("Failed to get _NET_WORKAREA atom");
+                return;
+            }
+            let workarea_atom = (*atom_reply).atom;
+            libc::free(atom_reply as *mut libc::c_void);
+
+            // Request the _NET_WORKAREA property from the root window.
+            let prop_cookie = xcb::ffi::xcb_get_property(
+                conn.get_raw_conn(),
+                0,       // delete = false
+                root,    // the window we are interested in
+                workarea_atom,
+                xcb::ffi::XCB_ATOM_CARDINAL, // property type: CARDINAL
+                0,       // offset (0 means start at the beginning)
+                1024,    // length (number of 32-bit items to fetch)
+            );
+            let prop_reply = xcb::ffi::xcb_get_property_reply(conn.get_raw_conn(), prop_cookie, ptr::null_mut());
+            if prop_reply.is_null() {
+                eprintln!("Failed to get _NET_WORKAREA property");
+                return;
+            }
+
+            // Determine how many 32-bit items were returned.
+            let len = (*prop_reply).value_len as usize;
+            let data_ptr = xcb::ffi::xcb_get_property_value(prop_reply) as *const u32;
+            let values = std::slice::from_raw_parts(data_ptr, len);
+
+            println!("_NET_WORKAREA raw values: {:?}", values);
+
+            // If the property contains groups of 4 values (x, y, width, height), print them.
+            if !values.is_empty() && values.len() % 4 == 0 {
+                println!("Parsed work areas:");
+                for chunk in values.chunks(4) {
+                    println!("x: {}, y: {}, width: {}, height: {}",
+                             chunk[0], chunk[1], chunk[2], chunk[3]);
+                }
+            } else {
+                println!("No valid _NET_WORKAREA property found or format unexpected.");
+            }
+
+            libc::free(prop_reply as *mut libc::c_void);
+        }
+    }
 
 
 
