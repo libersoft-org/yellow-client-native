@@ -27,6 +27,7 @@ pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Resul
     let monitors: Vec<MonitorInfo> = os_monitors_info();
     for m in monitors {
         info!("Monitor: {:?}", m);
+        info!("Monitor name: {:?}", m.name);
         //if m.name.eq(&monitor_name)
         {
             info!("Monitor found: {}", &monitor_name);
@@ -77,13 +78,18 @@ use windows::{
 #[tauri::command]
 fn os_monitors_info() -> Vec<MonitorInfo> {
     let mut results: Vec<MonitorInfo> = Vec::new();
-    unsafe {
+    let res = unsafe {
         EnumDisplayMonitors(
             None,
             None,
             Some(enum_monitor_proc),
             LPARAM(&mut results as *mut _ as isize),
         );
+    };
+    if res.as_bool() {
+        info!("Found {} displays", results.len());
+    } else {
+        info!("Failed to enumerate monitors");
     }
     results
 }
