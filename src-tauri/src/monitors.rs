@@ -164,6 +164,7 @@ unsafe extern "system" fn enum_monitor_proc(
 fn os_monitors_info() -> Vec<MonitorInfo> {
 
     print_xcb_net_workarea();
+    get_monitor_info_qt();
 
     let (tx, rx) = mpsc::channel();
    glib::MainContext::default().invoke(move || {
@@ -175,6 +176,8 @@ fn os_monitors_info() -> Vec<MonitorInfo> {
         eprintln!("Failed to get monitor information");
         vec![]
     })
+
+
 }
 
 #[cfg(target_os = "linux")]
@@ -324,6 +327,43 @@ fn print_xcb_net_workarea() {
             libc::free(prop_reply as *mut libc::c_void);
         }
     }
+
+
+#[cfg(target_os = "linux")]
+use qmetaobject::*;
+
+#[cfg(target_os = "linux")]
+fn get_monitor_info_qt() {
+    // Create a QGuiApplication instance with the current command-line arguments.
+    let mut args: Vec<String> = std::env::args().collect();
+    // QGuiApplication::init_qt() initializes Qt and must be called before any Qt functions.
+    let _app = QGuiApplication::init_qt(&mut args);
+
+    // Retrieve the list of screens.
+    let screens = QGuiApplication::screens();
+    let count = screens.count();
+    println!("Number of screens found: {}", count);
+
+    for i in 0..count {
+        // screens.at(i) returns an Option<QScreen>
+        let screen = screens.at(i).unwrap();
+        let geometry = screen.geometry();            // Returns a QRect (logical units)
+        let available = screen.availableGeometry();  // Returns a QRect for available/work area
+        let dpr = screen.devicePixelRatioF();        // Floating device pixel ratio
+
+        // Convert geometry dimensions to physical pixels by multiplying by the device pixel ratio.
+        let phys_width = (geometry.width() as f64 * dpr) as i32;
+        let phys_height = (geometry.height() as f64 * dpr) as i32;
+        let avail_phys_width = (available.width() as f64 * dpr) as i32;
+        let avail_phys_height = (available.height() as f64 * dpr) as i32;
+
+        println!("Screen {}:", i);
+        println!("  Geometry (logical): {:?}", geometry);
+        println!("  Geometry (physical): {} x {}", phys_width, phys_height);
+        println!("  Available (logical): {:?}", available);
+        println!("  Available (physical): {} x {}", avail_phys_width, avail_phys_height);
+    }
+}
 
 
 
