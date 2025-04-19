@@ -26,6 +26,11 @@
     "store:default",
     "os:default",
     "notification:default",
-    "core:app:allow-default-window-icon"
+    "core:app:allow-default-window-icon",
+    "process:allow-exit",
+    "process:default",
+    "sentry:allow-breadcrumb",
+    "sentry:default"
+
   ]
 }

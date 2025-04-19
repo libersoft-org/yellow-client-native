@@ -1,5 +1,5 @@
 use log::info;
-use tauri::{Window};
+use tauri::Window;
 
 // Command to get window size
 #[tauri::command]
@@ -34,7 +34,3 @@ pub fn get_scale_factor(window: Window) -> Result<f64, String> {
 pub fn log(message: String) {
     info!("{}", message);
 }
-
-
-
-

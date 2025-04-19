@@ -1,9 +1,9 @@
 //#![feature(str_as_str)]
 
 mod commands;
-mod notifications;
 mod monitors;
 mod monitors2;
+mod notifications;
 
 use log::{info, LevelFilter};
 use tauri::Listener;
@@ -48,7 +48,6 @@ fn setup_desktop_notifications(app: &mut tauri::App) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
     let client = sentry::init(("https://ba775427faea759b72f912167c326660@o4504414737399808.ingest.us.sentry.io/4506954859610112",
         sentry::ClientOptions {
@@ -62,12 +61,12 @@ pub fn run() {
     let _guard = minidump::init(&client);
     // Everything after here runs in only the app process
 
-
     setup_logging();
     info!("Starting application");
 
     #[cfg(desktop)]
     let mut builder = tauri::Builder::default()
+        .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_window_state::Builder::new().build())
         //.plugin(tauri_plugin_log::Builder::new().build())
         .plugin(tauri_plugin_sentry::init(&client))
