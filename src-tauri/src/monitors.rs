@@ -10,9 +10,7 @@ use cocoa::appkit::NSScreen;
 #[cfg(target_os = "macos")]
 use cocoa::base::nil;
 #[cfg(target_os = "macos")]
-use cocoa::foundation::NSRect;
-#[cfg(target_os = "macos")]
-use objc::runtime::Object;
+use cocoa::foundation::NSArray;
 
 //#[cfg(not(any(target_os = "android", target_os = "ios")))]
 use log::info;
@@ -326,9 +324,6 @@ fn print_xcb_net_workarea() {
 
 #[cfg(target_os = "macos")]
 fn os_monitors_info() -> Vec<MonitorInfo> {
-    use cocoa::appkit::NSScreen;
-    use cocoa::base::nil;
-    use objc::runtime::Object;
     let screens = unsafe { NSScreen::screens(nil) };
     let count = unsafe { screens.count() };
     let mut monitors_info = Vec::new();

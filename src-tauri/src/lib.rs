@@ -2,7 +2,6 @@
 
 mod commands;
 mod monitors;
-mod monitors2;
 mod notifications;
 
 use log::{info, LevelFilter};
