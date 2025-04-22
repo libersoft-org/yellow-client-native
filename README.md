@@ -36,3 +36,5 @@ bun tauri build --debug
 ```sh
 bun tauri build
 ```
+
+
