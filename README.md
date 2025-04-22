@@ -11,6 +11,8 @@ Using Tauri 2, Svelte 5, SvelteKit, TypeScript, Vite and Bun.
 
 ### dependencies
 
+https://tauri.app/start/prerequisites/
+
 #### Linux
 ```
 sudo apt install libcrypto++-dev libssl-dev
