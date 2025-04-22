@@ -9,7 +9,15 @@ Using Tauri 2, Svelte 5, SvelteKit, TypeScript, Vite and Bun.
 
 ## Development
 
-### Start frontend dev server
+### dependencies
+
+#### Linux
+```
+sudo apt install libcrypto++-dev libssl-dev
+```
+
+
+### Development
 start android dev:
 * `ANDROID_HOME=/home/koom/Android/Sdk/ NDK_HOME=~/Android/Sdk/ndk/29.0.13113456/ bun run tauri android dev`
 start desktop dev:
