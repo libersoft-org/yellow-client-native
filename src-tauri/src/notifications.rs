@@ -36,6 +36,7 @@ pub async fn create_notifications_window(_app: tauri::AppHandle) -> Result<(), S
             .resizable(true)
             .shadow(false)
             //.visible(false)
+
             .focused(false)
             .build()
             .map_err(|e| format!("Failed to create notifications window: {}", e))?;
