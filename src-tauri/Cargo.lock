@@ -2643,7 +2643,7 @@ dependencies = [
 [[package]]
 name = "monitor_work_area"
 version = "0.1.0"
-source = "git+https://github.com/koo5/monitor_work_area#4411ca5f0a5e2472313661c233cb940d79432608"
+source = "git+https://github.com/koo5/monitor_work_area#d4f970491c7e8cf930d04f230c8117d1fd889d54"
 dependencies = [
  "cocoa",
  "gdk",
