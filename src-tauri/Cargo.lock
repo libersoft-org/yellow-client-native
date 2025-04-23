@@ -1625,7 +1625,7 @@ dependencies = [
  "gobject-sys 0.20.9",
  "libc",
  "system-deps 7.0.3",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2638,6 +2638,25 @@ dependencies = [
  "libc",
  "wasi 0.11.0+wasi-snapshot-preview1",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "monitor_work_area"
+version = "0.1.0"
+source = "git+https://github.com/koo5/monitor_work_area#4411ca5f0a5e2472313661c233cb940d79432608"
+dependencies = [
+ "cocoa",
+ "gdk",
+ "glib 0.20.9",
+ "gtk",
+ "libc",
+ "log",
+ "objc",
+ "serde",
+ "tauri",
+ "windows",
+ "windows-core 0.60.1",
+ "xcb",
 ]
 
 [[package]]
@@ -6808,14 +6827,9 @@ dependencies = [
 name = "yellow"
 version = "0.1.0"
 dependencies = [
- "cocoa",
  "env_logger",
- "gdk",
- "glib 0.20.9",
- "gtk",
- "libc",
  "log",
- "objc",
+ "monitor_work_area",
  "sentry-rust-minidump 0.9.0",
  "serde",
  "serde_json",
@@ -6834,9 +6848,6 @@ dependencies = [
  "tauri-plugin-updater",
  "tauri-plugin-window-state",
  "window-vibrancy",
- "windows",
- "windows-core 0.60.1",
- "xcb",
 ]
 
 [[package]]

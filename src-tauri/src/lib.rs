@@ -1,7 +1,4 @@
-//#![feature(str_as_str)]
-
 mod commands;
-mod monitors;
 mod notifications;
 
 use log::{info, LevelFilter};
@@ -122,9 +119,8 @@ pub fn run() {
             commands::get_window_size,
             commands::get_scale_factor,
             commands::log,
-            #[cfg(not(any(target_os = "android", target_os = "ios")))]
-            monitors::get_work_area,
-            //monitors2::get_work_area2,
+            #[cfg(desktop)]
+            commands::get_work_area,
             notifications::close_notifications_window,
             notifications::create_notifications_window,
             notifications::show

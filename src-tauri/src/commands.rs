@@ -1,5 +1,6 @@
 use log::info;
 use tauri::Window;
+use monitor_work_area::{Area, get_work_area_tauri};
 
 // Command to get window size
 #[tauri::command]
@@ -33,4 +34,13 @@ pub fn get_scale_factor(window: Window) -> Result<f64, String> {
 #[tauri::command]
 pub fn log(message: String) {
     info!("{}", message);
+}
+
+
+#[tauri::command]
+pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Result<Area, String> {
+    let area = get_work_area_tauri(monitor_name, window)
+        .await
+        .map_err(|e| format!("Failed to get work area: {}", e));
+    area
 }
