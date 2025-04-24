@@ -1625,7 +1625,7 @@ dependencies = [
  "gobject-sys 0.20.9",
  "libc",
  "system-deps 7.0.3",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -2643,7 +2643,7 @@ dependencies = [
 [[package]]
 name = "monitor_work_area"
 version = "0.1.0"
-source = "git+https://github.com/koo5/monitor_work_area#d4f970491c7e8cf930d04f230c8117d1fd889d54"
+source = "git+https://github.com/koo5/monitor_work_area#f132618eae1ba777b5932514c64506cccd4ac133"
 dependencies = [
  "cocoa",
  "gdk",
@@ -5214,8 +5214,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-store"
 version = "2.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c0c08fae6995909f5e9a0da6038273b750221319f2c0f3b526d6de1cde21505"
+source = "git+https://github.com/koo5/plugins-workspace#701254b7ccd87466890c745b2346979a552fdb07"
 dependencies = [
  "dunce",
  "serde",
@@ -5262,10 +5261,11 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-window-state"
 version = "2.2.2"
-source = "git+https://github.com/koo5/plugins-workspace#29aa4d9289ff2139d576cc8e9852e549d65d7753"
+source = "git+https://github.com/koo5/plugins-workspace#701254b7ccd87466890c745b2346979a552fdb07"
 dependencies = [
  "bitflags 2.9.0",
  "log",
+ "monitor_work_area",
  "serde",
  "serde_json",
  "tauri",
