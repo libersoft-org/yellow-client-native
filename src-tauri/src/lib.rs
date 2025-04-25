@@ -1,5 +1,6 @@
 mod commands;
 mod notifications;
+mod audio;
 
 use log::{info, LevelFilter};
 use tauri::Listener;
@@ -123,7 +124,10 @@ pub fn run() {
             commands::get_work_area,
             notifications::close_notifications_window,
             notifications::create_notifications_window,
-            notifications::show
+            notifications::show,
+            audio::play_audio,
+            audio::stop_audio,
+            audio::is_audio_playing
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -31,6 +31,8 @@ tauri-plugin-process = "2"
 monitor_work_area = { git = "https://github.com/koo5/monitor_work_area", version = "0.1.0", features = ["tauri"] }
 tauri-plugin-window-state = { git = "https://github.com/koo5/plugins-workspace", version = "2.2.2" }
 tauri-plugin-store = { git = "https://github.com/koo5/plugins-workspace", version = "2.2.0" }
+rodio = "0.17.1"
+lazy_static = "1.4.0"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-autostart = "2"
