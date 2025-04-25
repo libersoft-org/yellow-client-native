@@ -18,7 +18,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [ "tray-icon" ] }
+tauri = { version = "2.4.1", features = [ "tray-icon" ] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -43,3 +43,11 @@ tauri-plugin-window-state = { git = "https://github.com/koo5/plugins-workspace",
 window-vibrancy = "0.6.0"
 sentry-rust-minidump = "0.9"
 tauri-plugin-sentry = "0.4.1"
+
+
+
+[patch.crates-io]
+# Overrides EVERY crates.io tauri = "…" to come from your Git fork/branch
+tauri = { git = "https://github.com/koo5/tauri", branch = "yellow" }
+
+

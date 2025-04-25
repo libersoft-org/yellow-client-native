@@ -5250,8 +5250,7 @@ checksum = "61c41af27dd6d1e27b1b16b489db798443478cef1f06a660c96db617ba5de3b1"
 [[package]]
 name = "tauri"
 version = "2.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d08db1ff9e011e04014e737ec022610d756c0eae0b3b3a9037bccaf3003173a"
+source = "git+https://github.com/koo5/tauri?branch=yellow#13956c7fbfdc511eb7e49617ee96fab202f5fc20"
 dependencies = [
  "anyhow",
  "bytes",
@@ -5281,11 +5280,11 @@ dependencies = [
  "serde_repr",
  "serialize-to-javascript",
  "swift-rs",
- "tauri-build",
+ "tauri-build 2.1.1 (git+https://github.com/koo5/tauri?branch=yellow)",
  "tauri-macros",
  "tauri-runtime",
  "tauri-runtime-wry",
- "tauri-utils",
+ "tauri-utils 2.3.1 (git+https://github.com/koo5/tauri?branch=yellow)",
  "thiserror 2.0.12",
  "tokio",
  "tray-icon",
@@ -5313,7 +5312,28 @@ dependencies = [
  "semver",
  "serde",
  "serde_json",
- "tauri-utils",
+ "tauri-utils 2.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tauri-winres",
+ "toml",
+ "walkdir",
+]
+
+[[package]]
+name = "tauri-build"
+version = "2.1.1"
+source = "git+https://github.com/koo5/tauri?branch=yellow#13956c7fbfdc511eb7e49617ee96fab202f5fc20"
+dependencies = [
+ "anyhow",
+ "cargo_toml",
+ "dirs 6.0.0",
+ "glob",
+ "heck 0.5.0",
+ "json-patch",
+ "schemars",
+ "semver",
+ "serde",
+ "serde_json",
+ "tauri-utils 2.3.1 (git+https://github.com/koo5/tauri?branch=yellow)",
  "tauri-winres",
  "toml",
  "walkdir",
@@ -5322,8 +5342,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "458258b19032450ccf975840116ecf013e539eadbb74420bd890e8c56ab2b1a4"
+source = "git+https://github.com/koo5/tauri?branch=yellow#13956c7fbfdc511eb7e49617ee96fab202f5fc20"
 dependencies = [
  "base64 0.22.1",
  "brotli",
@@ -5338,7 +5357,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "syn 2.0.100",
- "tauri-utils",
+ "tauri-utils 2.3.1 (git+https://github.com/koo5/tauri?branch=yellow)",
  "thiserror 2.0.12",
  "time",
  "url",
@@ -5349,15 +5368,14 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d402813d3b9c773a0fa58697c457c771f10e735498fdcb7b343264d18e5a601f"
+source = "git+https://github.com/koo5/tauri?branch=yellow#13956c7fbfdc511eb7e49617ee96fab202f5fc20"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
  "quote",
  "syn 2.0.100",
  "tauri-codegen",
- "tauri-utils",
+ "tauri-utils 2.3.1 (git+https://github.com/koo5/tauri?branch=yellow)",
 ]
 
 [[package]]
@@ -5372,7 +5390,7 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
- "tauri-utils",
+ "tauri-utils 2.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml",
  "walkdir",
 ]
@@ -5593,8 +5611,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "2.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00ada7ac2f9276f09b8c3afffd3215fd5d9bff23c22df8a7c70e7ef67cacd532"
+source = "git+https://github.com/koo5/tauri?branch=yellow#13956c7fbfdc511eb7e49617ee96fab202f5fc20"
 dependencies = [
  "cookie",
  "dpi",
@@ -5604,7 +5621,7 @@ dependencies = [
  "raw-window-handle",
  "serde",
  "serde_json",
- "tauri-utils",
+ "tauri-utils 2.3.1 (git+https://github.com/koo5/tauri?branch=yellow)",
  "thiserror 2.0.12",
  "url",
  "windows 0.60.0",
@@ -5613,8 +5630,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "2.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf2e5842c57e154af43a20a49c7efee0ce2578c20b4c2bdf266852b422d2e421"
+source = "git+https://github.com/koo5/tauri?branch=yellow#13956c7fbfdc511eb7e49617ee96fab202f5fc20"
 dependencies = [
  "gtk",
  "http",
@@ -5629,7 +5645,7 @@ dependencies = [
  "softbuffer",
  "tao",
  "tauri-runtime",
- "tauri-utils",
+ "tauri-utils 2.3.1 (git+https://github.com/koo5/tauri?branch=yellow)",
  "url",
  "webkit2gtk",
  "webview2-com",
@@ -5642,6 +5658,42 @@ name = "tauri-utils"
 version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f037e66c7638cc0a2213f61566932b9a06882b8346486579c90e4b019bac447"
+dependencies = [
+ "anyhow",
+ "cargo_metadata",
+ "ctor",
+ "dunce",
+ "glob",
+ "html5ever",
+ "http",
+ "infer",
+ "json-patch",
+ "kuchikiki",
+ "log",
+ "memchr",
+ "phf 0.11.3",
+ "proc-macro2",
+ "quote",
+ "regex",
+ "schemars",
+ "semver",
+ "serde",
+ "serde-untagged",
+ "serde_json",
+ "serde_with",
+ "swift-rs",
+ "thiserror 2.0.12",
+ "toml",
+ "url",
+ "urlpattern",
+ "uuid",
+ "walkdir",
+]
+
+[[package]]
+name = "tauri-utils"
+version = "2.3.1"
+source = "git+https://github.com/koo5/tauri?branch=yellow#13956c7fbfdc511eb7e49617ee96fab202f5fc20"
 dependencies = [
  "anyhow",
  "brotli",
@@ -7182,7 +7234,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "tauri-build",
+ "tauri-build 2.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "tauri-plugin-autostart",
  "tauri-plugin-log",
  "tauri-plugin-notification",
