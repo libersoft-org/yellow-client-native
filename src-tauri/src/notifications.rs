@@ -27,17 +27,23 @@ pub async fn create_notifications_window(_app: tauri::AppHandle) -> Result<(), S
         #[cfg(target_os = "macos")]
         let _notifications_window2 = _notifications_window;
 
-        _notifications_window2
+        let _notifications_window3 = _notifications_window2
             .title("Yellow Notifications")
             .inner_size(400.0, 60.0)
             .decorations(false)
             .skip_taskbar(true)
             .always_on_top(true)
-            .resizable(true)
             .shadow(false)
-            //.visible(false)
+            .focused(false);
 
-            .focused(false)
+        #[cfg(dev)]
+        let _notifications_window4 = _notifications_window3
+            .resizable(true);
+        #[cfg(not(dev))]
+        let _notifications_window4 = _notifications_window3
+            .visible(false);
+
+        _notifications_window4
             .build()
             .map_err(|e| format!("Failed to create notifications window: {}", e))?;
 
