@@ -23,6 +23,7 @@ pub async fn create_notifications_window(_app: tauri::AppHandle) -> Result<(), S
         );
 
         #[cfg(not(target_os = "macos"))]
+        // "Note that on `macOS` this requires the `macos-private-api` feature flag, enabled under `tauri.conf.json > app > macOSPrivateApi`".
         let _notifications_window2 = _notifications_window.transparent(true);
         #[cfg(target_os = "macos")]
         let _notifications_window2 = _notifications_window;
