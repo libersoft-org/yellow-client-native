@@ -1,6 +1,6 @@
+mod audio;
 mod commands;
 mod notifications;
-mod audio;
 
 use log::{info, LevelFilter};
 use tauri::Listener;
@@ -27,20 +27,8 @@ fn setup_logging() {
 }
 
 #[cfg(desktop)]
-fn setup_desktop_notifications(app: &mut tauri::App) {
-    let app_handle_clone = app.handle().clone();
-    let main_window = app.get_webview_window("main").unwrap();
-    main_window.on_window_event(move |event| {
-        if let tauri::WindowEvent::CloseRequested { .. } = event {
-            info!("Main window is closing, closing notifications window too");
-            if let Some(notifications_window) = app_handle_clone.get_webview_window("notifications")
-            {
-                info!("found, closing notifications window");
-                let _ = notifications_window.close();
-                info!("notifications window closed");
-            }
-        }
-    });
+fn setup_desktop_notifications(_app: &mut tauri::App) {
+    // todo: ensure that notifications window is closed when main window closes, even if the js in main window doesn't call close_notifications_window
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -63,6 +51,7 @@ pub fn run() {
 
     #[cfg(desktop)]
     let mut builder = tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_window_state::Builder::new().build())
         //.plugin(tauri_plugin_log::Builder::new().build())

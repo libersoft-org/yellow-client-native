@@ -12,6 +12,8 @@
     "core:window:allow-create",
     "core:window:allow-close",
     "core:window:allow-center",
+    "core:window:allow-hide",
+    "core:window:allow-show",
     "core:window:allow-set-always-on-top",
     "core:window:allow-set-decorations",
     "core:window:allow-set-skip-taskbar",
@@ -30,7 +32,8 @@
     "process:allow-exit",
     "process:default",
     "sentry:allow-breadcrumb",
-    "sentry:default"
-
+    "sentry:default",
+    "dialog:allow-confirm",
+    "dialog:default"
   ]
 }

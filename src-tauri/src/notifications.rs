@@ -38,11 +38,9 @@ pub async fn create_notifications_window(_app: tauri::AppHandle) -> Result<(), S
             .focused(false);
 
         #[cfg(dev)]
-        let _notifications_window4 = _notifications_window3
-            .resizable(true);
+        let _notifications_window4 = _notifications_window3.resizable(true);
         #[cfg(not(dev))]
-        let _notifications_window4 = _notifications_window3
-            .visible(false);
+        let _notifications_window4 = _notifications_window3.visible(false);
 
         _notifications_window4
             .build()
