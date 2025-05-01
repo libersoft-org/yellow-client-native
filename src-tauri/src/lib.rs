@@ -111,6 +111,8 @@ pub fn run() {
             commands::log,
             #[cfg(desktop)]
             commands::get_work_area,
+            commands::get_build_commit_hash,
+            commands::get_build_ts,
             notifications::close_notifications_window,
             notifications::create_notifications_window,
             notifications::show,
