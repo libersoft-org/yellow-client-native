@@ -107,13 +107,17 @@ pub fn run() {
             #[cfg(desktop)]
             setup_desktop_notifications(app);
 
+            #[cfg(debug_assertions)]
             let do_open_devtools = std::env::var("TAURI_OPEN_DEVTOOLS")
                 .map(|v| v.eq_ignore_ascii_case("true"))
                 .unwrap_or(false);
 
+            #[cfg(debug_assertions)]
             if do_open_devtools {
                 app.get_webview_window("main").unwrap().open_devtools();
             }
+
+            
 
 
             Ok(())
