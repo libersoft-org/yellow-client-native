@@ -12,6 +12,7 @@ use serde::Deserialize;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 use tauri_plugin_sentry::{minidump, sentry};
 
+
 // Define the plugin config
 #[derive(Deserialize)]
 struct Config {}
@@ -38,6 +39,8 @@ pub fn run() {
         sentry::ClientOptions {
             release: sentry::release_name!(),
             auto_session_tracking: true,
+            attach_stacktrace: true,
+            trim_backtraces: false,
             ..Default::default()
         },
     ));
@@ -103,6 +106,15 @@ pub fn run() {
             // Close notifications window when main window closes
             #[cfg(desktop)]
             setup_desktop_notifications(app);
+
+            let do_open_devtools = std::env::var("TAURI_OPEN_DEVTOOLS")
+                .map(|v| v.eq_ignore_ascii_case("true"))
+                .unwrap_or(false);
+
+            if do_open_devtools {
+                app.get_webview_window("main").unwrap().open_devtools();
+            }
+
 
             Ok(())
         })
