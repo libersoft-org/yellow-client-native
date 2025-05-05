@@ -2,6 +2,7 @@ use log::info;
 
 #[cfg(not(target_os = "android"))]
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
+use crate::misc;
 
 #[tauri::command]
 pub async fn create_notifications_window(_app: tauri::AppHandle) -> Result<(), String> {
@@ -20,7 +21,8 @@ pub async fn create_notifications_window(_app: tauri::AppHandle) -> Result<(), S
             &_app,
             "notifications",
             WebviewUrl::App("/notifications".into()),
-        );
+        )
+        .initialization_script(super::misc::get_error_handler_script());
 
         #[cfg(not(target_os = "macos"))]
         // "Note that on `macOS` this requires the `macos-private-api` feature flag, enabled under `tauri.conf.json > app > macOSPrivateApi`".
@@ -35,7 +37,8 @@ pub async fn create_notifications_window(_app: tauri::AppHandle) -> Result<(), S
             .skip_taskbar(true)
             .always_on_top(true)
             .shadow(false)
-            .focused(false);
+            .focused(false)
+            .initialization_script(misc::get_error_handler_script());
 
         #[cfg(dev)]
         let _notifications_window4 = _notifications_window3.resizable(true);

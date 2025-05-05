@@ -1,6 +1,7 @@
 mod audio;
 mod commands;
 mod notifications;
+mod misc;
 
 use log::{info, LevelFilter};
 use tauri::Listener;
@@ -115,6 +116,9 @@ pub fn run() {
             if do_open_devtools {
                 app.get_webview_window("main").unwrap().open_devtools();
             }
+
+            //window.initialization_script(misc::get_error_handler_script());
+            //  todo pub fn background_throttling(mut self, policy: Option<BackgroundThrottlingPolicy>) -> Self {
 
             Ok(())
         })

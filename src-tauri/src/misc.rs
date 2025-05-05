@@ -1,9 +1,6 @@
-
-/// Inject our global JS error handlers on every navigation
-fn install_error_handlers(window: &Window) {
-    // This script runs before any of your app’s own JS,
-    // so it’ll catch everything, including initial-load errors.
-    let js = r#"
+/// Returns a JavaScript script that installs global error handlers
+pub fn get_error_handler_script() -> &'static str {
+    r#"
     console.log('[init] installing global error handlers');
 
     // catch sync errors
@@ -15,9 +12,5 @@ fn install_error_handlers(window: &Window) {
     window.addEventListener('unhandledrejection', event => {
       console.error('onunhandledrejection:', event.reason, event.reason?.stack);
     });
-  "#;
-
-    window
-        .eval(js)
-        .expect("failed to inject error handler script");
+    "#
 }
