@@ -12,7 +12,6 @@ use serde::Deserialize;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 use tauri_plugin_sentry::{minidump, sentry};
 
-
 // Define the plugin config
 #[derive(Deserialize)]
 struct Config {}
@@ -36,13 +35,13 @@ fn setup_desktop_notifications(_app: &mut tauri::App) {
 pub fn run() {
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
     let client = sentry::init(("https://ba775427faea759b72f912167c326660@o4504414737399808.ingest.us.sentry.io/4506954859610112",
-        sentry::ClientOptions {
-            release: sentry::release_name!(),
-            auto_session_tracking: true,
-            attach_stacktrace: true,
-            trim_backtraces: false,
-            ..Default::default()
-        },
+                               sentry::ClientOptions {
+                                   release: sentry::release_name!(),
+                                   auto_session_tracking: true,
+                                   attach_stacktrace: true,
+                                   trim_backtraces: false,
+                                   ..Default::default()
+                               },
     ));
     // Caution! Everything before here runs in both app and crash reporter processes
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
@@ -117,9 +116,6 @@ pub fn run() {
                 app.get_webview_window("main").unwrap().open_devtools();
             }
 
-            
-
-
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -140,3 +136,4 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+
