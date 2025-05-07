@@ -27,14 +27,11 @@
     "core:event:allow-emit",
     "core:event:allow-listen",
     "core:event:allow-unlisten",
-    "store:default",
     "os:default",
     "notification:default",
     "core:app:allow-default-window-icon",
     "process:allow-exit",
     "process:default",
-    "sentry:allow-breadcrumb",
-    "sentry:default",
     "dialog:allow-confirm",
     "dialog:default"
   ]

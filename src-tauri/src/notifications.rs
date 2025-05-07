@@ -2,6 +2,7 @@ use log::info;
 
 #[cfg(not(target_os = "android"))]
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
+#[cfg(not(target_os = "android"))]
 use crate::misc;
 
 #[tauri::command]

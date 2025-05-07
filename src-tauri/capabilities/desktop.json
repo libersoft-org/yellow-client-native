@@ -14,6 +14,9 @@
     "updater:default",
     "updater:default",
     "autostart:default",
-    "window-state:default"
+    "window-state:default",
+    "sentry:allow-breadcrumb",
+    "sentry:default",
+    "store:default"
   ]
 }

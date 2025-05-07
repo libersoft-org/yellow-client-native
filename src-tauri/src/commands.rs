@@ -1,4 +1,5 @@
 use log::info;
+#[cfg(desktop)]
 use monitor_work_area::{get_work_area_tauri, Area};
 use tauri::Window;
 
@@ -38,6 +39,8 @@ pub fn log(message: String) {
     info!("{}", message);
 }
 
+
+#[cfg(desktop)]
 #[tauri::command]
 pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Result<Area, String> {
     let area = get_work_area_tauri(monitor_name, window)

@@ -326,9 +326,9 @@ checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
 
 [[package]]
 name = "backtrace"
-version = "0.3.74"
+version = "0.3.75"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d82cb332cdfaed17ae235a638438ac4d4839913cc2af585c3c6746e8f8bee1a"
+checksum = "6806a6321ec58106fea15becdad98371e28d92ccbc7c8f1b3b6dd724fe8f1002"
 dependencies = [
  "addr2line",
  "cfg-if",
@@ -467,9 +467,9 @@ dependencies = [
 
 [[package]]
 name = "brotli"
-version = "8.0.1"
+version = "7.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9991eea70ea4f293524138648e41ee89b0b2b12ddef3b255effa43c8056e0e0d"
+checksum = "cc97b8f16f944bba54f0433f07e30be199b6dc2bd25937444bbad560bcea29bd"
 dependencies = [
  "alloc-no-stdlib",
  "alloc-stdlib",
@@ -478,9 +478,9 @@ dependencies = [
 
 [[package]]
 name = "brotli-decompressor"
-version = "5.0.0"
+version = "4.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "874bb8112abecc98cbd6d81ea4fa7e94fb9449648c93cc89aa40c81c24d7de03"
+checksum = "a334ef7c9e23abf0ce748e8cd309037da93e606ad52eb372e4ce327a0dcfbdfd"
 dependencies = [
  "alloc-no-stdlib",
  "alloc-stdlib",
@@ -2009,9 +2009,9 @@ checksum = "fbf6a919d6cf397374f7dfeeea91d974c7c0a7221d0d0f4f20d859d329e53fcc"
 
 [[package]]
 name = "hermit-abi"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fbd780fe5cc30f81464441920d82ac8740e2e46b29a6fad543ddd075229ce37e"
+checksum = "f154ce46856750ed433c8649605bf7ed2de3bc35fd9d2a9f30cddd873c80cb08"
 
 [[package]]
 name = "hex"
@@ -2136,7 +2136,7 @@ dependencies = [
  "tokio",
  "tokio-rustls",
  "tower-service",
- "webpki-roots",
+ "webpki-roots 0.26.11",
 ]
 
 [[package]]
@@ -2406,7 +2406,7 @@ version = "0.4.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e04d7f318608d35d4b61ddd75cbdaee86b023ebe2bd5a66ee0915f0bf93095a9"
 dependencies = [
- "hermit-abi 0.5.0",
+ "hermit-abi 0.5.1",
  "libc",
  "windows-sys 0.59.0",
 ]
@@ -4188,7 +4188,7 @@ dependencies = [
  "wasm-bindgen-futures",
  "wasm-streams",
  "web-sys",
- "webpki-roots",
+ "webpki-roots 0.26.11",
  "windows-registry",
 ]
 
@@ -4344,9 +4344,9 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.23.26"
+version = "0.23.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df51b5869f3a441595eac5e8ff14d486ff285f7b8c0df8770e49c3b56351f0f0"
+checksum = "730944ca083c1c233a75c09f199e973ca499344a2b7ba9e755c457e86fb4a321"
 dependencies = [
  "once_cell",
  "ring",
@@ -4367,18 +4367,19 @@ dependencies = [
 
 [[package]]
 name = "rustls-pki-types"
-version = "1.11.0"
+version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "917ce264624a4b4db1c364dcc35bfca9ded014d0a958cd47ad3e960e988ea51c"
+checksum = "229a4a4c221013e7e1f1a043678c5cc39fe5171437c88fb47151a21e6f5b5c79"
 dependencies = [
  "web-time",
+ "zeroize",
 ]
 
 [[package]]
 name = "rustls-webpki"
-version = "0.103.1"
+version = "0.103.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fef8b8769aaccf73098557a87cd1816b4f9c7c16811c9c77142aa695c16f2c03"
+checksum = "7149975849f1abb3832b246010ef62ccc80d3a76169517ada7188252b9cfb437"
 dependencies = [
  "ring",
  "rustls-pki-types",
@@ -5234,9 +5235,9 @@ dependencies = [
 
 [[package]]
 name = "tao"
-version = "0.33.0"
+version = "0.32.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e59c1f38e657351a2e822eadf40d6a2ad4627b9c25557bc1180ec1b3295ef82"
+checksum = "63c8b1020610b9138dd7b1e06cf259ae91aa05c30f3bd0d6b42a03997b92dec1"
 dependencies = [
  "bitflags 2.9.0",
  "core-foundation 0.10.0",
@@ -5265,8 +5266,8 @@ dependencies = [
  "tao-macros",
  "unicode-segmentation",
  "url",
- "windows 0.61.1",
- "windows-core 0.61.0",
+ "windows 0.60.0",
+ "windows-core 0.60.1",
  "windows-version",
  "x11-dl",
 ]
@@ -5307,8 +5308,8 @@ checksum = "61c41af27dd6d1e27b1b16b489db798443478cef1f06a660c96db617ba5de3b1"
 
 [[package]]
 name = "tauri"
-version = "2.5.1"
-source = "git+https://github.com/koo5/tauri?branch=yellow#302acb42bb46a1c5f9d83039e40e63eaf593d312"
+version = "2.4.1"
+source = "git+https://github.com/koo5/tauri?branch=yellow-tauri-v2.4.1#a01037586cf3a4077af0e66d537e9a7b2b54f863"
 dependencies = [
  "anyhow",
  "bytes",
@@ -5329,7 +5330,6 @@ dependencies = [
  "objc2 0.6.1",
  "objc2-app-kit",
  "objc2-foundation 0.3.1",
- "objc2-ui-kit",
  "percent-encoding",
  "plist",
  "raw-window-handle",
@@ -5339,11 +5339,11 @@ dependencies = [
  "serde_repr",
  "serialize-to-javascript",
  "swift-rs",
- "tauri-build 2.2.0 (git+https://github.com/koo5/tauri?branch=yellow)",
+ "tauri-build 2.1.1",
  "tauri-macros",
  "tauri-runtime",
  "tauri-runtime-wry",
- "tauri-utils 2.4.0 (git+https://github.com/koo5/tauri?branch=yellow)",
+ "tauri-utils 2.3.1",
  "thiserror 2.0.12",
  "tokio",
  "tray-icon",
@@ -5352,7 +5352,28 @@ dependencies = [
  "webkit2gtk",
  "webview2-com",
  "window-vibrancy",
- "windows 0.61.1",
+ "windows 0.60.0",
+]
+
+[[package]]
+name = "tauri-build"
+version = "2.1.1"
+source = "git+https://github.com/koo5/tauri?branch=yellow-tauri-v2.4.1#a01037586cf3a4077af0e66d537e9a7b2b54f863"
+dependencies = [
+ "anyhow",
+ "cargo_toml",
+ "dirs 6.0.0",
+ "glob",
+ "heck 0.5.0",
+ "json-patch",
+ "schemars",
+ "semver",
+ "serde",
+ "serde_json",
+ "tauri-utils 2.3.1",
+ "tauri-winres",
+ "toml",
+ "walkdir",
 ]
 
 [[package]]
@@ -5371,28 +5392,7 @@ dependencies = [
  "semver",
  "serde",
  "serde_json",
- "tauri-utils 2.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "tauri-winres",
- "toml",
- "walkdir",
-]
-
-[[package]]
-name = "tauri-build"
-version = "2.2.0"
-source = "git+https://github.com/koo5/tauri?branch=yellow#302acb42bb46a1c5f9d83039e40e63eaf593d312"
-dependencies = [
- "anyhow",
- "cargo_toml",
- "dirs 6.0.0",
- "glob",
- "heck 0.5.0",
- "json-patch",
- "schemars",
- "semver",
- "serde",
- "serde_json",
- "tauri-utils 2.4.0 (git+https://github.com/koo5/tauri?branch=yellow)",
+ "tauri-utils 2.4.0",
  "tauri-winres",
  "toml",
  "walkdir",
@@ -5400,8 +5400,8 @@ dependencies = [
 
 [[package]]
 name = "tauri-codegen"
-version = "2.2.0"
-source = "git+https://github.com/koo5/tauri?branch=yellow#302acb42bb46a1c5f9d83039e40e63eaf593d312"
+version = "2.1.1"
+source = "git+https://github.com/koo5/tauri?branch=yellow-tauri-v2.4.1#a01037586cf3a4077af0e66d537e9a7b2b54f863"
 dependencies = [
  "base64 0.22.1",
  "brotli",
@@ -5416,7 +5416,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "syn 2.0.101",
- "tauri-utils 2.4.0 (git+https://github.com/koo5/tauri?branch=yellow)",
+ "tauri-utils 2.3.1",
  "thiserror 2.0.12",
  "time",
  "url",
@@ -5426,15 +5426,15 @@ dependencies = [
 
 [[package]]
 name = "tauri-macros"
-version = "2.2.0"
-source = "git+https://github.com/koo5/tauri?branch=yellow#302acb42bb46a1c5f9d83039e40e63eaf593d312"
+version = "2.1.1"
+source = "git+https://github.com/koo5/tauri?branch=yellow-tauri-v2.4.1#a01037586cf3a4077af0e66d537e9a7b2b54f863"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
  "quote",
  "syn 2.0.101",
  "tauri-codegen",
- "tauri-utils 2.4.0 (git+https://github.com/koo5/tauri?branch=yellow)",
+ "tauri-utils 2.3.1",
 ]
 
 [[package]]
@@ -5449,7 +5449,7 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
- "tauri-utils 2.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tauri-utils 2.4.0",
  "toml",
  "walkdir",
 ]
@@ -5502,7 +5502,7 @@ dependencies = [
  "serde_repr",
  "tauri",
  "tauri-plugin",
- "tauri-utils 2.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tauri-utils 2.4.0",
  "thiserror 2.0.12",
  "toml",
  "url",
@@ -5710,29 +5710,27 @@ dependencies = [
 
 [[package]]
 name = "tauri-runtime"
-version = "2.6.0"
-source = "git+https://github.com/koo5/tauri?branch=yellow#302acb42bb46a1c5f9d83039e40e63eaf593d312"
+version = "2.5.1"
+source = "git+https://github.com/koo5/tauri?branch=yellow-tauri-v2.4.1#a01037586cf3a4077af0e66d537e9a7b2b54f863"
 dependencies = [
  "cookie",
  "dpi",
  "gtk",
  "http",
  "jni",
- "objc2 0.6.1",
- "objc2-ui-kit",
  "raw-window-handle",
  "serde",
  "serde_json",
- "tauri-utils 2.4.0 (git+https://github.com/koo5/tauri?branch=yellow)",
+ "tauri-utils 2.3.1",
  "thiserror 2.0.12",
  "url",
- "windows 0.61.1",
+ "windows 0.60.0",
 ]
 
 [[package]]
 name = "tauri-runtime-wry"
-version = "2.6.0"
-source = "git+https://github.com/koo5/tauri?branch=yellow#302acb42bb46a1c5f9d83039e40e63eaf593d312"
+version = "2.5.1"
+source = "git+https://github.com/koo5/tauri?branch=yellow-tauri-v2.4.1#a01037586cf3a4077af0e66d537e9a7b2b54f863"
 dependencies = [
  "gtk",
  "http",
@@ -5747,21 +5745,21 @@ dependencies = [
  "softbuffer",
  "tao",
  "tauri-runtime",
- "tauri-utils 2.4.0 (git+https://github.com/koo5/tauri?branch=yellow)",
+ "tauri-utils 2.3.1",
  "url",
  "webkit2gtk",
  "webview2-com",
- "windows 0.61.1",
+ "windows 0.60.0",
  "wry",
 ]
 
 [[package]]
 name = "tauri-utils"
-version = "2.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2900399c239a471bcff7f15c4399eb1a8c4fe511ba2853e07c996d771a5e0a4"
+version = "2.3.1"
+source = "git+https://github.com/koo5/tauri?branch=yellow-tauri-v2.4.1#a01037586cf3a4077af0e66d537e9a7b2b54f863"
 dependencies = [
  "anyhow",
+ "brotli",
  "cargo_metadata",
  "ctor",
  "dunce",
@@ -5795,10 +5793,10 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.4.0"
-source = "git+https://github.com/koo5/tauri?branch=yellow#302acb42bb46a1c5f9d83039e40e63eaf593d312"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2900399c239a471bcff7f15c4399eb1a8c4fe511ba2853e07c996d771a5e0a4"
 dependencies = [
  "anyhow",
- "brotli",
  "cargo_metadata",
  "ctor",
  "dunce",
@@ -5991,9 +5989,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.44.2"
+version = "1.45.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6b88822cbe49de4185e3a4cbf8321dd487cf5fe0c5c65695fef6346371e9c48"
+checksum = "2513ca694ef9ede0fb23fe71a4ee4107cb102b9dc1930f6d0fd77aae068ae165"
 dependencies = [
  "backtrace",
  "bytes",
@@ -6105,7 +6103,7 @@ dependencies = [
  "serde_spanned",
  "toml_datetime",
  "toml_write",
- "winnow 0.7.9",
+ "winnow 0.7.10",
 ]
 
 [[package]]
@@ -6621,24 +6619,33 @@ dependencies = [
 
 [[package]]
 name = "webpki-roots"
-version = "0.26.10"
+version = "0.26.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37493cadf42a2a939ed404698ded7fb378bf301b5011f973361779a3a74f8c93"
+checksum = "521bc38abb08001b01866da9f51eb7c5d647a19260e00054a8c7fd5f9e57f7a9"
+dependencies = [
+ "webpki-roots 1.0.0",
+]
+
+[[package]]
+name = "webpki-roots"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2853738d1cc4f2da3a225c18ec6c3721abb31961096e9dbf5ab35fa88b19cfdb"
 dependencies = [
  "rustls-pki-types",
 ]
 
 [[package]]
 name = "webview2-com"
-version = "0.37.0"
+version = "0.36.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b542b5cfbd9618c46c2784e4d41ba218c336ac70d44c55e47b251033e7d85601"
+checksum = "b0d606f600e5272b514dbb66539dd068211cc20155be8d3958201b4b5bd79ed3"
 dependencies = [
  "webview2-com-macros",
  "webview2-com-sys",
- "windows 0.61.1",
- "windows-core 0.61.0",
- "windows-implement 0.60.0",
+ "windows 0.60.0",
+ "windows-core 0.60.1",
+ "windows-implement 0.59.0",
  "windows-interface",
 ]
 
@@ -6655,13 +6662,13 @@ dependencies = [
 
 [[package]]
 name = "webview2-com-sys"
-version = "0.37.0"
+version = "0.36.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8ae2d11c4a686e4409659d7891791254cf9286d3cfe0eef54df1523533d22295"
+checksum = "bfb27fccd3c27f68e9a6af1bcf48c2d82534b8675b83608a4d81446d095a17ac"
 dependencies = [
  "thiserror 2.0.12",
- "windows 0.61.1",
- "windows-core 0.61.0",
+ "windows 0.60.0",
+ "windows-core 0.60.1",
 ]
 
 [[package]]
@@ -7224,9 +7231,9 @@ dependencies = [
 
 [[package]]
 name = "winnow"
-version = "0.7.9"
+version = "0.7.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9fb597c990f03753e08d3c29efbfcf2019a003b4bf4ba19225c158e1549f0f3"
+checksum = "c06928c8748d81b05c9be96aad92e1b6ff01833332f281e8cfca3be4b35fc9ec"
 dependencies = [
  "memchr",
 ]
@@ -7273,9 +7280,9 @@ checksum = "1e9df38ee2d2c3c5948ea468a8406ff0db0b29ae1ffde1bcf20ef305bcc95c51"
 
 [[package]]
 name = "wry"
-version = "0.51.2"
+version = "0.50.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c886a0a9d2a94fd90cfa1d929629b79cfefb1546e2c7430c63a47f0664c0e4e2"
+checksum = "b19b78efae8b853c6c817e8752fc1dbf9cab8a8ffe9c30f399bd750ccf0f0730"
 dependencies = [
  "base64 0.22.1",
  "block2 0.6.1",
@@ -7309,8 +7316,8 @@ dependencies = [
  "webkit2gtk",
  "webkit2gtk-sys",
  "webview2-com",
- "windows 0.61.1",
- "windows-core 0.61.0",
+ "windows 0.60.0",
+ "windows-core 0.60.1",
  "windows-version",
  "x11-dl",
 ]
@@ -7379,7 +7386,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "tauri-build 2.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tauri-build 2.2.0",
  "tauri-plugin-autostart",
  "tauri-plugin-dialog",
  "tauri-plugin-fs",
@@ -7449,7 +7456,7 @@ dependencies = [
  "tracing",
  "uds_windows",
  "windows-sys 0.59.0",
- "winnow 0.7.9",
+ "winnow 0.7.10",
  "zbus_macros",
  "zbus_names",
  "zvariant",
@@ -7478,7 +7485,7 @@ checksum = "7be68e64bf6ce8db94f63e72f0c7eb9a60d733f7e0499e628dfab0f84d6bcb97"
 dependencies = [
  "serde",
  "static_assertions",
- "winnow 0.7.9",
+ "winnow 0.7.10",
  "zvariant",
 ]
 
@@ -7574,7 +7581,7 @@ dependencies = [
  "enumflags2",
  "serde",
  "url",
- "winnow 0.7.9",
+ "winnow 0.7.10",
  "zvariant_derive",
  "zvariant_utils",
 ]
@@ -7603,5 +7610,5 @@ dependencies = [
  "serde",
  "static_assertions",
  "syn 2.0.101",
- "winnow 0.7.9",
+ "winnow 0.7.10",
 ]

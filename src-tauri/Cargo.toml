@@ -19,7 +19,6 @@ tauri-build = { version = "2", features = [] }
 chrono = "0.4.40"
 
 [dependencies]
-tauri = { version = "2.5.1", features = [ "tray-icon", "unstable" ] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -29,13 +28,11 @@ tauri-plugin-os = "2"
 tauri-plugin-notification = "2"
 tauri-plugin-log = "2"
 tauri-plugin-process = "2"
-monitor_work_area = { git = "https://github.com/koo5/monitor_work_area", version = "0.1.0", features = ["tauri"] }
-tauri-plugin-window-state = { git = "https://github.com/koo5/plugins-workspace", version = "2.2.2" }
-tauri-plugin-store = { git = "https://github.com/koo5/plugins-workspace", version = "2.2.0" }
 rodio = "0.17.1"
 lazy_static = "1.4.0"
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
+tauri = { git = "https://github.com/koo5/tauri", branch = "yellow-tauri-v2.4.1", version = "2.4.1", features = ["tray-icon"] }
 
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
@@ -44,6 +41,8 @@ tauri-plugin-positioner = "2"
 tauri-plugin-single-instance = "2"
 tauri-plugin-updater = "2"
 tauri-plugin-window-state = { git = "https://github.com/koo5/plugins-workspace", version = "2.2.2" }
+monitor_work_area = { git = "https://github.com/koo5/monitor_work_area", version = "0.1.0", features = ["tauri"] }
+tauri-plugin-store = { git = "https://github.com/koo5/plugins-workspace", version = "2.2.0" }
 window-vibrancy = "0.6.0"
 sentry-rust-minidump = "0.9"
 tauri-plugin-sentry = "0.4.1"
@@ -52,6 +51,6 @@ tauri-plugin-sentry = "0.4.1"
 
 [patch.crates-io]
 # Overrides EVERY crates.io tauri = "…" to come from your Git fork/branch
-tauri = { git = "https://github.com/koo5/tauri", branch = "yellow" }
+tauri = { git = "https://github.com/koo5/tauri", branch = "yellow-tauri-v2.4.1" }
 
 

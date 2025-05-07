@@ -1,13 +1,16 @@
 mod audio;
 mod commands;
-mod notifications;
 mod misc;
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+mod notifications;
 
 use log::{info, LevelFilter};
 use tauri::Listener;
 
 #[cfg(desktop)]
-use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::Manager;
+
+use tauri::{WebviewUrl, WebviewWindowBuilder};
 
 use serde::Deserialize;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
@@ -70,6 +73,7 @@ pub fn run() {
         use tauri_plugin_autostart::MacosLauncher;
 
         builder = builder
+            .plugin(tauri_plugin_store::Builder::new().build())
             .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
                 let _ = app
                     .get_webview_window("main")
@@ -91,7 +95,6 @@ pub fn run() {
     builder
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let app_handle = app.handle().clone();
@@ -111,18 +114,22 @@ pub fn run() {
 
             {
                 info!("Creating main window with initialization script");
-                let main_window = WebviewWindowBuilder::new(
-                    app,
-                    "main", 
-                    WebviewUrl::App("/".into())
-                )
-                .title("Yellow")
-                .initialization_script(&misc::get_error_handler_script())
-                .inner_size(1000.0, 800.0)
-                .center()
-                .zoom_hotkeys_enabled(true)
-                .build()
-                .expect("Failed to create main window");
+                let main_window_builder =
+                    WebviewWindowBuilder::new(app, "main", WebviewUrl::App("/".into()))
+                        .initialization_script(&misc::get_error_handler_script())
+
+                        .zoom_hotkeys_enabled(true);
+
+                #[cfg(not(any(target_os = "android", target_os = "ios")))]
+                {
+                    main_window_builder.title("Yellow")
+                    .inner_size(1000.0, 800.0)
+                    .center()
+                }
+
+                let main_window = main_window_builder
+                    .build()
+                    .expect("Failed to create main window");
 
                 #[cfg(debug_assertions)]
                 {
@@ -152,8 +159,11 @@ pub fn run() {
             commands::get_work_area,
             commands::get_build_commit_hash,
             commands::get_build_ts,
+            #[cfg(not(any(target_os = "android", target_os = "ios")))]
             notifications::close_notifications_window,
+            #[cfg(not(any(target_os = "android", target_os = "ios")))]
             notifications::create_notifications_window,
+            #[cfg(not(any(target_os = "android", target_os = "ios")))]
             notifications::show,
             audio::play_audio,
             audio::stop_audio,
@@ -162,4 +172,3 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-
