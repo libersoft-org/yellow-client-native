@@ -133,6 +133,10 @@ pub fn run() {
                         main_window.open_devtools();
                     }
                 }
+                #[cfg(not(debug_assertions))]
+                {
+                    let _ = &main_window;
+                }
             }
 
             //  todo pub fn background_throttling(mut self, policy: Option<BackgroundThrottlingPolicy>) -> Self {
