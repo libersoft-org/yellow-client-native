@@ -54,3 +54,8 @@ pub fn get_build_commit_hash() -> String {
 pub fn get_build_ts() -> String {
     BUILD_TIME.to_string()
 }
+
+#[tauri::command]
+pub fn is_debug_mode() -> bool {
+    cfg!(debug_assertions)
+}

@@ -7,7 +7,7 @@ use log::{info, LevelFilter};
 use tauri::Listener;
 
 #[cfg(desktop)]
-use tauri::Manager;
+use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
 use serde::Deserialize;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
@@ -107,17 +107,34 @@ pub fn run() {
             #[cfg(desktop)]
             setup_desktop_notifications(app);
 
-            #[cfg(debug_assertions)]
-            let do_open_devtools = std::env::var("TAURI_OPEN_DEVTOOLS")
-                .map(|v| v.eq_ignore_ascii_case("true"))
-                .unwrap_or(false);
+            // Create main window explicitly with initialization script
 
-            #[cfg(debug_assertions)]
-            if do_open_devtools {
-                app.get_webview_window("main").unwrap().open_devtools();
+            {
+                info!("Creating main window with initialization script");
+                let main_window = WebviewWindowBuilder::new(
+                    app,
+                    "main", 
+                    WebviewUrl::App("/".into())
+                )
+                .title("Yellow")
+                .initialization_script(&misc::get_error_handler_script())
+                .inner_size(1000.0, 800.0)
+                .center()
+                .zoom_hotkeys_enabled(true)
+                .build()
+                .expect("Failed to create main window");
+
+                #[cfg(debug_assertions)]
+                {
+                    let do_open_devtools = std::env::var("TAURI_OPEN_DEVTOOLS")
+                        .map(|v| v.eq_ignore_ascii_case("true"))
+                        .unwrap_or(false);
+                    if do_open_devtools {
+                        main_window.open_devtools();
+                    }
+                }
             }
 
-            //window.initialization_script(misc::get_error_handler_script());
             //  todo pub fn background_throttling(mut self, policy: Option<BackgroundThrottlingPolicy>) -> Self {
 
             Ok(())
@@ -126,6 +143,7 @@ pub fn run() {
             commands::get_window_size,
             commands::get_scale_factor,
             commands::log,
+            commands::is_debug_mode,
             #[cfg(desktop)]
             commands::get_work_area,
             commands::get_build_commit_hash,
