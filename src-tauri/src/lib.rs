@@ -112,38 +112,38 @@ pub fn run() {
 
             // Create main window explicitly with initialization script
 
+            info!("Creating main window with initialization script");
+
+            let main_window_builder =
+                WebviewWindowBuilder::new(app, "main", WebviewUrl::App("/".into()))
+                    .initialization_script(&misc::get_error_handler_script())
+                    .zoom_hotkeys_enabled(true);
+
+            #[cfg(desktop)]
+            let main_window_builder2 = main_window_builder
+                .title("Yellow")
+                .inner_size(1000.0, 800.0)
+                .center();
+
+            #[cfg(not(desktop))]
+            let main_window_builder2 = main_window_builder;
+
+            let main_window = main_window_builder2
+                .build()
+                .expect("Failed to create main window");
+
+            #[cfg(debug_assertions)]
             {
-                info!("Creating main window with initialization script");
-                let main_window_builder =
-                    WebviewWindowBuilder::new(app, "main", WebviewUrl::App("/".into()))
-                        .initialization_script(&misc::get_error_handler_script())
-
-                        .zoom_hotkeys_enabled(true);
-
-                #[cfg(not(any(target_os = "android", target_os = "ios")))]
-                {
-                    main_window_builder.title("Yellow")
-                    .inner_size(1000.0, 800.0)
-                    .center()
+                let do_open_devtools = std::env::var("TAURI_OPEN_DEVTOOLS")
+                    .map(|v| v.eq_ignore_ascii_case("true"))
+                    .unwrap_or(false);
+                if do_open_devtools {
+                    main_window.open_devtools();
                 }
-
-                let main_window = main_window_builder
-                    .build()
-                    .expect("Failed to create main window");
-
-                #[cfg(debug_assertions)]
-                {
-                    let do_open_devtools = std::env::var("TAURI_OPEN_DEVTOOLS")
-                        .map(|v| v.eq_ignore_ascii_case("true"))
-                        .unwrap_or(false);
-                    if do_open_devtools {
-                        main_window.open_devtools();
-                    }
-                }
-                #[cfg(not(debug_assertions))]
-                {
-                    let _ = &main_window;
-                }
+            }
+            #[cfg(not(debug_assertions))]
+            {
+                let _ = &main_window;
             }
 
             //  todo pub fn background_throttling(mut self, policy: Option<BackgroundThrottlingPolicy>) -> Self {
