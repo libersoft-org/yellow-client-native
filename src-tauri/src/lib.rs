@@ -22,6 +22,15 @@ struct Config {}
 
 // Initialize logging
 fn setup_logging() {
+    #[cfg(target_os = "android")]
+    use android_logger::Config as AndroidConfig;
+    #[cfg(target_os = "android")]
+    android_logger::init_once(
+        AndroidConfig::default()
+            .with_max_level(LevelFilter::Trace)
+            .with_tag("yellow")  // any tag you like
+    );
+
     env_logger::Builder::new()
         .filter_level(LevelFilter::Debug)
         //add milliseconds to the logs
@@ -29,6 +38,9 @@ fn setup_logging() {
         .init();
     info!("Logging initialized");
 }
+
+
+
 
 #[cfg(desktop)]
 fn setup_desktop_notifications(_app: &mut tauri::App) {

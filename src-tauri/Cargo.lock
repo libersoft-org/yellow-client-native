@@ -7376,6 +7376,7 @@ dependencies = [
 name = "yellow"
 version = "0.1.0"
 dependencies = [
+ "android_logger",
  "chrono",
  "env_logger",
  "lazy_static",
