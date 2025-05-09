@@ -22,8 +22,23 @@ sudo apt install libcrypto++-dev libssl-dev libasound2-dev
 ### Development
 #### Android
 ```
- JAVA_HOME=/snap/android-studio/189/jbr  CMAKE_MAKE_PROGRAM=/bin/make ANDROID_NDK_HOME=~/Android/Sdk/ndk/28.0.13004108/   NDK_HOME=~/Android/Sdk/ndk/28.0.13004108/ ANDROID_HOME=~/Android/Sdk/ bun run tauri android init
- JAVA_HOME=/snap/android-studio/189/jbr  CMAKE_MAKE_PROGRAM=/bin/make ANDROID_NDK_HOME=~/Android/Sdk/ndk/28.0.13004108/   NDK_HOME=~/Android/Sdk/ndk/28.0.13004108/ ANDROID_HOME=~/Android/Sdk/ bun run tauri android build --target armv7 --debug
+ sudo apt install libwebkit2gtk-4.1-dev \
+  build-essential \
+  curl \
+  wget \
+  file \
+  libxdo-dev \
+  libssl-dev \
+  libayatana-appindicator3-dev \
+  librsvg2-dev
+
+ curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
+
+ rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
+
+ JAVA_HOME=/snap/android-studio/current/jbr/ CMAKE_MAKE_PROGRAM=/bin/make ANDROID_NDK_HOME=~/Android/Sdk/ndk/* NDK_HOME=~/Android/Sdk/ndk/* ANDROID_HOME=~/Android/Sdk/ bun run tauri android init
+ JAVA_HOME=/snap/android-studio/current/jbr/ CMAKE_MAKE_PROGRAM=/bin/make ANDROID_NDK_HOME=~/Android/Sdk/ndk/* NDK_HOME=~/Android/Sdk/ndk/* ANDROID_HOME=~/Android/Sdk/ bun run tauri android build --debug
+
 ```
 start android dev:
 ...` tauri android dev`
