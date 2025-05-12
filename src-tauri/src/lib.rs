@@ -62,7 +62,10 @@ pub fn run() {
             let backtrace = std::backtrace::Backtrace::capture();
             let current_thread = std::thread::current();
             let thread_id = current_thread.id();
-            let thread_name = current_thread.name().unwrap_or("<unnamed>");
+            let thread_name = match current_thread.name() {
+                Some(name) => name,
+                None => "<unnamed>",
+            };
 
             if let Some(location) = panic_info.location() {
                 log::error!(
