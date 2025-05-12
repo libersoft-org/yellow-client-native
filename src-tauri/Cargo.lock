@@ -7380,6 +7380,7 @@ dependencies = [
  "chrono",
  "env_logger",
  "lazy_static",
+ "libc",
  "log",
  "monitor_work_area",
  "rodio",

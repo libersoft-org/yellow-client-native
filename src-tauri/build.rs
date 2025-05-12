@@ -1,4 +1,5 @@
 use chrono::prelude::*;
+use std::env;
 
 fn main() {
     // Let Tauri set up its stuff
@@ -17,4 +18,10 @@ fn main() {
     // Emit both as compile-time env vars
     println!("cargo:rustc-env=GIT_HASH={}", git_hash.trim());
     println!("cargo:rustc-env=BUILD_TIME={}", build_time);
+
+    // Add C++ standard library linking for Android targets
+    let target = env::var("TARGET").unwrap_or_default();
+    if target.contains("android") {
+        println!("cargo:rustc-link-lib=c++_shared");
+    }
 }

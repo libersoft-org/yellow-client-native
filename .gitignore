@@ -13,3 +13,5 @@ vite.config.ts.timestamp-*
 server-config.json
 .mcp.json
 
+
+**/.claude/settings.local.json

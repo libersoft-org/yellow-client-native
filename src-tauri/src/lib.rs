@@ -23,20 +23,25 @@ struct Config {}
 // Initialize logging
 fn setup_logging() {
     #[cfg(target_os = "android")]
-    use android_logger::Config as AndroidConfig;
-    #[cfg(target_os = "android")]
-    android_logger::init_once(
-        AndroidConfig::default()
-            .with_max_level(LevelFilter::Trace)
-            .with_tag("yellow")  // any tag you like
-    );
+    {
+        use android_logger::Config as AndroidConfig;
+        android_logger::init_once(
+            AndroidConfig::default()
+                .with_max_level(LevelFilter::Trace)
+                .with_tag("yellow")  // any tag you like
+        );
+        info!("Android logging initialized");
+    }
 
-    env_logger::Builder::new()
-        .filter_level(LevelFilter::Debug)
-        //add milliseconds to the logs
-        .format_timestamp(Some(env_logger::fmt::TimestampPrecision::Millis))
-        .init();
-    info!("Logging initialized");
+    #[cfg(not(target_os = "android"))]
+    {
+        env_logger::Builder::new()
+            .filter_level(LevelFilter::Debug)
+            //add milliseconds to the logs
+            .format_timestamp(Some(env_logger::fmt::TimestampPrecision::Millis))
+            .init();
+        info!("Desktop logging initialized");
+    }
 }
 
 
@@ -49,6 +54,38 @@ fn setup_desktop_notifications(_app: &mut tauri::App) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Set up panic hook to log panics on Android
+    #[cfg(target_os = "android")]
+    {
+        use std::panic;
+        panic::set_hook(Box::new(|panic_info| {
+            let backtrace = std::backtrace::Backtrace::capture();
+            let current_thread = std::thread::current();
+            let thread_id = current_thread.id();
+            let thread_name = current_thread.name().unwrap_or("<unnamed>");
+
+            if let Some(location) = panic_info.location() {
+                log::error!(
+                    "PANIC in thread {:?} ({}): occurred at {}:{}: {}\nBacktrace: {:?}",
+                    thread_id,
+                    thread_name,
+                    location.file(),
+                    location.line(),
+                    panic_info,
+                    backtrace
+                );
+            } else {
+                log::error!(
+                    "PANIC in thread {:?} ({}): {}\nBacktrace: {:?}",
+                    thread_id,
+                    thread_name,
+                    panic_info,
+                    backtrace
+                );
+            }
+        }));
+    }
+
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
     let client = sentry::init(("https://ba775427faea759b72f912167c326660@o4504414737399808.ingest.us.sentry.io/4506954859610112",
                                sentry::ClientOptions {
@@ -66,6 +103,35 @@ pub fn run() {
 
     setup_logging();
     info!("Starting application");
+
+    // Print Android-specific info for debugging
+    #[cfg(target_os = "android")]
+    {
+        info!("Running on Android");
+        info!("Android environment info:");
+        if let Ok(home) = std::env::var("HOME") {
+            info!("HOME: {}", home);
+        }
+        if let Ok(path) = std::env::var("PATH") {
+            info!("PATH: {}", path);
+        }
+        info!("Current dir: {:?}", std::env::current_dir());
+
+        // Try to manually load the C++ standard library
+        #[cfg(target_arch = "x86_64")]
+        unsafe {
+            use std::ffi::CString;
+            info!("Attempting to load libc++_shared.so for x86_64");
+            let lib_path = CString::new("/system/lib64/libc++_shared.so").unwrap();
+            let result = libc::dlopen(lib_path.as_ptr(), libc::RTLD_LAZY);
+            if result.is_null() {
+                let error = std::ffi::CStr::from_ptr(libc::dlerror());
+                info!("Failed to load libc++_shared.so: {:?}", error);
+            } else {
+                info!("Successfully loaded libc++_shared.so");
+            }
+        }
+    }
 
     #[cfg(desktop)]
     let mut builder = tauri::Builder::default()
