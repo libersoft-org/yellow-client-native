@@ -90,7 +90,7 @@ pub fn run() {
     }
 
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
-    let client = sentry::init(("https://ba775427faea759b72f912167c326660@o4504414737399808.ingest.us.sentry.io/4506954859610112",
+    let client = sentry::init(("https://3d18b31f479eb4d197cf54e7ef5c4291@o4509327469772800.ingest.de.sentry.io/4509327534981200",
                                sentry::ClientOptions {
                                    release: sentry::release_name!(),
                                    auto_session_tracking: true,
@@ -246,6 +246,8 @@ pub fn run() {
             notifications::create_notifications_window,
             #[cfg(not(any(target_os = "android", target_os = "ios")))]
             notifications::show_notifications_window,
+            #[cfg(not(any(target_os = "android", target_os = "ios")))]
+            notifications::hide_notifications_window,
             audio::play_audio,
             audio::stop_audio,
             audio::is_audio_playing
