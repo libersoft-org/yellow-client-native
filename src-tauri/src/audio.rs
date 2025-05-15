@@ -143,16 +143,19 @@ mod audio_impl {
 }
 
 // Expose commands using the platform-specific implementations
+#[cfg(not(target_os = "android"))]
 #[tauri::command]
 pub fn play_audio(file_path: String, id: Option<String>) -> Result<String, String> {
     audio_impl::play_audio(file_path, id)
 }
 
+#[cfg(not(target_os = "android"))]
 #[tauri::command]
 pub fn stop_audio(id: String) -> Result<(), String> {
     audio_impl::stop_audio(id)
 }
 
+#[cfg(not(target_os = "android"))]
 #[tauri::command]
 pub fn is_audio_playing(id: String) -> Result<bool, String> {
     audio_impl::is_audio_playing(id)

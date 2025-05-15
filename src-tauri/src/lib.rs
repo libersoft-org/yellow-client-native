@@ -54,37 +54,20 @@ fn setup_desktop_notifications(_app: &mut tauri::App) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // Set up panic hook to log panics on Android
+    // Set up a simplified panic hook on Android to avoid thread issues
     #[cfg(target_os = "android")]
     {
         use std::panic;
         panic::set_hook(Box::new(|panic_info| {
-            let backtrace = std::backtrace::Backtrace::capture();
-            let current_thread = std::thread::current();
-            let thread_id = current_thread.id();
-            let thread_name = match current_thread.name() {
-                Some(name) => name,
-                None => "<unnamed>",
-            };
-
             if let Some(location) = panic_info.location() {
                 log::error!(
-                    "PANIC in thread {:?} ({}): occurred at {}:{}: {}\nBacktrace: {:?}",
-                    thread_id,
-                    thread_name,
+                    "PANIC: at {}:{}: {}",
                     location.file(),
                     location.line(),
-                    panic_info,
-                    backtrace
+                    panic_info
                 );
             } else {
-                log::error!(
-                    "PANIC in thread {:?} ({}): {}\nBacktrace: {:?}",
-                    thread_id,
-                    thread_name,
-                    panic_info,
-                    backtrace
-                );
+                log::error!("PANIC: {}", panic_info);
             }
         }));
     }
@@ -138,9 +121,6 @@ pub fn run() {
 
     #[cfg(desktop)]
     let mut builder = tauri::Builder::default()
-        .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_window_state::Builder::new().build())
         //.plugin(tauri_plugin_log::Builder::new().build())
         .plugin(tauri_plugin_sentry::init(&client))
@@ -173,11 +153,19 @@ pub fn run() {
     info!("thread id: {:?}", std::thread::current().id());
     info!("thread name: {:?}", std::thread::current().name());
 
-    builder
+    // Plugins that should be available on all platforms
+    let builder = builder.plugin(tauri_plugin_os::init());
+    
+    // Core plugins that should run only on non-Android platforms due to threading concerns
+    #[cfg(not(target_os = "android"))]
+    let builder = builder
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
-        .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
-        .setup(|app| {
+        .plugin(tauri_plugin_process::init());
+    
+    builder.setup(|app| {
             let app_handle = app.handle().clone();
 
             // Set up event listener for notification logs
@@ -248,8 +236,11 @@ pub fn run() {
             notifications::show_notifications_window,
             #[cfg(not(any(target_os = "android", target_os = "ios")))]
             notifications::hide_notifications_window,
+            #[cfg(not(target_os = "android"))]
             audio::play_audio,
+            #[cfg(not(target_os = "android"))]
             audio::stop_audio,
+            #[cfg(not(target_os = "android"))]
             audio::is_audio_playing
         ])
         .run(tauri::generate_context!())

@@ -32,7 +32,6 @@ tauri-plugin-os = "2"
 tauri-plugin-notification = "2"
 tauri-plugin-log = "2"
 tauri-plugin-process = "2"
-# Rodio is only included on non-Android platforms via target-specific dependencies
 lazy_static = "1.4.0"
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
@@ -55,10 +54,7 @@ tauri-plugin-store = { git = "https://github.com/koo5/plugins-workspace", versio
 window-vibrancy = "0.6.0"
 sentry-rust-minidump = "0.9"
 tauri-plugin-sentry = "0.4.1"
-
-# Enable audio on non-mobile platforms
 rodio = { version = "0.17.1" }
-
 
 
 [patch.crates-io]

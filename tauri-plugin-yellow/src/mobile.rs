@@ -15,7 +15,7 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
   api: PluginApi<R, C>,
 ) -> crate::Result<Yellow<R>> {
   #[cfg(target_os = "android")]
-  let handle = api.register_android_plugin("org.libersoft.yellow-plugin", "ExamplePlugin")?;
+  let handle = api.register_android_plugin("org.libersoft.yellowplugin", "ExamplePlugin")?;
   #[cfg(target_os = "ios")]
   let handle = api.register_ios_plugin(init_plugin_yellow)?;
   Ok(Yellow(handle))

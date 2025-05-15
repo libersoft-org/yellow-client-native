@@ -1,4 +1,4 @@
-package org.libersoft.yellow-plugin
+package org.libersoft.yellowplugin
 
 import android.util.Log
 
