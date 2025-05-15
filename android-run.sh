@@ -17,3 +17,8 @@ rm -rf src-tauri/target/x86_64-linux-android/debug
 # Build and run
 echo "Building and running Android app..."
 bun run tauri android dev
+
+# This process will keep running, so we need to show logs in a new terminal
+# You can manually run this command in a separate terminal:
+echo "To view logs, run the following in a separate terminal:"
+echo "adb logcat -v time '*:S' yellow:V YellowApp:V"

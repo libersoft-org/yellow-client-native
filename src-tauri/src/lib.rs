@@ -28,9 +28,16 @@ fn setup_logging() {
         android_logger::init_once(
             AndroidConfig::default()
                 .with_max_level(LevelFilter::Trace)
-                .with_tag("yellow")  // any tag you like
+                .with_tag("YellowApp")  // more specific tag for Android
+                //.with_output_format(android_logger::OutputFormat::Full) // Full format for more info
         );
-        info!("Android logging initialized");
+        
+        // Log several messages at different levels for testing
+        log::trace!("TRACE: Android logging initialized with YellowApp tag");
+        log::debug!("DEBUG: Android logging initialized with YellowApp tag");
+        log::info!("INFO: Android logging initialized with YellowApp tag");
+        log::warn!("WARN: Android logging initialized with YellowApp tag");
+        log::error!("ERROR: Android logging initialized with YellowApp tag");
     }
 
     #[cfg(not(target_os = "android"))]
@@ -154,16 +161,20 @@ pub fn run() {
     info!("thread name: {:?}", std::thread::current().name());
 
     // Plugins that should be available on all platforms
-    let builder = builder.plugin(tauri_plugin_os::init());
-    
-    // Core plugins that should run only on non-Android platforms due to threading concerns
-    #[cfg(not(target_os = "android"))]
     let builder = builder
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
-        .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_process::init());
+        .plugin(tauri_plugin_opener::init());
+
+
+    // Core plugins that should run only on non-Android platforms
+    //#[cfg(not(target_os = "android"))]
+    //let builder = builder
+    //    .plugin(tauri_plugin_opener::init())
+
     
     builder.setup(|app| {
             let app_handle = app.handle().clone();
