@@ -245,7 +245,7 @@ pub fn run() {
             #[cfg(not(any(target_os = "android", target_os = "ios")))]
             notifications::create_notifications_window,
             #[cfg(not(any(target_os = "android", target_os = "ios")))]
-            notifications::show,
+            notifications::show_notifications_window,
             audio::play_audio,
             audio::stop_audio,
             audio::is_audio_playing

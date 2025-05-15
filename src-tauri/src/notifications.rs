@@ -63,31 +63,26 @@ pub async fn create_notifications_window(_app: tauri::AppHandle) -> Result<(), S
 
 #[tauri::command]
 pub fn close_notifications_window(_app: tauri::AppHandle) -> Result<(), String> {
-    info!("Closing notifications window");
-
     #[cfg(not(target_os = "android"))]
     {
+
+        info!("Closing notifications window");
+
         // Close the notifications window if it exists
         if let Some(window) = _app.get_webview_window("notifications") {
             window
-                .close()
+                .hide()
                 .map_err(|e| format!("Failed to close notifications window: {}", e))?;
             info!("Notifications window closed successfully");
         } else {
             info!("Notifications window not found");
         }
     }
-
-    #[cfg(target_os = "android")]
-    {
-        info!("Notifications window not supported on Android");
-    }
-
     Ok(())
 }
 
 #[tauri::command]
-pub fn show(_window: tauri::Window) -> Result<(), String> {
+pub fn show_notifications_window(_window: tauri::Window) -> Result<(), String> {
     info!("show...");
 
     #[cfg(not(target_os = "android"))]
@@ -97,9 +92,19 @@ pub fn show(_window: tauri::Window) -> Result<(), String> {
             .map_err(|e| format!("Failed to show window: {}", e))?;
     }
 
-    #[cfg(target_os = "android")]
+    Ok(())
+}
+
+
+#[tauri::command]
+pub fn hide_notifications_window(_window: tauri::Window) -> Result<(), String> {
+    info!("hide...");
+
+    #[cfg(not(target_os = "android"))]
     {
-        info!("Window show method not used on Android");
+        _window
+            .hide()
+            .map_err(|e| format!("Failed to hide window: {}", e))?;
     }
 
     Ok(())
