@@ -27,9 +27,8 @@ fn setup_logging() {
         use android_logger::Config as AndroidConfig;
         android_logger::init_once(
             AndroidConfig::default()
-                .with_max_level(LevelFilter::Trace)
-                .with_tag("YellowApp")  // more specific tag for Android
-                //.with_output_format(android_logger::OutputFormat::Full) // Full format for more info
+                .with_max_level(LevelFilter::Info)
+                .with_tag("YellowApp")
         );
         
         // Log several messages at different levels for testing
@@ -247,11 +246,8 @@ pub fn run() {
             notifications::show_notifications_window,
             #[cfg(not(any(target_os = "android", target_os = "ios")))]
             notifications::hide_notifications_window,
-            #[cfg(not(target_os = "android"))]
             audio::play_audio,
-            #[cfg(not(target_os = "android"))]
             audio::stop_audio,
-            #[cfg(not(target_os = "android"))]
             audio::is_audio_playing
         ])
         .run(tauri::generate_context!())
