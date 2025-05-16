@@ -6,9 +6,13 @@ export ANDROID_HOME=~/Android/Sdk
 export NDK_HOME=~/Android/Sdk/ndk/29.0.13113456
 export ANDROID_NDK_HOME=~/Android/Sdk/ndk/29.0.13113456
 
-# Copy C++ libraries (still needed for some core dependencies)
-echo "Copying C++ shared libraries..."
-./copy-cxx-lib.sh
+# Copy C++ libraries only if MANUAL_CXX_LIB feature is enabled
+if [ "$MANUAL_CXX_LIB" = "1" ]; then
+    echo "Copying C++ shared libraries (MANUAL_CXX_LIB enabled)..."
+    ./copy-cxx-lib.sh
+else
+    echo "Skipping C++ library copy (MANUAL_CXX_LIB not enabled)"
+fi
 
 # Clean previous builds to ensure dependencies are correctly processed
 echo "Cleaning previous builds..."

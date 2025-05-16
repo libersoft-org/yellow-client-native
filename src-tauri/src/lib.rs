@@ -109,8 +109,8 @@ pub fn run() {
         }
         info!("Current dir: {:?}", std::env::current_dir());
 
-        // Try to manually load the C++ standard library
-        #[cfg(target_arch = "x86_64")]
+        // Try to manually load the C++ standard library (only when cfg flag is enabled)
+        #[cfg(all(feature = "manual_cxx_lib", target_arch = "x86_64"))]
         unsafe {
             use std::ffi::CString;
             info!("Attempting to load libc++_shared.so for x86_64");
