@@ -33,6 +33,14 @@
     "process:allow-exit",
     "process:default",
     "dialog:allow-confirm",
-    "dialog:default"
+    "dialog:default",
+    "fs:allow-write-file",
+    "fs:write-all",
+    "fs:write-files",
+    "fs:allow-desktop-write-recursive",
+    "fs:allow-document-write-recursive",
+    "fs:allow-download-write-recursive",
+    "fs:allow-home-write-recursive",
+    "fs:allow-exists"
   ]
 }
