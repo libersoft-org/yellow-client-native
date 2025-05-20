@@ -15,6 +15,7 @@ https://tauri.app/start/prerequisites/
 
 #### Linux
 ```
+(outdated, ignore)
 sudo apt install libcrypto++-dev libssl-dev libasound2-dev
 ```
 
