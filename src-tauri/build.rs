@@ -12,12 +12,20 @@ fn main() {
         .expect("Failed to get Git commit hash");
     let git_hash = String::from_utf8(git_hash.stdout).expect("Invalid UTF-8 in Git hash");
 
+    // Get current Git branch
+    let git_branch = std::process::Command::new("git")
+        .args(["rev-parse", "--abbrev-ref", "HEAD"])
+        .output()
+        .expect("Failed to get Git branch");
+    let git_branch = String::from_utf8(git_branch.stdout).expect("Invalid UTF-8 in Git branch");
+
     // Get current build time in RFC3339 format
     let build_time = Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
 
-    // Emit both as compile-time env vars
-    println!("cargo:rustc-env=GIT_HASH={}", git_hash.trim());
-    println!("cargo:rustc-env=BUILD_TIME={}", build_time);
+    // Emit values as compile-time env vars
+    println!("cargo:rustc-env=GIT_HASH=\"{}\"", git_hash.trim());
+    println!("cargo:rustc-env=GIT_BRANCH=\"{}\"", git_branch.trim());
+    println!("cargo:rustc-env=BUILD_TIME=\"{}\"", build_time);
 
     // Add C++ standard library linking for Android targets
     let target = env::var("TARGET").unwrap_or_default();

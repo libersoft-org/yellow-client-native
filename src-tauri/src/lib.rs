@@ -237,6 +237,7 @@ pub fn run() {
             #[cfg(desktop)]
             commands::get_work_area,
             commands::get_build_commit_hash,
+            commands::get_build_branch,
             commands::get_build_ts,
             #[cfg(not(any(target_os = "android", target_os = "ios")))]
             notifications::close_notifications_window,

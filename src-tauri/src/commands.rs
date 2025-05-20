@@ -4,6 +4,7 @@ use monitor_work_area::{get_work_area_tauri, Area};
 use tauri::Window;
 
 const GIT_HASH: &str = env!("GIT_HASH");
+const GIT_BRANCH: &str = env!("GIT_BRANCH");
 const BUILD_TIME: &str = env!("BUILD_TIME");
 // Command to get window size
 #[tauri::command]
@@ -53,6 +54,12 @@ pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Resul
 pub fn get_build_commit_hash() -> String {
     GIT_HASH.to_string()
 }
+
+#[tauri::command]
+pub fn get_build_branch() -> String {
+    GIT_BRANCH.to_string()
+}
+
 #[tauri::command]
 pub fn get_build_ts() -> String {
     BUILD_TIME.to_string()
