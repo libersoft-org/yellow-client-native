@@ -9,7 +9,7 @@
         "zoomHotkeysEnabled": true,
         "center": true,
         "label": "main",
-        "create": false
+        "create": true
       }
     ]
   }
