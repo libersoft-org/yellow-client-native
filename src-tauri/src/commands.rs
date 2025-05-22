@@ -3,9 +3,7 @@ use log::info;
 use monitor_work_area::{get_work_area_tauri, Area};
 use tauri::Window;
 
-const GIT_HASH: &str = env!("GIT_HASH");
-const GIT_BRANCH: &str = env!("GIT_BRANCH");
-const BUILD_TIME: &str = env!("BUILD_TIME");
+
 // Command to get window size
 #[tauri::command]
 pub fn get_window_size(window: Window) -> Result<(u32, u32), String> {
@@ -48,24 +46,4 @@ pub async fn get_work_area(monitor_name: String, window: tauri::Window) -> Resul
         .await
         .map_err(|e| format!("Failed to get work area: {}", e));
     area
-}
-
-#[tauri::command]
-pub fn get_build_commit_hash() -> String {
-    GIT_HASH.to_string()
-}
-
-#[tauri::command]
-pub fn get_build_branch() -> String {
-    GIT_BRANCH.to_string()
-}
-
-#[tauri::command]
-pub fn get_build_ts() -> String {
-    BUILD_TIME.to_string()
-}
-
-#[tauri::command]
-pub fn is_debug_mode() -> bool {
-    cfg!(debug_assertions)
 }

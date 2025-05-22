@@ -36,7 +36,7 @@ tauri-plugin-process = "2"
 lazy_static = "1.4.0"
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
-tauri = { git = "https://github.com/koo5/tauri", branch = "yellow-tauri-v2.4.1", version = "2.4.1", features = ["tray-icon"] }
+tauri = { version = "2.5.1", features = ["tray-icon"] }
 
 
 [target.'cfg(target_os = "android")'.dependencies]
@@ -57,9 +57,5 @@ sentry-rust-minidump = "0.9"
 tauri-plugin-sentry = "0.4.1"
 rodio = { version = "0.17.1" }
 
-
-[patch.crates-io]
-# Overrides EVERY crates.io tauri = "…" to come from your Git fork/branch
-tauri = { git = "https://github.com/koo5/tauri", branch = "yellow-tauri-v2.4.1" }
 
 
