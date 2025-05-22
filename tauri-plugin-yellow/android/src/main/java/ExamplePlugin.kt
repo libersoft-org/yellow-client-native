@@ -13,7 +13,10 @@ class PingArgs {
   var value: String? = null
 }
 
-@TauriPlugin
+@TauriPlugin(
+  permissions = [
+    Permission(strings = [Manifest.permission.POST_NOTIFICATIONS], alias = "postNotification")
+  ])
 class ExamplePlugin(private val activity: Activity): Plugin(activity) {
     private val implementation = Example()
 
