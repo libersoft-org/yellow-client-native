@@ -1,0 +1,47 @@
+[build]
+# Default target for development
+target-dir = "target"
+
+# Android cross-compilation configuration
+[target.aarch64-linux-android]
+linker = "aarch64-linux-android-clang"
+ar = "aarch64-linux-android-ar"
+
+[target.armv7-linux-androideabi]
+linker = "armv7a-linux-androideabi-clang"
+ar = "arm-linux-androideabi-ar"
+
+[target.i686-linux-android]
+linker = "i686-linux-android-clang"
+ar = "i686-linux-android-ar"
+
+[target.x86_64-linux-android]
+linker = "x86_64-linux-android-clang"
+ar = "x86_64-linux-android-ar"
+
+# iOS cross-compilation configuration
+[target.aarch64-apple-ios]
+linker = "rust-lld"
+
+[target.x86_64-apple-ios]
+linker = "rust-lld"
+
+# ARM Linux cross-compilation
+[target.aarch64-unknown-linux-gnu]
+linker = "aarch64-linux-gnu-gcc"
+
+[target.armv7-unknown-linux-gnueabihf]
+linker = "arm-linux-gnueabihf-gcc"
+
+# Environment variables for V8 cross-compilation
+[env]
+# V8 build configuration
+V8_FROM_SOURCE = "1"
+V8_ENABLE_POINTER_COMPRESSION = "false"
+
+# Android NDK configuration (override with actual paths)
+# ANDROID_NDK_HOME = "/path/to/android-ndk"
+# ANDROID_SDK_ROOT = "/path/to/android-sdk"
+
+# iOS configuration
+# IPHONEOS_DEPLOYMENT_TARGET = "12.0"
