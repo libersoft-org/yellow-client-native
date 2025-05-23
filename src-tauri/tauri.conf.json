@@ -4,7 +4,7 @@
   "version": "0.1.1",
   "identifier": "org.libersoft.yellow",
   "build": {
-    "devUrl": "https://amtp.mediasun.cz:3000",
+    "devUrl": "http://localhost:3000",
     "beforeBuildCommand": "bun ./build.js",
     "frontendDist": "../yellow-client/build-tauri"
   },
