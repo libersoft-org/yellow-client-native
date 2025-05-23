@@ -1,6 +1,7 @@
 mod audio;
 mod commands;
 mod misc;
+mod rusty;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 mod notifications;
 
@@ -249,7 +250,8 @@ pub fn run() {
             notifications::hide_notifications_window,
             audio::play_audio,
             audio::stop_audio,
-            audio::is_audio_playing
+            audio::is_audio_playing,
+            rusty::rusty_test
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
