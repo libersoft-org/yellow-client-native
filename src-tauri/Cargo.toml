@@ -37,6 +37,7 @@ lazy_static = "1.4.0"
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
 tauri = { git = "https://github.com/koo5/tauri", branch = "yellow-tauri-v2.4.1", version = "2.4.1", features = ["tray-icon"] }
+rustyscript = { git = "https://github.com/rscarson/rustyscript", branch = "master"  }
 
 
 [target.'cfg(target_os = "android")'.dependencies]
