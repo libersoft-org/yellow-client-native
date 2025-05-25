@@ -31,4 +31,18 @@ impl<R: Runtime> Yellow<R> {
       .run_mobile_plugin("ping", payload)
       .map_err(Into::into)
   }
+
+  pub fn check_file_permissions(&self) -> crate::Result<CheckPermissionsResponse> {
+    self
+      .0
+      .run_mobile_plugin("checkFilePermissions", ())
+      .map_err(Into::into)
+  }
+
+  pub fn request_file_permissions(&self) -> crate::Result<RequestPermissionsResponse> {
+    self
+      .0
+      .run_mobile_plugin("requestFilePermissions", ())
+      .map_err(Into::into)
+  }
 }

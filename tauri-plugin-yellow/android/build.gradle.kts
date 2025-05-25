@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "org.libersoft.yellow-plugin"
+    namespace = "org.libersoft.yellowplugin"
     compileSdk = 34
 
     defaultConfig {
@@ -16,7 +16,6 @@ android {
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

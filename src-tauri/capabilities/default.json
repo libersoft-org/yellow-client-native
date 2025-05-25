@@ -41,6 +41,7 @@
     "fs:allow-document-write-recursive",
     "fs:allow-download-write-recursive",
     "fs:allow-home-write-recursive",
-    "fs:allow-exists"
+    "fs:allow-exists",
+    "yellow:default"
   ]
 }

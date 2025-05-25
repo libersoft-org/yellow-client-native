@@ -1,4 +1,4 @@
-package org.libersoft.yellow-plugin
+package org.libersoft.yellowplugin
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("org.libersoft.yellow-plugin", appContext.packageName)
+        assertEquals("org.libersoft.yellowplugin", appContext.packageName)
     }
 }

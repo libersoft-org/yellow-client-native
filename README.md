@@ -41,6 +41,16 @@ sudo apt install libcrypto++-dev libssl-dev libasound2-dev
  JAVA_HOME=/snap/android-studio/current/jbr/ CMAKE_MAKE_PROGRAM=/bin/make ANDROID_NDK_HOME=~/Android/Sdk/ndk/* NDK_HOME=~/Android/Sdk/ndk/* ANDROID_HOME=~/Android/Sdk/ bun run tauri android build --debug
 
 ```
+
+**Important**: After running `tauri android init`, you need to manually add file permissions to the generated AndroidManifest.xml:
+
+Add these lines to `src-tauri/gen/android/app/src/main/AndroidManifest.xml` after the existing `<uses-permission>` tags:
+```xml
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+```
+
+This enables native file saving functionality on Android devices.
 start android dev:
 ...` tauri android dev`
 

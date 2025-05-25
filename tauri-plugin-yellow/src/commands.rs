@@ -11,3 +11,17 @@ pub(crate) async fn ping<R: Runtime>(
 ) -> Result<PingResponse> {
     app.yellow().ping(payload)
 }
+
+#[command]
+pub(crate) async fn check_file_permissions<R: Runtime>(
+    app: AppHandle<R>,
+) -> Result<CheckPermissionsResponse> {
+    app.yellow().check_file_permissions()
+}
+
+#[command]
+pub(crate) async fn request_file_permissions<R: Runtime>(
+    app: AppHandle<R>,
+) -> Result<RequestPermissionsResponse> {
+    app.yellow().request_file_permissions()
+}

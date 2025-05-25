@@ -5709,6 +5709,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-yellow"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 2.0.12",
+]
+
+[[package]]
 name = "tauri-runtime"
 version = "2.5.1"
 source = "git+https://github.com/koo5/tauri?branch=yellow-tauri-v2.4.1#a01037586cf3a4077af0e66d537e9a7b2b54f863"
@@ -7403,6 +7413,7 @@ dependencies = [
  "tauri-plugin-store",
  "tauri-plugin-updater",
  "tauri-plugin-window-state",
+ "tauri-plugin-yellow",
  "window-vibrancy",
 ]
 
