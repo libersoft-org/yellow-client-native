@@ -24,6 +24,7 @@ class PingArgs {
 
 @TauriPlugin(
   permissions = [
+    Permission(strings = [Manifest.permission.POST_NOTIFICATIONS], alias = "postNotifications"),
     Permission(strings = [Manifest.permission.WRITE_EXTERNAL_STORAGE], alias = "writeExternalStorage"),
     Permission(strings = [Manifest.permission.READ_EXTERNAL_STORAGE], alias = "readExternalStorage"),
     Permission(strings = [Manifest.permission.MANAGE_DOCUMENTS], alias = "manageDocuments")

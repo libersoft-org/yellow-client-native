@@ -2,9 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$/.." vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/../messages2" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/../rust/monitor_work_area" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/../rust/plugins-workspace" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../yellow-admin" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../yellow-client" vcs="Git" />
     <mapping directory="$PROJECT_DIR$" vcs="Git" />

@@ -19,4 +19,18 @@ impl<R: Runtime> Yellow<R> {
       value: payload.value,
     })
   }
+
+  pub fn check_file_permissions(&self) -> crate::Result<CheckPermissionsResponse> {
+    // Desktop platforms don't need special file permissions
+    Ok(CheckPermissionsResponse {
+      write_external_storage: "granted".to_string(),
+    })
+  }
+
+  pub fn request_file_permissions(&self) -> crate::Result<RequestPermissionsResponse> {
+    // Desktop platforms don't need special file permissions
+    Ok(RequestPermissionsResponse {
+      write_external_storage: "granted".to_string(),
+    })
+  }
 }

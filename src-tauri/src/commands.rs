@@ -37,7 +37,7 @@ pub fn get_scale_factor(window: Window) -> Result<f64, String> {
 
 #[tauri::command]
 pub fn log(message: String) {
-    info!("{}", message);
+    info!("YELLOW {}", message);
 }
 
 

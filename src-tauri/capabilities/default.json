@@ -34,6 +34,15 @@
     "process:default",
     "dialog:allow-confirm",
     "dialog:default",
+    "fs:default",
+    {
+      "identifier": "fs:allow-write-file",
+      "allow": [
+        {
+          "path": "$APPDATA/*"
+        }
+      ]
+    },
     "fs:allow-write-file",
     "fs:write-all",
     "fs:write-files",
@@ -42,6 +51,7 @@
     "fs:allow-download-write-recursive",
     "fs:allow-home-write-recursive",
     "fs:allow-exists",
-    "yellow:default"
+    "yellow:default",
+    "yellow:allow-request-file-permissions"
   ]
 }
