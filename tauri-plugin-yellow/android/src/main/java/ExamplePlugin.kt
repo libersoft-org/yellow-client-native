@@ -18,8 +18,9 @@ import app.tauri.plugin.Plugin
 import app.tauri.plugin.Invoke
 import android.content.ContentValues
 import android.provider.MediaStore
-import android.os.Environment
 import java.io.File
+import android.os.Environment
+import android.media.MediaScannerConnection
 import java.io.FileOutputStream
 
 private const val ALIAS_WRITE_EXTERNAL_STORAGE: String = "writeExternalStorage"
@@ -179,6 +180,88 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity) {
                 ret.put("readExternalStorage", "denied")
                 invoke.resolve(ret)
             }
+        }
+    }
+    
+    @Command
+    fun exportFileToDownloads(invoke: Invoke) {
+        val args = invoke.getArgs()
+        val filePath = args.getString("filePath")
+        val fileName = args.getString("fileName") ?: "download"
+        val mimeType = args.getString("mimeType") ?: "application/octet-stream"
+        
+        if (filePath == null) {
+            invoke.reject("No file path provided")
+            return
+        }
+        
+        try {
+            val sourceFile = File(activity.filesDir, filePath)
+            if (!sourceFile.exists()) {
+                invoke.reject("Source file not found: $filePath")
+                return
+            }
+            
+            val apiLevel = android.os.Build.VERSION.SDK_INT
+            
+            if (apiLevel >= 29) {
+                // Use MediaStore for Android Q and above
+                val resolver = activity.contentResolver
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                    put(MediaStore.Downloads.MIME_TYPE, mimeType)
+                    put(MediaStore.Downloads.IS_PENDING, 1)
+                }
+                
+                val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                if (uri != null) {
+                    // Stream file directly without loading into memory
+                    resolver.openOutputStream(uri)?.use { outputStream ->
+                        sourceFile.inputStream().use { inputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+                    
+                    contentValues.clear()
+                    contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
+                    resolver.update(uri, contentValues, null, null)
+                    
+                    val ret = JSObject()
+                    ret.put("success", true)
+                    ret.put("uri", uri.toString())
+                    ret.put("path", "Downloads/$fileName")
+                    invoke.resolve(ret)
+                } else {
+                    invoke.reject("Failed to create file in Downloads")
+                }
+            } else {
+                // For older Android versions
+                val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                val destFile = File(downloadsDir, fileName)
+                
+                // Stream copy
+                sourceFile.inputStream().use { input ->
+                    destFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                
+                // Notify media scanner
+                MediaScannerConnection.scanFile(
+                    activity,
+                    arrayOf(destFile.absolutePath),
+                    arrayOf(mimeType),
+                    null
+                )
+                
+                val ret = JSObject()
+                ret.put("success", true)
+                ret.put("path", destFile.absolutePath)
+                invoke.resolve(ret)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("YellowPlugin", "Failed to export file", e)
+            invoke.reject("Failed to export file: ${e.message}")
         }
     }
     

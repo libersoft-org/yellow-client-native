@@ -70,4 +70,23 @@ impl<R: Runtime> Yellow<R> {
       )
       .map_err(Into::into)
   }
+  
+  pub fn export_file_to_downloads(
+    &self,
+    file_path: String,
+    file_name: String,
+    mime_type: String,
+  ) -> crate::Result<serde_json::Value> {
+    self
+      .0
+      .run_mobile_plugin(
+        "exportFileToDownloads",
+        serde_json::json!({ 
+          "filePath": file_path,
+          "fileName": file_name,
+          "mimeType": mime_type
+        }),
+      )
+      .map_err(Into::into)
+  }
 }
