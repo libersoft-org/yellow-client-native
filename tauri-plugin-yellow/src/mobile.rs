@@ -32,17 +32,42 @@ impl<R: Runtime> Yellow<R> {
       .map_err(Into::into)
   }
 
-  pub fn check_file_permissions(&self) -> crate::Result<CheckPermissionsResponse> {
+  pub fn check_permissions(&self) -> crate::Result<PermissionStatus> {
     self
       .0
-      .run_mobile_plugin("checkFilePermissions", ())
+      .run_mobile_plugin("checkPermissions", ())
       .map_err(Into::into)
   }
 
-  pub fn request_file_permissions(&self) -> crate::Result<RequestPermissionsResponse> {
+  pub fn request_permissions(
+    &self,
+    permissions: Option<Vec<PermissionType>>,
+  ) -> crate::Result<PermissionStatus> {
     self
       .0
-      .run_mobile_plugin("requestFilePermissions", ())
+      .run_mobile_plugin(
+        "requestPermissions",
+        serde_json::json!({ "permissions": permissions }),
+      )
+      .map_err(Into::into)
+  }
+  
+  pub fn save_to_downloads(
+    &self,
+    file_name: String,
+    mime_type: String,
+    data: String,
+  ) -> crate::Result<serde_json::Value> {
+    self
+      .0
+      .run_mobile_plugin(
+        "saveToDownloads",
+        serde_json::json!({ 
+          "fileName": file_name,
+          "mimeType": mime_type,
+          "data": data 
+        }),
+      )
       .map_err(Into::into)
   }
 }

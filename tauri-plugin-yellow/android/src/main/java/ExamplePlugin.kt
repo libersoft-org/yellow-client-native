@@ -16,6 +16,14 @@ import app.tauri.annotation.Permission
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
 import app.tauri.plugin.Invoke
+import android.content.ContentValues
+import android.provider.MediaStore
+import android.os.Environment
+import java.io.File
+import java.io.FileOutputStream
+
+private const val ALIAS_WRITE_EXTERNAL_STORAGE: String = "writeExternalStorage"
+private const val ALIAS_READ_EXTERNAL_STORAGE: String = "readExternalStorage"
 
 @InvokeArg
 class PingArgs {
@@ -25,9 +33,8 @@ class PingArgs {
 @TauriPlugin(
   permissions = [
     Permission(strings = [Manifest.permission.POST_NOTIFICATIONS], alias = "postNotifications"),
-    Permission(strings = [Manifest.permission.WRITE_EXTERNAL_STORAGE], alias = "writeExternalStorage"),
-    Permission(strings = [Manifest.permission.READ_EXTERNAL_STORAGE], alias = "readExternalStorage"),
-    Permission(strings = [Manifest.permission.MANAGE_DOCUMENTS], alias = "manageDocuments")
+    Permission(strings = [Manifest.permission.WRITE_EXTERNAL_STORAGE], alias = ALIAS_WRITE_EXTERNAL_STORAGE),
+    Permission(strings = [Manifest.permission.READ_EXTERNAL_STORAGE], alias = ALIAS_READ_EXTERNAL_STORAGE)
   ])
 class ExamplePlugin(private val activity: Activity): Plugin(activity) {
     private val implementation = Example()
@@ -43,20 +50,12 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity) {
     }
 
     @Command
-    fun checkFilePermissions(invoke: Invoke) {
+    override fun checkPermissions(invoke: Invoke) {
         val apiLevel = android.os.Build.VERSION.SDK_INT
-        android.util.Log.d("YellowPlugin", "Checking file permissions, API level: $apiLevel")
+        android.util.Log.d("YellowPlugin", "Checking permissions, API level: $apiLevel")
         
-        // Check MANAGE_DOCUMENTS permission for Downloads provider access
-        val manageDocsPermission = ContextCompat.checkSelfPermission(
-            activity,
-            Manifest.permission.MANAGE_DOCUMENTS
-        )
-        android.util.Log.d("YellowPlugin", "MANAGE_DOCUMENTS permission: $manageDocsPermission")
-        
-        val status = if (apiLevel >= 30) {
-            // For API 30+, MANAGE_DOCUMENTS is typically not granted to regular apps
-            // Let's try a different approach - just return granted since we should have scoped storage
+        val writeStatus = if (apiLevel >= 30) {
+            // For API 30+, use scoped storage approach
             android.util.Log.d("YellowPlugin", "API 30+, using scoped storage approach")
             "granted"
         } else {
@@ -71,112 +70,181 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity) {
                 else -> "denied"
             }
         }
+        
+        val readStatus = if (apiLevel >= 30) {
+            "granted"
+        } else {
+            val readPermission = ContextCompat.checkSelfPermission(
+                activity,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            )
+            when (readPermission) {
+                PackageManager.PERMISSION_GRANTED -> "granted"
+                else -> "denied"
+            }
+        }
 
-        android.util.Log.d("YellowPlugin", "Final permission status: $status")
+        android.util.Log.d("YellowPlugin", "Write permission status: $writeStatus, Read permission status: $readStatus")
         val ret = JSObject()
-        ret.put("writeExternalStorage", status)
+        ret.put("writeExternalStorage", writeStatus)
+        ret.put("readExternalStorage", readStatus)
         invoke.resolve(ret)
     }
 
     @Command
-    fun requestFilePermissions(invoke: Invoke) {
+    override fun requestPermissions(invoke: Invoke) {
         val apiLevel = android.os.Build.VERSION.SDK_INT
-        android.util.Log.d("YellowPlugin", "Requesting file permissions, API level: $apiLevel")
+        android.util.Log.d("YellowPlugin", "Requesting permissions, API level: $apiLevel")
         
-        if (apiLevel >= 30) {
-            // For API 30+, try to request MANAGE_DOCUMENTS permission
-            val manageDocsPermission = ContextCompat.checkSelfPermission(
-                activity,
-                Manifest.permission.MANAGE_DOCUMENTS
-            )
-            
-            android.util.Log.d("YellowPlugin", "MANAGE_DOCUMENTS permission status: $manageDocsPermission")
-            
-            if (manageDocsPermission == PackageManager.PERMISSION_GRANTED) {
-                android.util.Log.d("YellowPlugin", "MANAGE_DOCUMENTS already granted")
-                val ret = JSObject()
-                ret.put("writeExternalStorage", "granted")
-                invoke.resolve(ret)
-                return
-            }
-            
-            // Try both approaches: standard permission request and All Files Access
-            try {
-                android.util.Log.d("YellowPlugin", "Requesting MANAGE_DOCUMENTS permission")
-                
-                // First try standard permission request
-                ActivityCompat.requestPermissions(
-                    activity, 
-                    arrayOf(Manifest.permission.MANAGE_DOCUMENTS), 
-                    REQUEST_CODE_PERMISSIONS
-                )
-                
-                val ret = JSObject()
-                ret.put("writeExternalStorage", "prompt")
-                invoke.resolve(ret)
-                
-            } catch (e: Exception) {
-                android.util.Log.e("YellowPlugin", "MANAGE_DOCUMENTS permission request failed, trying All Files Access", e)
-                
-                // Fallback to All Files Access
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    try {
-                        val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
-                            data = Uri.parse("package:" + activity.packageName)
-                        }
-                        activity.startActivity(intent)
-                        
-                        val ret = JSObject()
-                        ret.put("writeExternalStorage", "prompt")
-                        invoke.resolve(ret)
-                    } catch (e2: Exception) {
-                        android.util.Log.e("YellowPlugin", "All Files Access also failed", e2)
-                        val ret = JSObject()
-                        ret.put("writeExternalStorage", "denied")
-                        invoke.resolve(ret)
-                    }
-                } else {
-                    val ret = JSObject()
-                    ret.put("writeExternalStorage", "denied")
-                    invoke.resolve(ret)
+        // Parse the permissions parameter
+        val args = invoke.getArgs()
+        val permissionsArray = args.optJSONArray("permissions")
+        val requestedPermissions = mutableListOf<String>()
+        
+        if (permissionsArray != null) {
+            for (i in 0 until permissionsArray.length()) {
+                val permission = permissionsArray.getString(i)
+                when (permission) {
+                    "writeExternalStorage" -> requestedPermissions.add("writeExternalStorage")
+                    "readExternalStorage" -> requestedPermissions.add("readExternalStorage")
                 }
             }
+        } else {
+            // If no specific permissions requested, request both
+            requestedPermissions.add("writeExternalStorage")
+            requestedPermissions.add("readExternalStorage")
+        }
+        
+        if (apiLevel >= 30) {
+            // For API 30+, we'll handle storage permissions differently
+            android.util.Log.d("YellowPlugin", "API 30+, using scoped storage - returning granted")
+            val ret = JSObject()
+            ret.put("writeExternalStorage", "granted")
+            ret.put("readExternalStorage", "granted")
+            invoke.resolve(ret)
             return
         } else {
-            // For older Android versions, check traditional permissions
-            val writePermission = ContextCompat.checkSelfPermission(
-                activity,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            )
+            // For older Android versions, check and request traditional permissions
+            val permissionsToRequest = mutableListOf<String>()
+            var allGranted = true
             
-            if (writePermission == PackageManager.PERMISSION_GRANTED) {
-                android.util.Log.d("YellowPlugin", "WRITE_EXTERNAL_STORAGE already granted")
+            if (requestedPermissions.contains("writeExternalStorage")) {
+                val writePermission = ContextCompat.checkSelfPermission(
+                    activity,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+                if (writePermission != PackageManager.PERMISSION_GRANTED) {
+                    permissionsToRequest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    allGranted = false
+                }
+            }
+            
+            if (requestedPermissions.contains("readExternalStorage")) {
+                val readPermission = ContextCompat.checkSelfPermission(
+                    activity,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                )
+                if (readPermission != PackageManager.PERMISSION_GRANTED) {
+                    permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    allGranted = false
+                }
+            }
+            
+            if (allGranted) {
+                android.util.Log.d("YellowPlugin", "All requested permissions already granted")
                 val ret = JSObject()
                 ret.put("writeExternalStorage", "granted")
+                ret.put("readExternalStorage", "granted")
                 invoke.resolve(ret)
                 return
             }
             
             try {
-                android.util.Log.d("YellowPlugin", "Requesting WRITE_EXTERNAL_STORAGE permission")
+                android.util.Log.d("YellowPlugin", "Requesting permissions: ${permissionsToRequest.joinToString()}")
                 ActivityCompat.requestPermissions(
                     activity, 
-                    arrayOf(
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.READ_EXTERNAL_STORAGE
-                    ), 
+                    permissionsToRequest.toTypedArray(), 
                     REQUEST_CODE_PERMISSIONS
                 )
                 
+                // Return prompt status while permission dialog is shown
                 val ret = JSObject()
                 ret.put("writeExternalStorage", "prompt")
+                ret.put("readExternalStorage", "prompt")
                 invoke.resolve(ret)
             } catch (e: Exception) {
                 android.util.Log.e("YellowPlugin", "Permission request failed", e)
                 val ret = JSObject()
                 ret.put("writeExternalStorage", "denied")
+                ret.put("readExternalStorage", "denied")
                 invoke.resolve(ret)
             }
+        }
+    }
+    
+    @Command
+    fun saveToDownloads(invoke: Invoke) {
+        val args = invoke.getArgs()
+        val fileName = args.getString("fileName") ?: "download"
+        val mimeType = args.getString("mimeType") ?: "application/octet-stream"
+        val dataBase64 = args.getString("data")
+        
+        if (dataBase64 == null) {
+            invoke.reject("No data provided")
+            return
+        }
+        
+        try {
+            val data = android.util.Base64.decode(dataBase64, android.util.Base64.DEFAULT)
+            val apiLevel = android.os.Build.VERSION.SDK_INT
+            
+            if (apiLevel >= 29) {
+                // Use MediaStore for Android Q and above
+                val resolver = activity.contentResolver
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                    put(MediaStore.Downloads.MIME_TYPE, mimeType)
+                    put(MediaStore.Downloads.IS_PENDING, 1)
+                }
+                
+                val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                if (uri != null) {
+                    resolver.openOutputStream(uri)?.use { outputStream ->
+                        outputStream.write(data)
+                    }
+                    
+                    contentValues.clear()
+                    contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
+                    resolver.update(uri, contentValues, null, null)
+                    
+                    val ret = JSObject()
+                    ret.put("success", true)
+                    ret.put("uri", uri.toString())
+                    ret.put("path", "Downloads/$fileName")
+                    invoke.resolve(ret)
+                } else {
+                    invoke.reject("Failed to create file in Downloads")
+                }
+            } else {
+                // For older Android versions, use direct file access
+                val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                if (!downloadsDir.exists()) {
+                    downloadsDir.mkdirs()
+                }
+                
+                val file = File(downloadsDir, fileName)
+                FileOutputStream(file).use { outputStream ->
+                    outputStream.write(data)
+                }
+                
+                val ret = JSObject()
+                ret.put("success", true)
+                ret.put("path", file.absolutePath)
+                invoke.resolve(ret)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("YellowPlugin", "Failed to save file", e)
+            invoke.reject("Failed to save file: ${e.message}")
         }
     }
 }

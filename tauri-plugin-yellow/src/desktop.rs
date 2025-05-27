@@ -20,17 +20,22 @@ impl<R: Runtime> Yellow<R> {
     })
   }
 
-  pub fn check_file_permissions(&self) -> crate::Result<CheckPermissionsResponse> {
+  pub fn check_permissions(&self) -> crate::Result<PermissionStatus> {
     // Desktop platforms don't need special file permissions
-    Ok(CheckPermissionsResponse {
-      write_external_storage: "granted".to_string(),
+    Ok(PermissionStatus {
+      write_external_storage: tauri::plugin::PermissionState::Granted,
+      read_external_storage: tauri::plugin::PermissionState::Granted,
     })
   }
 
-  pub fn request_file_permissions(&self) -> crate::Result<RequestPermissionsResponse> {
+  pub fn request_permissions(
+    &self,
+    _permissions: Option<Vec<PermissionType>>,
+  ) -> crate::Result<PermissionStatus> {
     // Desktop platforms don't need special file permissions
-    Ok(RequestPermissionsResponse {
-      write_external_storage: "granted".to_string(),
+    Ok(PermissionStatus {
+      write_external_storage: tauri::plugin::PermissionState::Granted,
+      read_external_storage: tauri::plugin::PermissionState::Granted,
     })
   }
 }

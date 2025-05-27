@@ -52,6 +52,7 @@
     "fs:allow-home-write-recursive",
     "fs:allow-exists",
     "yellow:default",
+    "yellow:allow-check-file-permissions",
     "yellow:allow-request-file-permissions"
   ]
 }

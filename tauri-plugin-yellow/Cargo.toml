@@ -11,6 +11,7 @@ links = "tauri-plugin-yellow"
 [dependencies]
 tauri = { version = "2.3.1" }
 serde = "1.0"
+serde_json = "1.0"
 thiserror = "2"
 
 [build-dependencies]

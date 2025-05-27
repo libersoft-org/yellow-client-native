@@ -5,9 +5,9 @@ use tauri::{
 
 pub use models::*;
 
-#[cfg(desktop)]
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 mod desktop;
-#[cfg(mobile)]
+#[cfg(any(target_os = "android", target_os = "ios"))]
 mod mobile;
 
 mod commands;
@@ -16,9 +16,9 @@ mod models;
 
 pub use error::{Error, Result};
 
-#[cfg(desktop)]
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 use desktop::Yellow;
-#[cfg(mobile)]
+#[cfg(any(target_os = "android", target_os = "ios"))]
 use mobile::Yellow;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the yellow APIs.
@@ -38,12 +38,13 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
     .invoke_handler(tauri::generate_handler![
       commands::ping,
       commands::check_file_permissions,
-      commands::request_file_permissions
+      commands::request_file_permissions,
+      commands::save_to_downloads
     ])
     .setup(|app, api| {
-      #[cfg(mobile)]
+      #[cfg(any(target_os = "android", target_os = "ios"))]
       let yellow = mobile::init(app, api)?;
-      #[cfg(desktop)]
+      #[cfg(not(any(target_os = "android", target_os = "ios")))]
       let yellow = desktop::init(app, api)?;
       app.manage(yellow);
       Ok(())
