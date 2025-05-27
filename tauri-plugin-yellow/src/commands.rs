@@ -1,16 +1,9 @@
 use tauri::{AppHandle, command, Runtime};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::models::*;
 use crate::Result;
 use crate::YellowExt;
-
-#[derive(Debug, Deserialize)]
-pub struct SaveToDownloadsRequest {
-    pub file_name: String,
-    pub mime_type: String,
-    pub data: String,
-}
 
 #[command]
 pub(crate) async fn ping<R: Runtime>(
