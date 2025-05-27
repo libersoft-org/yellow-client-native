@@ -1,3 +1,3 @@
 [default]
 description = "Default permissions for the plugin"
-permissions = ["allow-ping", "allow-check-file-permissions", "allow-request-file-permissions", "allow-save-to-downloads"]
+permissions = ["allow-ping", "allow-check-file-permissions", "allow-request-file-permissions", "allow-save-to-downloads", "allow-export-file-to-downloads"]
