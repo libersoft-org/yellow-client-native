@@ -1,16 +1,10 @@
 use tauri::{AppHandle, command, Runtime};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::models::*;
 use crate::Result;
 use crate::YellowExt;
 
-#[derive(Debug, Deserialize)]
-pub struct SaveToDownloadsRequest {
-    pub file_name: String,
-    pub mime_type: String,
-    pub data: String,
-}
 
 #[command]
 pub(crate) async fn ping<R: Runtime>(
@@ -82,5 +76,5 @@ pub(crate) async fn save_to_downloads<R: Runtime>(
     _data: String,
 ) -> Result<serde_json::Value> {
     // Desktop doesn't need this - use regular file system
-    Err(crate::Error::String("save_to_downloads is only for mobile platforms".to_string()))
+    Err(std::io::Error::new(std::io::ErrorKind::Unsupported, "save_to_downloads is only for mobile platforms").into())
 }
