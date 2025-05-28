@@ -40,6 +40,12 @@ class PingArgs {
 class ExamplePlugin(private val activity: Activity): Plugin(activity) {
     private val implementation = Example()
     private val REQUEST_CODE_PERMISSIONS = 1001
+    private val CREATE_FILE_REQUEST_CODE = 1002
+    private val OPEN_FILE_REQUEST_CODE = 1003
+    
+    private var pendingInvoke: Invoke? = null
+    private var pendingFileName: String? = null
+    private var pendingMimeType: String? = null
 
     @Command
     fun ping(invoke: Invoke) {
@@ -328,6 +334,203 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity) {
         } catch (e: Exception) {
             android.util.Log.e("YellowPlugin", "Failed to save file", e)
             invoke.reject("Failed to save file: ${e.message}")
+        }
+    }
+    
+    @Command
+    fun createFile(invoke: Invoke) {
+        val args = invoke.getArgs()
+        val fileName = args.getString("fileName") ?: "file"
+        val content = args.getString("content") ?: ""
+        
+        try {
+            val file = File(activity.filesDir, fileName)
+            file.writeText(content)
+            
+            val ret = JSObject()
+            ret.put("success", true)
+            ret.put("path", fileName)
+            invoke.resolve(ret)
+        } catch (e: Exception) {
+            android.util.Log.e("YellowPlugin", "Failed to create file", e)
+            invoke.reject("Failed to create file: ${e.message}")
+        }
+    }
+    
+    @Command
+    fun appendToFile(invoke: Invoke) {
+        val args = invoke.getArgs()
+        val fileName = args.getString("fileName")
+        val dataBase64 = args.getString("data")
+        
+        if (fileName == null || dataBase64 == null) {
+            invoke.reject("Missing fileName or data")
+            return
+        }
+        
+        try {
+            val file = File(activity.filesDir, fileName)
+            val data = android.util.Base64.decode(dataBase64, android.util.Base64.DEFAULT)
+            
+            file.appendBytes(data)
+            
+            val ret = JSObject()
+            ret.put("success", true)
+            invoke.resolve(ret)
+        } catch (e: Exception) {
+            android.util.Log.e("YellowPlugin", "Failed to append to file", e)
+            invoke.reject("Failed to append to file: ${e.message}")
+        }
+    }
+    
+    @Command
+    fun renameFile(invoke: Invoke) {
+        val args = invoke.getArgs()
+        val oldName = args.getString("oldName")
+        val newName = args.getString("newName")
+        
+        if (oldName == null || newName == null) {
+            invoke.reject("Missing oldName or newName")
+            return
+        }
+        
+        try {
+            val oldFile = File(activity.filesDir, oldName)
+            val newFile = File(activity.filesDir, newName)
+            
+            if (!oldFile.exists()) {
+                invoke.reject("Source file not found")
+                return
+            }
+            
+            if (oldFile.renameTo(newFile)) {
+                val ret = JSObject()
+                ret.put("success", true)
+                invoke.resolve(ret)
+            } else {
+                invoke.reject("Failed to rename file")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("YellowPlugin", "Failed to rename file", e)
+            invoke.reject("Failed to rename file: ${e.message}")
+        }
+    }
+    
+    @Command
+    fun deleteFile(invoke: Invoke) {
+        val args = invoke.getArgs()
+        val fileName = args.getString("fileName")
+        
+        if (fileName == null) {
+            invoke.reject("Missing fileName")
+            return
+        }
+        
+        try {
+            val file = File(activity.filesDir, fileName)
+            
+            if (file.exists() && file.delete()) {
+                val ret = JSObject()
+                ret.put("success", true)
+                invoke.resolve(ret)
+            } else {
+                invoke.reject("Failed to delete file")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("YellowPlugin", "Failed to delete file", e)
+            invoke.reject("Failed to delete file: ${e.message}")
+        }
+    }
+    
+    @Command
+    fun openSaveDialog(invoke: Invoke) {
+        val args = invoke.getArgs()
+        val fileName = args.getString("fileName") ?: "download"
+        val mimeType = args.getString("mimeType") ?: "application/octet-stream"
+        
+        try {
+            pendingInvoke = invoke
+            pendingFileName = fileName
+            pendingMimeType = mimeType
+            
+            val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = mimeType
+                putExtra(Intent.EXTRA_TITLE, fileName)
+                
+                // Add appropriate directories based on mime type
+                when {
+                    mimeType.startsWith("image/") -> putExtra("android.provider.extra.INITIAL_URI", MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                    mimeType.startsWith("video/") -> putExtra("android.provider.extra.INITIAL_URI", MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+                    mimeType.startsWith("audio/") -> putExtra("android.provider.extra.INITIAL_URI", MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
+                    else -> putExtra("android.provider.extra.INITIAL_URI", MediaStore.Downloads.EXTERNAL_CONTENT_URI)
+                }
+            }
+            
+            activity.startActivityForResult(intent, CREATE_FILE_REQUEST_CODE)
+        } catch (e: Exception) {
+            android.util.Log.e("YellowPlugin", "Failed to open save dialog", e)
+            invoke.reject("Failed to open save dialog: ${e.message}")
+        }
+    }
+    
+    @Command
+    fun saveFileToUri(invoke: Invoke) {
+        val args = invoke.getArgs()
+        val filePath = args.getString("filePath")
+        val uriString = args.getString("uri")
+        
+        if (filePath == null || uriString == null) {
+            invoke.reject("Missing filePath or uri")
+            return
+        }
+        
+        try {
+            val sourceFile = File(activity.filesDir, filePath)
+            if (!sourceFile.exists()) {
+                invoke.reject("Source file not found")
+                return
+            }
+            
+            val uri = Uri.parse(uriString)
+            
+            activity.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                sourceFile.inputStream().use { inputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+            
+            val ret = JSObject()
+            ret.put("success", true)
+            invoke.resolve(ret)
+        } catch (e: Exception) {
+            android.util.Log.e("YellowPlugin", "Failed to save file to URI", e)
+            invoke.reject("Failed to save file: ${e.message}")
+        }
+    }
+    
+    fun handleOnActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (requestCode) {
+            CREATE_FILE_REQUEST_CODE -> {
+                val invoke = pendingInvoke
+                if (invoke != null) {
+                    if (resultCode == Activity.RESULT_OK && data?.data != null) {
+                        val uri = data.data!!
+                        val ret = JSObject()
+                        ret.put("success", true)
+                        ret.put("uri", uri.toString())
+                        ret.put("fileName", pendingFileName)
+                        ret.put("mimeType", pendingMimeType)
+                        invoke.resolve(ret)
+                    } else {
+                        invoke.reject("Save dialog cancelled")
+                    }
+                    
+                    pendingInvoke = null
+                    pendingFileName = null
+                    pendingMimeType = null
+                }
+            }
         }
     }
 }

@@ -77,6 +77,65 @@ pub(crate) async fn export_file_to_downloads<R: Runtime>(
     app.yellow().export_file_to_downloads(file_path, file_name, mime_type)
 }
 
+#[cfg(any(target_os = "android", target_os = "ios"))]
+#[command]
+pub(crate) async fn create_file<R: Runtime>(
+    app: AppHandle<R>,
+    file_name: String,
+    content: String,
+) -> Result<serde_json::Value> {
+    app.yellow().create_file(file_name, content)
+}
+
+#[cfg(any(target_os = "android", target_os = "ios"))]
+#[command]
+pub(crate) async fn append_to_file<R: Runtime>(
+    app: AppHandle<R>,
+    file_name: String,
+    data: String,
+) -> Result<serde_json::Value> {
+    app.yellow().append_to_file(file_name, data)
+}
+
+#[cfg(any(target_os = "android", target_os = "ios"))]
+#[command]
+pub(crate) async fn rename_file<R: Runtime>(
+    app: AppHandle<R>,
+    old_name: String,
+    new_name: String,
+) -> Result<serde_json::Value> {
+    app.yellow().rename_file(old_name, new_name)
+}
+
+#[cfg(any(target_os = "android", target_os = "ios"))]
+#[command]
+pub(crate) async fn delete_file<R: Runtime>(
+    app: AppHandle<R>,
+    file_name: String,
+) -> Result<serde_json::Value> {
+    app.yellow().delete_file(file_name)
+}
+
+#[cfg(any(target_os = "android", target_os = "ios"))]
+#[command]
+pub(crate) async fn open_save_dialog<R: Runtime>(
+    app: AppHandle<R>,
+    file_name: String,
+    mime_type: String,
+) -> Result<serde_json::Value> {
+    app.yellow().open_save_dialog(file_name, mime_type)
+}
+
+#[cfg(any(target_os = "android", target_os = "ios"))]
+#[command]
+pub(crate) async fn save_file_to_uri<R: Runtime>(
+    app: AppHandle<R>,
+    file_path: String,
+    uri: String,
+) -> Result<serde_json::Value> {
+    app.yellow().save_file_to_uri(file_path, uri)
+}
+
 
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 #[command]
@@ -100,5 +159,64 @@ pub(crate) async fn export_file_to_downloads<R: Runtime>(
 ) -> Result<serde_json::Value> {
     // Desktop doesn't need this - use regular file system
     Err(crate::Error::String("export_file_to_downloads is only for mobile platforms".to_string()))
+}
+
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+#[command]
+pub(crate) async fn create_file<R: Runtime>(
+    _app: AppHandle<R>,
+    _file_name: String,
+    _content: String,
+) -> Result<serde_json::Value> {
+    Err(crate::Error::String("create_file is only for mobile platforms".to_string()))
+}
+
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+#[command]
+pub(crate) async fn append_to_file<R: Runtime>(
+    _app: AppHandle<R>,
+    _file_name: String,
+    _data: String,
+) -> Result<serde_json::Value> {
+    Err(crate::Error::String("append_to_file is only for mobile platforms".to_string()))
+}
+
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+#[command]
+pub(crate) async fn rename_file<R: Runtime>(
+    _app: AppHandle<R>,
+    _old_name: String,
+    _new_name: String,
+) -> Result<serde_json::Value> {
+    Err(crate::Error::String("rename_file is only for mobile platforms".to_string()))
+}
+
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+#[command]
+pub(crate) async fn delete_file<R: Runtime>(
+    _app: AppHandle<R>,
+    _file_name: String,
+) -> Result<serde_json::Value> {
+    Err(crate::Error::String("delete_file is only for mobile platforms".to_string()))
+}
+
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+#[command]
+pub(crate) async fn open_save_dialog<R: Runtime>(
+    _app: AppHandle<R>,
+    _file_name: String,
+    _mime_type: String,
+) -> Result<serde_json::Value> {
+    Err(crate::Error::String("open_save_dialog is only for mobile platforms".to_string()))
+}
+
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+#[command]
+pub(crate) async fn save_file_to_uri<R: Runtime>(
+    _app: AppHandle<R>,
+    _file_path: String,
+    _uri: String,
+) -> Result<serde_json::Value> {
+    Err(crate::Error::String("save_file_to_uri is only for mobile platforms".to_string()))
 }
 

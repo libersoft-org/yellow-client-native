@@ -40,7 +40,13 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
       commands::check_file_permissions,
       commands::request_file_permissions,
       commands::save_to_downloads,
-      commands::export_file_to_downloads
+      commands::export_file_to_downloads,
+      commands::create_file,
+      commands::append_to_file,
+      commands::rename_file,
+      commands::delete_file,
+      commands::open_save_dialog,
+      commands::save_file_to_uri
     ])
     .setup(|app, api| {
       #[cfg(any(target_os = "android", target_os = "ios"))]
