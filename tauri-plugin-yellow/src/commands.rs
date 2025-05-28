@@ -1,4 +1,5 @@
 use tauri::{AppHandle, command, Runtime};
+use serde::Deserialize;
 
 use crate::models::*;
 use crate::Result;
@@ -87,7 +88,7 @@ pub(crate) async fn save_to_downloads<R: Runtime>(
     _data: String,
 ) -> Result<serde_json::Value> {
     // Desktop doesn't need this - use regular file system
-    Err(crate::Error::String("save_to_downloads is only for mobile platforms".to_string()))
+    Err(std::io::Error::new(std::io::ErrorKind::Unsupported, "save_to_downloads is only for mobile platforms").into())
 }
 
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
