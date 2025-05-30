@@ -4,6 +4,7 @@
     <mapping directory="$PROJECT_DIR$/.." vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../yellow-admin" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../yellow-client" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../yellow-client-common" vcs="Git" />
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../yellow-server" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../yellow-server-common" vcs="Git" />

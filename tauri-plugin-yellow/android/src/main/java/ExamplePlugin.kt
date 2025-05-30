@@ -7,12 +7,14 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import androidx.activity.result.ActivityResult
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import app.tauri.annotation.Command
 import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.TauriPlugin
 import app.tauri.annotation.Permission
+import app.tauri.annotation.ActivityCallback
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
 import app.tauri.plugin.Invoke
@@ -373,7 +375,8 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity) {
             val data = android.util.Base64.decode(dataBase64, android.util.Base64.DEFAULT)
             
             file.appendBytes(data)
-            
+            android.util.Log.d("YellowPlugin", "Appended data to file: ${file.absolutePath}, new size: ${file.length()} bytes")
+
             val ret = JSObject()
             ret.put("success", true)
             invoke.resolve(ret)
@@ -447,12 +450,16 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity) {
         val args = invoke.getArgs()
         val fileName = args.getString("fileName") ?: "download"
         val mimeType = args.getString("mimeType") ?: "application/octet-stream"
-        
+
+        android.util.Log.d("YellowPlugin", "Opening save dialog for file: $fileName, mimeType: $mimeType")
+
         try {
             pendingInvoke = invoke
             pendingFileName = fileName
             pendingMimeType = mimeType
-            
+
+
+            android.util.Log.d("YellowPlugin", "Creating intent for ACTION_CREATE_DOCUMENT")
             val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
                 type = mimeType
@@ -466,8 +473,10 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity) {
                     else -> putExtra("android.provider.extra.INITIAL_URI", MediaStore.Downloads.EXTERNAL_CONTENT_URI)
                 }
             }
-            
-            activity.startActivityForResult(intent, CREATE_FILE_REQUEST_CODE)
+
+            android.util.Log.d("YellowPlugin", "Opening save dialog for file: $fileName, mimeType: $mimeType")
+            startActivityForResult(invoke, intent, "handleSaveDialogResult")
+            android.util.Log.d("YellowPlugin", "Save dialog started, waiting for result")
         } catch (e: Exception) {
             android.util.Log.e("YellowPlugin", "Failed to open save dialog", e)
             invoke.reject("Failed to open save dialog: ${e.message}")
@@ -484,7 +493,9 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity) {
             invoke.reject("Missing filePath or uri")
             return
         }
-        
+
+        android.util.Log.d("YellowPlugin", "Saving file from $filePath to URI: $uriString")
+
         try {
             val sourceFile = File(activity.filesDir, filePath)
             if (!sourceFile.exists()) {
@@ -493,12 +504,16 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity) {
             }
             
             val uri = Uri.parse(uriString)
+
+            android.util.Log.d("YellowPlugin", "Opening output stream for URI: $uri")
             
+            var bytesCopied: Long = 0
             activity.contentResolver.openOutputStream(uri)?.use { outputStream ->
                 sourceFile.inputStream().use { inputStream ->
-                    inputStream.copyTo(outputStream)
+                    bytesCopied = inputStream.copyTo(outputStream)
                 }
             }
+            android.util.Log.d("YellowPlugin", "Copied $bytesCopied bytes from ${sourceFile.name} to URI: $uri")
             
             val ret = JSObject()
             ret.put("success", true)
@@ -509,28 +524,28 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity) {
         }
     }
     
-    fun handleOnActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (requestCode) {
-            CREATE_FILE_REQUEST_CODE -> {
-                val invoke = pendingInvoke
-                if (invoke != null) {
-                    if (resultCode == Activity.RESULT_OK && data?.data != null) {
-                        val uri = data.data!!
-                        val ret = JSObject()
-                        ret.put("success", true)
-                        ret.put("uri", uri.toString())
-                        ret.put("fileName", pendingFileName)
-                        ret.put("mimeType", pendingMimeType)
-                        invoke.resolve(ret)
-                    } else {
-                        invoke.reject("Save dialog cancelled")
-                    }
-                    
-                    pendingInvoke = null
-                    pendingFileName = null
-                    pendingMimeType = null
-                }
-            }
+    @ActivityCallback
+    fun handleSaveDialogResult(invoke: Invoke, result: androidx.activity.result.ActivityResult) {
+        val resultCode = result.resultCode
+        val data = result.data
+        android.util.Log.d("YellowPlugin", "handleSaveDialogResult called - resultCode: $resultCode, hasData: ${data != null}")
+        
+        if (resultCode == Activity.RESULT_OK && data?.data != null) {
+            val uri = data.data!!
+            android.util.Log.d("YellowPlugin", "Save dialog success, URI: $uri")
+            val ret = JSObject()
+            ret.put("success", true)
+            ret.put("uri", uri.toString())
+            ret.put("fileName", pendingFileName)
+            ret.put("mimeType", pendingMimeType)
+            invoke.resolve(ret)
+        } else {
+            android.util.Log.d("YellowPlugin", "Save dialog cancelled or failed - resultCode: $resultCode")
+            invoke.reject("Save dialog cancelled")
         }
+        
+        pendingInvoke = null
+        pendingFileName = null
+        pendingMimeType = null
     }
 }
