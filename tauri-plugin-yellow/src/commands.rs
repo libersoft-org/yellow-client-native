@@ -118,6 +118,15 @@ pub(crate) async fn delete_file<R: Runtime>(
 
 #[cfg(any(target_os = "android", target_os = "ios"))]
 #[command]
+pub(crate) async fn file_exists<R: Runtime>(
+    app: AppHandle<R>,
+    file_name: String,
+) -> Result<bool> {
+    app.yellow().file_exists(file_name)
+}
+
+#[cfg(any(target_os = "android", target_os = "ios"))]
+#[command]
 pub(crate) async fn open_save_dialog<R: Runtime>(
     app: AppHandle<R>,
     file_name: String,
@@ -198,6 +207,15 @@ pub(crate) async fn delete_file<R: Runtime>(
     _file_name: String,
 ) -> Result<serde_json::Value> {
     Err(crate::Error::String("delete_file is only for mobile platforms".to_string()))
+}
+
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+#[command]
+pub(crate) async fn file_exists<R: Runtime>(
+    _app: AppHandle<R>,
+    _file_name: String,
+) -> Result<bool> {
+    Err(crate::Error::String("file_exists is only for mobile platforms".to_string()))
 }
 
 #[cfg(not(any(target_os = "android", target_os = "ios")))]

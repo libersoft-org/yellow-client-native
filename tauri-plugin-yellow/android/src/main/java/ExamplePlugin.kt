@@ -446,6 +446,28 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity) {
     }
     
     @Command
+    fun fileExists(invoke: Invoke) {
+        val args = invoke.getArgs()
+        val fileName = args.getString("fileName")
+        
+        if (fileName == null) {
+            invoke.reject("Missing fileName")
+            return
+        }
+        
+        try {
+            val file = File(activity.filesDir, fileName)
+            val exists = file.exists()
+            
+            android.util.Log.d("YellowPlugin", "Checking if file exists: $fileName, result: $exists")
+            invoke.resolve(exists)
+        } catch (e: Exception) {
+            android.util.Log.e("YellowPlugin", "Failed to check file existence", e)
+            invoke.reject("Failed to check file existence: ${e.message}")
+        }
+    }
+    
+    @Command
     fun openSaveDialog(invoke: Invoke) {
         val args = invoke.getArgs()
         val fileName = args.getString("fileName") ?: "download"

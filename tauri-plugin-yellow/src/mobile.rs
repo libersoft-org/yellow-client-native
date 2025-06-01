@@ -156,6 +156,21 @@ impl<R: Runtime> Yellow<R> {
       .map_err(Into::into)
   }
   
+  pub fn file_exists(
+    &self,
+    file_name: String,
+  ) -> crate::Result<bool> {
+    self
+      .0
+      .run_mobile_plugin(
+        "fileExists",
+        serde_json::json!({ 
+          "fileName": file_name
+        }),
+      )
+      .map_err(Into::into)
+  }
+  
   pub fn open_save_dialog(
     &self,
     file_name: String,
