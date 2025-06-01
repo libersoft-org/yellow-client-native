@@ -12,8 +12,10 @@
       <excludeFolder url="file://$MODULE_DIR$/src-tauri/target" />
       <excludeFolder url="file://$MODULE_DIR$/tauri-plugin-yellow/examples/vanilla/src-tauri/target" />
       <excludeFolder url="file://$MODULE_DIR$/tauri-plugin-yellow/target" />
-      <excludeFolder url="file://$MODULE_DIR$/yellow-client" />
       <excludeFolder url="file://$MODULE_DIR$/src-tauri/gen" />
+      <excludeFolder url="file://$MODULE_DIR$/yellow-client/.storybook" />
+      <excludeFolder url="file://$MODULE_DIR$/yellow-client/.svelte-kit" />
+      <excludeFolder url="file://$MODULE_DIR$/yellow-client/build-tauri" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

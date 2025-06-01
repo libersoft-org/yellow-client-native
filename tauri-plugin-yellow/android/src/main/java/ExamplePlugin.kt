@@ -460,7 +460,10 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity) {
             val exists = file.exists()
             
             android.util.Log.d("YellowPlugin", "Checking if file exists: $fileName, result: $exists")
-            invoke.resolve(exists)
+            
+            val result = JSObject()
+            result.put("exists", exists)
+            invoke.resolve(result)
         } catch (e: Exception) {
             android.util.Log.e("YellowPlugin", "Failed to check file existence", e)
             invoke.reject("Failed to check file existence: ${e.message}")

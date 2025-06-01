@@ -160,15 +160,19 @@ impl<R: Runtime> Yellow<R> {
     &self,
     file_name: String,
   ) -> crate::Result<bool> {
-    self
+    let result: serde_json::Value = self
       .0
       .run_mobile_plugin(
         "fileExists",
         serde_json::json!({ 
           "fileName": file_name
         }),
-      )
-      .map_err(Into::into)
+      )?;
+    
+    result
+      .get("exists")
+      .and_then(|v| v.as_bool())
+      .ok_or_else(|| crate::Error::String("Invalid response from fileExists".into()))
   }
   
   pub fn open_save_dialog(
