@@ -89,4 +89,142 @@ impl<R: Runtime> Yellow<R> {
       )
       .map_err(Into::into)
   }
+  
+  pub fn create_file(
+    &self,
+    file_name: String,
+    content: String,
+  ) -> crate::Result<serde_json::Value> {
+    self
+      .0
+      .run_mobile_plugin(
+        "createFile",
+        serde_json::json!({ 
+          "fileName": file_name,
+          "content": content
+        }),
+      )
+      .map_err(Into::into)
+  }
+  
+  pub fn append_to_file(
+    &self,
+    file_name: String,
+    data: String,
+  ) -> crate::Result<serde_json::Value> {
+    self
+      .0
+      .run_mobile_plugin(
+        "appendToFile",
+        serde_json::json!({ 
+          "fileName": file_name,
+          "data": data
+        }),
+      )
+      .map_err(Into::into)
+  }
+  
+  pub fn rename_file(
+    &self,
+    old_name: String,
+    new_name: String,
+  ) -> crate::Result<serde_json::Value> {
+    self
+      .0
+      .run_mobile_plugin(
+        "renameFile",
+        serde_json::json!({ 
+          "oldName": old_name,
+          "newName": new_name
+        }),
+      )
+      .map_err(Into::into)
+  }
+  
+  pub fn delete_file(
+    &self,
+    file_name: String,
+  ) -> crate::Result<serde_json::Value> {
+    self
+      .0
+      .run_mobile_plugin(
+        "deleteFile",
+        serde_json::json!({ 
+          "fileName": file_name
+        }),
+      )
+      .map_err(Into::into)
+  }
+  
+  pub fn file_exists(
+    &self,
+    file_name: String,
+  ) -> crate::Result<bool> {
+    let result: serde_json::Value = self
+      .0
+      .run_mobile_plugin(
+        "fileExists",
+        serde_json::json!({ 
+          "fileName": file_name
+        }),
+      )?;
+    
+    result
+      .get("exists")
+      .and_then(|v| v.as_bool())
+      .ok_or_else(|| crate::Error::String("Invalid response from fileExists".into()))
+  }
+  
+  pub fn get_file_size(
+    &self,
+    file_name: String,
+  ) -> crate::Result<i64> {
+    let result: serde_json::Value = self
+      .0
+      .run_mobile_plugin(
+        "getFileSize",
+        serde_json::json!({ 
+          "fileName": file_name
+        }),
+      )?;
+    
+    result
+      .get("size")
+      .and_then(|v| v.as_i64())
+      .ok_or_else(|| crate::Error::String("Invalid response from getFileSize".into()))
+  }
+  
+  pub fn open_save_dialog(
+    &self,
+    file_name: String,
+    mime_type: String,
+  ) -> crate::Result<serde_json::Value> {
+    self
+      .0
+      .run_mobile_plugin(
+        "openSaveDialog",
+        serde_json::json!({ 
+          "fileName": file_name,
+          "mimeType": mime_type
+        }),
+      )
+      .map_err(Into::into)
+  }
+  
+  pub fn save_file_to_uri(
+    &self,
+    file_path: String,
+    uri: String,
+  ) -> crate::Result<serde_json::Value> {
+    self
+      .0
+      .run_mobile_plugin(
+        "saveFileToUri",
+        serde_json::json!({ 
+          "filePath": file_path,
+          "uri": uri
+        }),
+      )
+      .map_err(Into::into)
+  }
 }

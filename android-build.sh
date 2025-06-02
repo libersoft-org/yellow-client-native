@@ -8,7 +8,7 @@ export ANDROID_NDK_HOME=~/Android/Sdk/ndk/29.0.13113456
 
 # Build and run
 echo "Building and running Android app..."
-bun run tauri android dev
+bun run tauri android build
 
 # This process will keep running, so we need to show logs in a new terminal
 # You can manually run this command in a separate terminal:

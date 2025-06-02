@@ -1,24 +1,25 @@
 #!/bin/bash
-# Alternative logging script that uses process ID filtering
+# Script to view Android logs for the Yellow app
 
 # Define ADB if not set
 ADB=${ADB:-adb}
 
-# Clear the log first
+# Clear the log first (optional)
 $ADB logcat -c
 
-# Package name
+# Get the package name for filtering
 PACKAGE="org.libersoft.yellow"
+echo "Showing logs for $PACKAGE"
 
-# Get the PID of our app
-PID=$($ADB shell ps -A | grep $PACKAGE | awk '{print $2}')
+# Run a more comprehensive logcat command
+echo "Running logcat with broad filters to catch all app logs..."
 
-if [ -z "$PID" ]; then
-  echo "Could not find process for $PACKAGE"
-  echo "Showing all logs with yellow/tauri/rust filter instead..."
-  $ADB logcat -v threadtime | grep -i --color=auto "yellow\|tauri\|rust\|Error\|Exception"
-else
-  echo "Found process ID: $PID for $PACKAGE"
-  echo "Showing logs for process $PID..."
-  $ADB logcat -v threadtime --pid=$PID
-fi
+# Option 1: By package name (this will show logs from your app's process)
+stdbuf -i0 -o0 -e0 $ADB logcat -v threadtime | stdbuf -i0 -o0 -e0 grep -i --color=auto "$PACKAGE\|yellow\|rust\|tauri\|Error\|Exception"
+
+# If the above command doesn't show logs, manually uncomment and try one of these:
+# Option 2: Show all Rust/Tauri related logs
+# $ADB logcat -v threadtime "*:D" | grep -i --color=auto "yellow\|rust\|tauri"
+
+# Option 3: Show all logs without filtering
+# $ADB logcat -v threadtime
