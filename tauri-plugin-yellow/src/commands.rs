@@ -1,5 +1,4 @@
 use tauri::{AppHandle, command, Runtime};
-use serde::Deserialize;
 
 use crate::models::*;
 use crate::Result;
