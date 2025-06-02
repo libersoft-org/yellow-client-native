@@ -244,6 +244,8 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity) {
                 }
             } else {
                 // For older Android versions
+                android.util.Log.d("YellowPlugin", "API level < 29, using direct file access")
+
                 val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                 val destFile = File(downloadsDir, fileName)
                 
