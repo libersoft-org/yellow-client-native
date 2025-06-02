@@ -127,6 +127,15 @@ pub(crate) async fn file_exists<R: Runtime>(
 
 #[cfg(any(target_os = "android", target_os = "ios"))]
 #[command]
+pub(crate) async fn get_file_size<R: Runtime>(
+    app: AppHandle<R>,
+    file_name: String,
+) -> Result<i64> {
+    app.yellow().get_file_size(file_name)
+}
+
+#[cfg(any(target_os = "android", target_os = "ios"))]
+#[command]
 pub(crate) async fn open_save_dialog<R: Runtime>(
     app: AppHandle<R>,
     file_name: String,
@@ -216,6 +225,15 @@ pub(crate) async fn file_exists<R: Runtime>(
     _file_name: String,
 ) -> Result<bool> {
     Err(crate::Error::String("file_exists is only for mobile platforms".to_string()))
+}
+
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+#[command]
+pub(crate) async fn get_file_size<R: Runtime>(
+    _app: AppHandle<R>,
+    _file_name: String,
+) -> Result<i64> {
+    Err(crate::Error::String("get_file_size is only for mobile platforms".to_string()))
 }
 
 #[cfg(not(any(target_os = "android", target_os = "ios")))]

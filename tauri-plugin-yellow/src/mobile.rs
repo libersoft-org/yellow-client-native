@@ -175,6 +175,25 @@ impl<R: Runtime> Yellow<R> {
       .ok_or_else(|| crate::Error::String("Invalid response from fileExists".into()))
   }
   
+  pub fn get_file_size(
+    &self,
+    file_name: String,
+  ) -> crate::Result<i64> {
+    let result: serde_json::Value = self
+      .0
+      .run_mobile_plugin(
+        "getFileSize",
+        serde_json::json!({ 
+          "fileName": file_name
+        }),
+      )?;
+    
+    result
+      .get("size")
+      .and_then(|v| v.as_i64())
+      .ok_or_else(|| crate::Error::String("Invalid response from getFileSize".into()))
+  }
+  
   pub fn open_save_dialog(
     &self,
     file_name: String,

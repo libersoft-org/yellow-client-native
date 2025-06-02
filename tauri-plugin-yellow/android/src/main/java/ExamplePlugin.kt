@@ -472,6 +472,36 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity) {
     }
     
     @Command
+    fun getFileSize(invoke: Invoke) {
+        val args = invoke.getArgs()
+        val fileName = args.getString("fileName")
+        
+        if (fileName == null) {
+            invoke.reject("Missing fileName")
+            return
+        }
+        
+        try {
+            val file = File(activity.filesDir, fileName)
+            
+            if (!file.exists()) {
+                invoke.reject("File not found")
+                return
+            }
+            
+            val size = file.length()
+            android.util.Log.d("YellowPlugin", "File size for $fileName: $size bytes")
+            
+            val result = JSObject()
+            result.put("size", size)
+            invoke.resolve(result)
+        } catch (e: Exception) {
+            android.util.Log.e("YellowPlugin", "Failed to get file size", e)
+            invoke.reject("Failed to get file size: ${e.message}")
+        }
+    }
+    
+    @Command
     fun openSaveDialog(invoke: Invoke) {
         val args = invoke.getArgs()
         val fileName = args.getString("fileName") ?: "download"

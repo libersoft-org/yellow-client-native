@@ -15,7 +15,7 @@ echo "Showing logs for $PACKAGE"
 echo "Running logcat with broad filters to catch all app logs..."
 
 # Option 1: By package name (this will show logs from your app's process)
-$ADB logcat -v threadtime | grep -i --color=auto "$PACKAGE\|yellow\|rust\|tauri\|Error\|Exception"
+stdbuf -i0 -o0 -e0 $ADB logcat -v threadtime | stdbuf -i0 -o0 -e0 grep -i --color=auto "$PACKAGE\|yellow\|rust\|Error\|Exception" | stdbuf -i0 -o0 -e0  grep -v 'Tauri/Console:'
 
 # If the above command doesn't show logs, manually uncomment and try one of these:
 # Option 2: Show all Rust/Tauri related logs

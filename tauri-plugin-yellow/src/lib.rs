@@ -46,6 +46,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
       commands::rename_file,
       commands::delete_file,
       commands::file_exists,
+      commands::get_file_size,
       commands::open_save_dialog,
       commands::save_file_to_uri
     ])

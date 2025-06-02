@@ -11,6 +11,7 @@ permissions = [
   "allow-rename-file",
   "allow-delete-file",
   "allow-file-exists",
+  "allow-get-file-size",
   "allow-open-save-dialog",
   "allow-save-file-to-uri"
 ]
