@@ -10,6 +10,7 @@ permissions = [
   "allow-append-to-file",
   "allow-rename-file",
   "allow-delete-file",
+  "allow-file-exists",
   "allow-open-save-dialog",
   "allow-save-file-to-uri"
 ]

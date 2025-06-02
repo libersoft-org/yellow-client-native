@@ -348,6 +348,7 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity) {
         try {
             val file = File(activity.filesDir, fileName)
             file.writeText(content)
+            android.util.Log.d("YellowPlugin", "Created file: ${file.absolutePath}, size: ${file.length()} bytes")
             
             val ret = JSObject()
             ret.put("success", true)
