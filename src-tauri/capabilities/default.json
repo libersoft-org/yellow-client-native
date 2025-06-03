@@ -51,9 +51,6 @@
     "fs:allow-download-write-recursive",
     "fs:allow-home-write-recursive",
     "fs:allow-exists",
-    "fs:allow-stat",
-    "yellow:default",
-    "yellow:allow-check-file-permissions",
-    "yellow:allow-request-file-permissions"
+    "fs:allow-stat"
   ]
 }

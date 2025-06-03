@@ -1,0 +1,16 @@
+{
+  "identifier": "mobile-capability",
+  "platforms": [
+    "android",
+    "iOS"
+  ],
+  "windows": [
+    "*"
+  ],
+  "permissions": [
+    "yellow:default",
+    "yellow:allow-check-file-permissions",
+    "yellow:allow-request-file-permissions",
+    "yellow:allow-save-accounts-config"
+  ]
+}

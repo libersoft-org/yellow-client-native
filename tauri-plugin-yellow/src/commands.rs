@@ -154,6 +154,15 @@ pub(crate) async fn save_file_to_uri<R: Runtime>(
     app.yellow().save_file_to_uri(file_path, uri)
 }
 
+#[cfg(any(target_os = "android", target_os = "ios"))]
+#[command]
+pub(crate) async fn save_accounts_config<R: Runtime>(
+    app: AppHandle<R>,
+    config_json: String,
+) -> Result<serde_json::Value> {
+    app.yellow().save_accounts_config(config_json)
+}
+
 
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 #[command]

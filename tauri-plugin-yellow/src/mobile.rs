@@ -227,4 +227,19 @@ impl<R: Runtime> Yellow<R> {
       )
       .map_err(Into::into)
   }
+  
+  pub fn save_accounts_config(
+    &self,
+    config_json: String,
+  ) -> crate::Result<serde_json::Value> {
+    self
+      .0
+      .run_mobile_plugin(
+        "saveAccountsConfig",
+        serde_json::json!({ 
+          "configJson": config_json
+        }),
+      )
+      .map_err(Into::into)
+  }
 }

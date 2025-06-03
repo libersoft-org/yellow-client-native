@@ -38,6 +38,7 @@ class PingArgs {
 class ExamplePlugin(private val activity: Activity): Plugin(activity), OnRequestPermissionsResultCallback {
     private val implementation = Example()
     private val files = Files(activity)
+    private val encryptedStorage = EncryptedStorage(activity)
     private val REQUEST_CODE_PERMISSIONS = 1001
     private val REQUEST_CODE_NOTIFICATIONS = 1004  // Separate code for notifications
     private val CREATE_FILE_REQUEST_CODE = 1002
@@ -300,6 +301,36 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity), OnRequest
     @Command
     fun saveFileToUri(invoke: Invoke) {
         files.saveFileToUri(invoke)
+    }
+    
+    @Command
+    fun saveAccountsConfig(invoke: Invoke) {
+        try {
+            val args = invoke.getArgs()
+            val configJson = args.getString("configJson")
+            
+            if (configJson == null) {
+                android.util.Log.e("YellowPlugin", "saveAccountsConfig called with null configJson")
+                invoke.reject("Missing configJson parameter")
+                return
+            }
+            
+            android.util.Log.d("YellowPlugin", "Saving accounts config, length: ${configJson.length}")
+            val success = encryptedStorage.saveAccountsConfig(configJson)
+            
+            val ret = JSObject()
+            ret.put("success", success)
+            if (success) {
+                android.util.Log.d("YellowPlugin", "Accounts config saved successfully")
+                invoke.resolve(ret)
+            } else {
+                android.util.Log.e("YellowPlugin", "Failed to save accounts config")
+                invoke.reject("Failed to save accounts config")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("YellowPlugin", "Exception in saveAccountsConfig", e)
+            invoke.reject("Failed to save accounts config: ${e.message}")
+        }
     }
     
     @ActivityCallback

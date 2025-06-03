@@ -160,6 +160,7 @@ pub fn run() {
     info!("thread name: {:?}", std::thread::current().name());
 
     // Plugins that should be available on all platforms
+    #[cfg(any(target_os = "android", target_os = "ios"))]
     let builder = builder
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_process::init())
@@ -168,6 +169,15 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_yellow::init());
+
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    let builder = builder
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_opener::init());
 
 
     // Core plugins that should run only on non-Android platforms

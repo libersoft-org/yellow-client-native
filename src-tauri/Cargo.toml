@@ -36,7 +36,6 @@ tauri-plugin-process = "2"
 lazy_static = "1.4.0"
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
-tauri-plugin-yellow = { path = "../tauri-plugin-yellow" }
 #tauri = { git = "https://github.com/koo5/tauri", branch = "yellow-tauri-v2.4.1", version = "2.4.1", features = ["tray-icon"] }
 tauri = { version = "2.5.1", features = [] }
 
@@ -44,6 +43,10 @@ tauri = { version = "2.5.1", features = [] }
 [target.'cfg(target_os = "android")'.dependencies]
 android_logger = "0.15"
 libc = "0.2"
+tauri-plugin-yellow = { path = "../tauri-plugin-yellow" }
+
+[target.'cfg(target_os = "ios")'.dependencies]
+tauri-plugin-yellow = { path = "../tauri-plugin-yellow" }
 
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
