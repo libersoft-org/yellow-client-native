@@ -318,10 +318,14 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity), OnRequest
             android.util.Log.d("YellowPlugin", "Saving accounts config, length: ${configJson.length}")
             val success = encryptedStorage.saveAccountsConfig(configJson)
             
-            val ret = JSObject()
-            ret.put("success", success)
             if (success) {
                 android.util.Log.d("YellowPlugin", "Accounts config saved successfully")
+                
+                // Notify the foreground service to update its notification
+                notifyForegroundServiceAccountsChanged()
+                
+                val ret = JSObject()
+                ret.put("success", true)
                 invoke.resolve(ret)
             } else {
                 android.util.Log.e("YellowPlugin", "Failed to save accounts config")
@@ -330,6 +334,22 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity), OnRequest
         } catch (e: Exception) {
             android.util.Log.e("YellowPlugin", "Exception in saveAccountsConfig", e)
             invoke.reject("Failed to save accounts config: ${e.message}")
+        }
+    }
+    
+    private fun notifyForegroundServiceAccountsChanged() {
+        try {
+            if (YellowForegroundService.isRunning()) {
+                android.util.Log.d("YellowPlugin", "Notifying foreground service of account changes")
+                val serviceIntent = Intent(activity, YellowForegroundService::class.java).apply {
+                    action = YellowForegroundService.ACTION_UPDATE_ACCOUNTS
+                }
+                activity.startService(serviceIntent)
+            } else {
+                android.util.Log.d("YellowPlugin", "Foreground service not running, skipping notification")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("YellowPlugin", "Failed to notify foreground service", e)
         }
     }
     

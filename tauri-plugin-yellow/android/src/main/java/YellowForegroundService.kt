@@ -18,6 +18,7 @@ class YellowForegroundService : Service() {
         const val NOTIFICATION_ID = 1001
         const val ACTION_START = "org.libersoft.yellowplugin.START_SERVICE"
         const val ACTION_STOP = "org.libersoft.yellowplugin.STOP_SERVICE"
+        const val ACTION_UPDATE_ACCOUNTS = "org.libersoft.yellowplugin.UPDATE_ACCOUNTS"
         const val EXTRA_TITLE = "title"
         const val EXTRA_MESSAGE = "message"
         private const val TAG = "YellowForegroundService"
@@ -27,11 +28,14 @@ class YellowForegroundService : Service() {
         
         fun isRunning(): Boolean = isServiceRunning
     }
+    
+    private lateinit var encryptedStorage: EncryptedStorage
 
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "Service onCreate")
         isServiceRunning = true
+        encryptedStorage = EncryptedStorage(this)
         createNotificationChannel()
     }
 
@@ -46,6 +50,9 @@ class YellowForegroundService : Service() {
             }
             ACTION_STOP -> {
                 stopForegroundService()
+            }
+            ACTION_UPDATE_ACCOUNTS -> {
+                updateNotificationWithAccountCount()
             }
             else -> {
                 // Handle service restart after being killed by system
@@ -77,6 +84,26 @@ class YellowForegroundService : Service() {
 
     private fun startForegroundService(title: String, message: String) {
         Log.d(TAG, "Starting foreground service - title: $title, message: $message")
+        
+        // Get account count and update the message
+        val accountCount = encryptedStorage.getAccountsCount()
+        val updatedMessage = "$message ($accountCount accounts)"
+        
+        createAndShowNotification(title, updatedMessage)
+    }
+    
+    private fun updateNotificationWithAccountCount() {
+        Log.d(TAG, "Updating notification with account count")
+        
+        val accountCount = encryptedStorage.getAccountsCount()
+        val title = "Yellow Service"
+        val message = "Service is running ($accountCount accounts)"
+        
+        createAndShowNotification(title, message)
+    }
+    
+    private fun createAndShowNotification(title: String, message: String) {
+        Log.d(TAG, "Creating notification - title: $title, message: $message")
         
         // Create intent to launch app when notification is clicked
         val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
@@ -110,19 +137,29 @@ class YellowForegroundService : Service() {
         val notification = notificationBuilder.build()
         
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(
-                    NOTIFICATION_ID,
-                    notification,
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
-                )
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            if (isServiceRunning) {
+                // Update existing notification
+                notificationManager?.notify(NOTIFICATION_ID, notification)
+                Log.d(TAG, "Notification updated successfully")
             } else {
-                startForeground(NOTIFICATION_ID, notification)
+                // Start foreground service
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    startForeground(
+                        NOTIFICATION_ID,
+                        notification,
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+                    )
+                } else {
+                    startForeground(NOTIFICATION_ID, notification)
+                }
+                Log.d(TAG, "Foreground service started successfully")
             }
-            Log.d(TAG, "Foreground service started successfully")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to start foreground service", e)
-            throw e
+            Log.e(TAG, "Failed to create/update notification", e)
+            if (!isServiceRunning) {
+                throw e
+            }
         }
     }
 

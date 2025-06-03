@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import org.json.JSONArray
 
 class EncryptedStorage(private val context: Context) {
     companion object {
@@ -51,6 +52,25 @@ class EncryptedStorage(private val context: Context) {
         } catch (e: Exception) {
             Log.e(TAG, "Failed to retrieve accounts config", e)
             null
+        }
+    }
+    
+    fun getAccountsCount(): Int {
+        return try {
+            val configJson = getAccountsConfig()
+            if (configJson != null) {
+                // Parse JSON to count accounts
+                val jsonArray = JSONArray(configJson)
+                val count = jsonArray.length()
+                Log.d(TAG, "Found $count accounts in config")
+                count
+            } else {
+                Log.d(TAG, "No accounts config found")
+                0
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to count accounts", e)
+            0
         }
     }
     
