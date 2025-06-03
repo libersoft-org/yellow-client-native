@@ -18,6 +18,7 @@ import app.tauri.annotation.ActivityCallback
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
 import app.tauri.plugin.Invoke
+import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import android.content.ContentValues
 import android.provider.MediaStore
 import java.io.File
@@ -37,17 +38,73 @@ class PingArgs {
   permissions = [
     Permission(strings = [Manifest.permission.POST_NOTIFICATIONS], alias = "postNotifications"),
     Permission(strings = [Manifest.permission.WRITE_EXTERNAL_STORAGE], alias = ALIAS_WRITE_EXTERNAL_STORAGE),
-    Permission(strings = [Manifest.permission.READ_EXTERNAL_STORAGE], alias = ALIAS_READ_EXTERNAL_STORAGE)
+    Permission(strings = [Manifest.permission.READ_EXTERNAL_STORAGE], alias = ALIAS_READ_EXTERNAL_STORAGE),
+    Permission(strings = [Manifest.permission.FOREGROUND_SERVICE], alias = "foregroundService")
   ])
-class ExamplePlugin(private val activity: Activity): Plugin(activity) {
+class ExamplePlugin(private val activity: Activity): Plugin(activity), OnRequestPermissionsResultCallback {
     private val implementation = Example()
     private val REQUEST_CODE_PERMISSIONS = 1001
+    private val REQUEST_CODE_NOTIFICATIONS = 1004  // Separate code for notifications
     private val CREATE_FILE_REQUEST_CODE = 1002
     private val OPEN_FILE_REQUEST_CODE = 1003
     
     private var pendingInvoke: Invoke? = null
     private var pendingFileName: String? = null
     private var pendingMimeType: String? = null
+    
+    init {
+        android.util.Log.d("YellowPlugin", "ExamplePlugin initialized - API level: ${Build.VERSION.SDK_INT}")
+        // Always try to start service - let the method handle permission checks
+        startServiceOnAppStartup()
+    }
+    
+    
+    private fun startServiceOnAppStartup() {
+        try {
+            // Check if service is already running
+            if (YellowForegroundService.isRunning()) {
+                android.util.Log.d("YellowPlugin", "Foreground service already running, skipping startup")
+                return
+            }
+            
+            // For Android 13+, check notification permission first
+            if (Build.VERSION.SDK_INT >= 33) {
+                val notificationPermission = ContextCompat.checkSelfPermission(
+                    activity,
+                    Manifest.permission.POST_NOTIFICATIONS
+                )
+                android.util.Log.d("YellowPlugin", "Notification permission status: $notificationPermission")
+                
+                if (notificationPermission != PackageManager.PERMISSION_GRANTED) {
+                    android.util.Log.d("YellowPlugin", "Requesting POST_NOTIFICATIONS permission")
+                    ActivityCompat.requestPermissions(
+                        activity,
+                        arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                        REQUEST_CODE_NOTIFICATIONS
+                    )
+                    return
+                }
+            }
+            
+            android.util.Log.d("YellowPlugin", "Starting foreground service on app startup")
+            
+            val serviceIntent = Intent(activity, YellowForegroundService::class.java).apply {
+                action = YellowForegroundService.ACTION_START
+                putExtra(YellowForegroundService.EXTRA_TITLE, "Yellow Service")
+                putExtra(YellowForegroundService.EXTRA_MESSAGE, "Service is running")
+            }
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                activity.startForegroundService(serviceIntent)
+            } else {
+                activity.startService(serviceIntent)
+            }
+            
+            android.util.Log.d("YellowPlugin", "Foreground service started on app startup")
+        } catch (e: Exception) {
+            android.util.Log.e("YellowPlugin", "Failed to start service on app startup", e)
+        }
+    }
 
     @Command
     fun ping(invoke: Invoke) {
@@ -605,5 +662,91 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity) {
         pendingInvoke = null
         pendingFileName = null
         pendingMimeType = null
+    }
+    
+    @Command
+    fun startForegroundService(invoke: Invoke) {
+        val args = invoke.getArgs()
+        val title = args.getString("title") ?: "Yellow Service"
+        val message = args.getString("message") ?: "Service is running"
+        
+        try {
+            android.util.Log.d("YellowPlugin", "Starting foreground service - title: $title, message: $message")
+            
+            val serviceIntent = Intent(activity, YellowForegroundService::class.java).apply {
+                action = YellowForegroundService.ACTION_START
+                putExtra(YellowForegroundService.EXTRA_TITLE, title)
+                putExtra(YellowForegroundService.EXTRA_MESSAGE, message)
+            }
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                activity.startForegroundService(serviceIntent)
+            } else {
+                activity.startService(serviceIntent)
+            }
+            
+            val ret = JSObject()
+            ret.put("success", true)
+            invoke.resolve(ret)
+        } catch (e: Exception) {
+            android.util.Log.e("YellowPlugin", "Failed to start foreground service", e)
+            invoke.reject("Failed to start foreground service: ${e.message}")
+        }
+    }
+    
+    @Command
+    fun stopForegroundService(invoke: Invoke) {
+        try {
+            android.util.Log.d("YellowPlugin", "Stopping foreground service")
+            
+            val serviceIntent = Intent(activity, YellowForegroundService::class.java).apply {
+                action = YellowForegroundService.ACTION_STOP
+            }
+            
+            activity.startService(serviceIntent)
+            
+            val ret = JSObject()
+            ret.put("success", true)
+            invoke.resolve(ret)
+        } catch (e: Exception) {
+            android.util.Log.e("YellowPlugin", "Failed to stop foreground service", e)
+            invoke.reject("Failed to stop foreground service: ${e.message}")
+        }
+    }
+    
+    @Command
+    fun checkNotificationPermissionAndStartService(invoke: Invoke) {
+        // Check notification permission and start service if granted
+        val hasPermission = if (Build.VERSION.SDK_INT >= 33) {
+            ContextCompat.checkSelfPermission(
+                activity,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true // Not needed for Android < 13
+        }
+        
+        if (hasPermission && !YellowForegroundService.isRunning()) {
+            startServiceOnAppStartup()
+        }
+        
+        val ret = JSObject()
+        ret.put("hasPermission", hasPermission)
+        ret.put("serviceRunning", YellowForegroundService.isRunning())
+        invoke.resolve(ret)
+    }
+    
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        android.util.Log.d("YellowPlugin", "onRequestPermissionsResult: requestCode=$requestCode, permissions=${permissions.contentToString()}, results=${grantResults.contentToString()}")
+        
+        if (requestCode == REQUEST_CODE_NOTIFICATIONS) {
+            val notificationPermissionIndex = permissions.indexOf(Manifest.permission.POST_NOTIFICATIONS)
+            if (notificationPermissionIndex >= 0 && grantResults[notificationPermissionIndex] == PackageManager.PERMISSION_GRANTED) {
+                android.util.Log.d("YellowPlugin", "POST_NOTIFICATIONS permission granted, starting service")
+                startServiceOnAppStartup()
+            } else {
+                android.util.Log.w("YellowPlugin", "POST_NOTIFICATIONS permission denied")
+            }
+        }
     }
 }
