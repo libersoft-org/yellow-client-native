@@ -13,5 +13,6 @@ permissions = [
   "allow-file-exists",
   "allow-get-file-size",
   "allow-open-save-dialog",
-  "allow-save-file-to-uri"
+  "allow-save-file-to-uri",
+  "allow-save-accounts-config"
 ]
