@@ -49,7 +49,9 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
       commands::get_file_size,
       commands::open_save_dialog,
       commands::save_file_to_uri,
-      commands::save_accounts_config
+      commands::save_accounts_config,
+      commands::save_modules_config,
+      commands::send_to_native
     ])
     .setup(|app, api| {
       #[cfg(any(target_os = "android", target_os = "ios"))]

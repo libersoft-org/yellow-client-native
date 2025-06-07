@@ -12,6 +12,7 @@ class EncryptedStorage(private val context: Context) {
         private const val TAG = "EncryptedStorage"
         private const val PREFS_NAME = "yellow_encrypted_prefs"
         private const val ACCOUNTS_CONFIG_KEY = "accounts_config"
+        private const val MODULES_CONFIG_KEY = "modules_config"
     }
     
     private val masterKey: MasterKey by lazy {
@@ -83,6 +84,44 @@ class EncryptedStorage(private val context: Context) {
             true
         } catch (e: Exception) {
             Log.e(TAG, "Failed to clear accounts config", e)
+            false
+        }
+    }
+    
+    fun saveModulesConfig(configJson: String): Boolean {
+        return try {
+            Log.d(TAG, "Saving modules config to encrypted storage")
+            encryptedPrefs.edit()
+                .putString(MODULES_CONFIG_KEY, configJson)
+                .apply()
+            Log.d(TAG, "Modules config saved successfully")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to save modules config", e)
+            false
+        }
+    }
+    
+    fun getModulesConfig(): String? {
+        return try {
+            val config = encryptedPrefs.getString(MODULES_CONFIG_KEY, null)
+            Log.d(TAG, "Retrieved modules config from encrypted storage")
+            config
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to retrieve modules config", e)
+            null
+        }
+    }
+    
+    fun clearModulesConfig(): Boolean {
+        return try {
+            encryptedPrefs.edit()
+                .remove(MODULES_CONFIG_KEY)
+                .apply()
+            Log.d(TAG, "Modules config cleared from encrypted storage")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to clear modules config", e)
             false
         }
     }

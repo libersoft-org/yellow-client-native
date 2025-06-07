@@ -337,6 +337,37 @@ class ExamplePlugin(private val activity: Activity): Plugin(activity), OnRequest
         }
     }
     
+    @Command
+    fun saveModulesConfig(invoke: Invoke) {
+        try {
+            val args = invoke.getArgs()
+            val configJson = args.getString("configJson")
+            
+            if (configJson == null) {
+                android.util.Log.e("YellowPlugin", "saveModulesConfig called with null configJson")
+                invoke.reject("Missing configJson parameter")
+                return
+            }
+            
+            android.util.Log.d("YellowPlugin", "Saving modules config, length: ${configJson.length}")
+            val success = encryptedStorage.saveModulesConfig(configJson)
+            
+            if (success) {
+                android.util.Log.d("YellowPlugin", "Modules config saved successfully")
+                
+                val ret = JSObject()
+                ret.put("success", true)
+                invoke.resolve(ret)
+            } else {
+                android.util.Log.e("YellowPlugin", "Failed to save modules config")
+                invoke.reject("Failed to save modules config")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("YellowPlugin", "Exception in saveModulesConfig", e)
+            invoke.reject("Failed to save modules config: ${e.message}")
+        }
+    }
+    
     private fun notifyForegroundServiceAccountsChanged() {
         try {
             if (YellowForegroundService.isRunning()) {

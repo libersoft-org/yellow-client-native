@@ -1,0 +1,27 @@
+{
+  "name": "yellow-native-e2e",
+  "version": "1.0.0",
+  "description": "End-to-end tests for Yellow native Android app",
+  "type": "module",
+  "scripts": {
+    "test": "jest",
+    "test:android": "jest --config jest.config.android.js",
+    "appium:install": "npm install -g appium && appium driver install uiautomator2",
+    "appium:start": "appium --port 4723",
+    "emulator:start": "emulator -avd test_device -no-snapshot-load"
+  },
+  "devDependencies": {
+    "@jest/types": "^29.6.3",
+    "@types/jest": "^29.5.12",
+    "@wdio/appium-service": "^8.40.0",
+    "appium": "^2.11.1",
+    "appium-uiautomator2-driver": "^4.2.3",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "webdriverio": "^8.40.0"
+  },
+  "dependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}
