@@ -18,6 +18,41 @@ log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 APPIUM_PORT=4723
 DEVICE_NAME="emulator-5554"
 
+# Auto-detect ADB if not provided
+find_adb() {
+    # Check if ADB env var is set
+    if [ ! -z "$ADB" ]; then
+        echo "$ADB"
+        return
+    fi
+    
+    # Check if adb is in PATH
+    if command -v adb >/dev/null 2>&1; then
+        echo "adb"
+        return
+    fi
+    
+    # Check common Android SDK locations
+    local common_paths=(
+        "$HOME/Android/Sdk/platform-tools/adb"
+        "$HOME/android-sdk/platform-tools/adb"
+        "$ANDROID_HOME/platform-tools/adb"
+        "$ANDROID_SDK_ROOT/platform-tools/adb"
+        "/opt/android-sdk/platform-tools/adb"
+        "/usr/local/android-sdk/platform-tools/adb"
+    )
+    
+    for path in "${common_paths[@]}"; do
+        if [ -f "$path" ]; then
+            echo "$path"
+            return
+        fi
+    done
+    
+    # Not found
+    echo ""
+}
+
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -44,10 +79,20 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Find ADB
+ADB_COMMAND=$(find_adb)
+if [ -z "$ADB_COMMAND" ]; then
+    log_error "Android Debug Bridge (adb) not found."
+    log_error "Please set ADB environment variable or install Android SDK:"
+    log_error "  export ADB=/path/to/android/sdk/platform-tools/adb"
+    exit 1
+fi
+
 log_info "🚀 Quick E2E Test Run"
+log_info "ADB: $ADB_COMMAND"
 
 # Check if device is connected
-if ! adb devices | grep -q "device$"; then
+if ! $ADB_COMMAND devices | grep -q "device$"; then
     log_error "No Android devices found. Please connect a device or start an emulator."
     exit 1
 fi
@@ -59,7 +104,13 @@ fi
 
 # Build latest service
 log_info "🔨 Building latest service..."
-cd .. && bun run build:messages-service && cd e2e
+cd ../yellow-client
+if [ ! -f "package.json" ]; then
+    log_error "yellow-client submodule not found. Please run: git submodule update --init"
+    exit 1
+fi
+bun run build:messages-service
+cd ../e2e
 
 # Start Appium if not running
 if ! lsof -i :$APPIUM_PORT >/dev/null 2>&1; then

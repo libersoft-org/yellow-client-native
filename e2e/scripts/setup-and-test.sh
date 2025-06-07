@@ -99,6 +99,10 @@ while [[ $# -gt 0 ]]; do
             APPIUM_PORT="$2"
             shift 2
             ;;
+        --adb-path)
+            ADB_PATH="$2"
+            shift 2
+            ;;
         --help)
             echo "Yellow E2E Test Setup and Runner"
             echo ""
@@ -111,6 +115,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --device NAME          Android device/emulator name (default: $DEVICE_NAME)"
             echo "  --package NAME         App package name (default: $APP_PACKAGE)"
             echo "  --port PORT            Appium server port (default: $APPIUM_PORT)"
+            echo "  --adb-path PATH        Path to adb binary (auto-detected if not provided)"
             echo "  --help                 Show this help message"
             echo ""
             echo "Examples:"
@@ -128,8 +133,24 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Find ADB path
+if [ ! -z "$ADB_PATH" ]; then
+    ADB_COMMAND="$ADB_PATH"
+else
+    ADB_COMMAND=$(find_adb)
+fi
+
+if [ -z "$ADB_COMMAND" ]; then
+    log_error "Android Debug Bridge (adb) not found."
+    log_error "Please install Android SDK or set ADB environment variable:"
+    log_error "  export ADB=/path/to/android/sdk/platform-tools/adb"
+    log_error "  Or use: $0 --adb-path /path/to/adb"
+    exit 1
+fi
+
 log_info "🚀 Starting Yellow Native Android E2E Test Setup"
 log_info "Device: $DEVICE_NAME | Package: $APP_PACKAGE | Port: $APPIUM_PORT"
+log_info "ADB: $ADB_COMMAND"
 
 # Step 1: Check prerequisites
 log_info "📋 Checking prerequisites..."
@@ -144,11 +165,7 @@ if ! command_exists npm; then
     exit 1
 fi
 
-if ! command_exists adb; then
-    log_error "Android Debug Bridge (adb) is not installed."
-    log_error "Please install Android SDK and add adb to your PATH."
-    exit 1
-fi
+# ADB check now happens earlier, so we can skip this
 
 if ! command_exists java; then
     log_warning "Java not found in PATH. Appium may require Java."
@@ -182,12 +199,12 @@ fi
 if [ "$SKIP_DEVICE_CHECK" = false ]; then
     log_info "📱 Checking Android device connectivity..."
     
-    if ! adb devices | grep -q "device$"; then
+    if ! $ADB_COMMAND devices | grep -q "device$"; then
         log_error "No Android devices found or device not authorized."
         log_error "Please:"
         log_error "1. Connect your Android device via USB and enable USB debugging"
         log_error "2. OR start an Android emulator"
-        log_error "3. Run 'adb devices' to verify connection"
+        log_error "3. Run '$ADB_COMMAND devices' to verify connection"
         log_error ""
         log_info "To start an emulator, you can run:"
         log_info "  emulator -list-avds                    # List available emulators"
@@ -196,13 +213,13 @@ if [ "$SKIP_DEVICE_CHECK" = false ]; then
     fi
     
     # Check if specific device is available
-    if ! adb devices | grep -q "$DEVICE_NAME"; then
+    if ! $ADB_COMMAND devices | grep -q "$DEVICE_NAME"; then
         log_warning "Specified device '$DEVICE_NAME' not found."
         log_info "Available devices:"
-        adb devices
+        $ADB_COMMAND devices
         
         # Use first available device
-        DEVICE_NAME=$(adb devices | grep "device$" | head -1 | cut -f1)
+        DEVICE_NAME=$($ADB_COMMAND devices | grep "device$" | head -1 | cut -f1)
         log_info "Using device: $DEVICE_NAME"
     fi
     
@@ -213,13 +230,20 @@ fi
 
 # Step 5: Build Yellow service file
 log_info "🔨 Building Yellow messages service..."
-cd ..  # Go to yellow-client-native root
+cd ../yellow-client  # Go to yellow-client submodule
+if [ ! -f "package.json" ]; then
+    log_error "yellow-client submodule not found. Please run: git submodule update --init"
+    exit 1
+fi
 bun run build:messages-service
 log_success "Messages service built"
 
 # Step 6: Build Yellow Android APK (if not skipped)
 if [ "$SKIP_BUILD" = false ]; then
     log_info "🏗️  Building Yellow Android APK..."
+    
+    # Go back to client-native directory for APK build
+    cd ..
     
     # Check if we're in the right directory
     if [ ! -f "src-tauri/Cargo.toml" ]; then
@@ -229,9 +253,9 @@ if [ "$SKIP_BUILD" = false ]; then
     
     # Build the APK
     if command_exists bun; then
-        bun run tauri build --target android
+        bun run tauri android build
     else
-        npm run tauri build --target android
+        npm run tauri android build
     fi
     
     # Check if APK was created
@@ -245,6 +269,9 @@ if [ "$SKIP_BUILD" = false ]; then
 else
     log_info "⏭️  Skipping APK build"
     
+    # Go back to client-native directory to check APK
+    cd ..
+    
     # Still check if APK exists
     APK_PATH="src-tauri/gen/android/app/build/outputs/apk/debug/app-debug.apk"
     if [ ! -f "$APK_PATH" ]; then
@@ -253,7 +280,7 @@ else
     fi
 fi
 
-# Go back to e2e directory
+# Go back to e2e directory  
 cd e2e
 
 # Step 7: Start Appium server
@@ -326,7 +353,7 @@ else
     log_error "❌ Some E2E tests failed"
     log_info "📋 Debugging information:"
     log_info "  Appium logs: $(pwd)/appium.log"
-    log_info "  Device logs: adb -s $DEVICE_NAME logcat"
+    log_info "  Device logs: $ADB_COMMAND -s $DEVICE_NAME logcat"
     log_info "  Test configuration: $(pwd)/setup/global.setup.ts"
     
     # Show recent Appium logs
