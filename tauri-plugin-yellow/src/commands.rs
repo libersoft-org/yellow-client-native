@@ -163,6 +163,15 @@ pub(crate) async fn save_accounts_config<R: Runtime>(
     app.yellow().save_accounts_config(config_json)
 }
 
+#[cfg(any(target_os = "android", target_os = "ios"))]
+#[command]
+pub(crate) async fn save_modules_config<R: Runtime>(
+    app: AppHandle<R>,
+    config_json: String,
+) -> Result<serde_json::Value> {
+    app.yellow().save_modules_config(config_json)
+}
+
 
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 #[command]
@@ -263,5 +272,44 @@ pub(crate) async fn save_file_to_uri<R: Runtime>(
     _uri: String,
 ) -> Result<serde_json::Value> {
     Err(crate::Error::String("save_file_to_uri is only for mobile platforms".to_string()))
+}
+
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+#[command]
+pub(crate) async fn save_accounts_config<R: Runtime>(
+    _app: AppHandle<R>,
+    _config_json: String,
+) -> Result<serde_json::Value> {
+    Err(crate::Error::String("save_accounts_config is only for mobile platforms".to_string()))
+}
+
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+#[command]
+pub(crate) async fn save_modules_config<R: Runtime>(
+    _app: AppHandle<R>,
+    _config_json: String,
+) -> Result<serde_json::Value> {
+    Err(crate::Error::String("save_modules_config is only for mobile platforms".to_string()))
+}
+
+// Mobile connection bridging commands
+#[cfg(any(target_os = "android", target_os = "ios"))]
+#[command]
+pub(crate) async fn send_to_native<R: Runtime>(
+    app: AppHandle<R>,
+    account_id: String,
+    message: serde_json::Value,
+) -> Result<()> {
+    app.yellow().send_to_native(account_id, message)
+}
+
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+#[command]
+pub(crate) async fn send_to_native<R: Runtime>(
+    _app: AppHandle<R>,
+    _account_id: String,
+    _message: serde_json::Value,
+) -> Result<()> {
+    Err(crate::Error::String("send_to_native is only for mobile platforms".to_string()))
 }
 

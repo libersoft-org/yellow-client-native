@@ -30,12 +30,18 @@ class YellowForegroundService : Service() {
     }
     
     private lateinit var encryptedStorage: EncryptedStorage
+    private lateinit var accountManager: AccountManager
 
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "Service onCreate")
         isServiceRunning = true
         encryptedStorage = EncryptedStorage(this)
+        accountManager = AccountManager(this) { accountId, message ->
+            // Handle messages from accounts - for now just log
+            Log.d(TAG, "Message from account $accountId: $message")
+            // TODO: Forward to frontend through Tauri events
+        }
         createNotificationChannel()
     }
 
@@ -52,6 +58,7 @@ class YellowForegroundService : Service() {
                 stopForegroundService()
             }
             ACTION_UPDATE_ACCOUNTS -> {
+                updateAccounts()
                 updateNotificationWithAccountCount()
             }
             else -> {
@@ -85,19 +92,30 @@ class YellowForegroundService : Service() {
     private fun startForegroundService(title: String, message: String) {
         Log.d(TAG, "Starting foreground service - title: $title, message: $message")
         
+        // Initialize accounts from stored config
+        updateAccounts()
+        
         // Get account count and update the message
-        val accountCount = encryptedStorage.getAccountsCount()
-        val updatedMessage = "$message ($accountCount accounts)"
+        val accountCount = accountManager.getActiveAccountsCount()
+        val updatedMessage = "$message ($accountCount active accounts)"
         
         createAndShowNotification(title, updatedMessage)
+    }
+    
+    private fun updateAccounts() {
+        Log.d(TAG, "Updating accounts from encrypted storage")
+        
+        encryptedStorage.getAccountsConfig()?.let { configJson ->
+            accountManager.updateAccountsConfig(configJson)
+        }
     }
     
     private fun updateNotificationWithAccountCount() {
         Log.d(TAG, "Updating notification with account count")
         
-        val accountCount = encryptedStorage.getAccountsCount()
+        val accountCount = accountManager.getActiveAccountsCount()
         val title = "Yellow Service"
-        val message = "Service is running ($accountCount accounts)"
+        val message = "Service is running ($accountCount active accounts)"
         
         createAndShowNotification(title, message)
     }
@@ -177,5 +195,6 @@ class YellowForegroundService : Service() {
         super.onDestroy()
         Log.d(TAG, "Service onDestroy")
         isServiceRunning = false
+        accountManager.destroy()
     }
 }
